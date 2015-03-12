@@ -15,20 +15,119 @@
     <script src="http://code.jquery.com/jquery.js"></script>
     <script src="http://libs.cartocdn.com/cartodb.js/v3/3.12/cartodb.js"></script>
     <script src="http://cdn-geoweb.s3.amazonaws.com/esri-leaflet/1.0.0-rc.5/esri-leaflet.js"></script>
-    <script src="js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bluebird/2.9.13/bluebird.min.js"></script>
 
     <script type="text/javascript">
+      /*globals L, cartodb: true */
+
       $(function(){
         var map = L.map('map').setView([37.77493,-122.419416], 12);
 
         var baseLayer = L.tileLayer('http://a.tiles.mapbox.com/v3/matth.map-zmpggdzn/{z}/{x}/{y}.png');
         map.addLayer(baseLayer);
 
-        //Add your own layer
+        // Add the pre-1990 layer
         var esriLayer = new L.TileLayer('http://gis.mtc.ca.gov/mtc/rest/services/VitalSigns/LU5_Greenfield_1990_Cache/MapServer/tile/{z}/{y}/{x}').addTo(map);
 
-        cartodb.createLayer(map, 'http://localdata.cartodb.com/api/v2/viz/4a796c3c-c849-11e4-b0d5-0e018d66dc29/viz.json')
-          .addTo(map);
+        // Define the years and colors we'll want to add.
+        var layerDefs = [{
+          year:  '1992',
+          color: '#4B2D73'
+        },
+        {
+          year:  '1994',
+          color: '#2D882D'
+        },
+        {
+          year:  '1996',
+          color: '#AA3939'
+        },
+        {
+          year:  '1998',
+          color: '#592A71'
+        },
+        {
+          year:  '2000',
+          color: '#AA6E39'
+        },
+        {
+          year:  '2002',
+          color: '#2F4172'
+        },
+        {
+          year:  '2004',
+          color: '#236167'
+        },
+        {
+          year:  '2006',
+          color: '#2D882D'
+        },
+        {
+          year:  '2008',
+          color: '#226666'
+        },
+        {
+          year:  '2010',
+          color: '#4B2D73'
+        },
+        {
+          year:  '2012',
+          color: '#592A71'
+        }];
+
+
+        // Start loading all the layers
+        var tileSets = [];
+        var i;
+        for (i = 0; i < layerDefs.length; i++) {
+          var layer = 'lu5_greenfield_' + layerDefs[i].year;
+
+          // Set up the request to get the tiles
+          var p = Promise.resolve($.ajax({
+            url: 'https://localdata.cartodb.com/api/v1/map',
+            type: 'GET',
+            dataType: 'jsonp',
+            data: {
+              config: JSON.stringify({
+                version: '1.0.1',
+                layers:[{
+                  type:'cartodb',
+                  options:{
+                    sql: 'select * from ' + layer,
+                    cartocss: '#' + layer + ' { polygon-fill: ' + layerDefs[i].color + '; } ',
+                    cartocss_version: '2.1.1',
+                    interactivity: ['cartodb_id']
+                  }
+                }]
+              })
+            }
+          }));
+
+          tileSets.push(p);
+        }
+
+        // Load all the layers (but don't add them to the map until we need them)
+        Promise.all(tileSets).then(function(data) {
+
+          var layersByYear = {};
+
+          // Create each of the layers.
+          for (i = 0; i < data.length; i++) {
+            var url = 'https://' + data[i].cdn_url.https +
+                '/localdata/api/v1/map/' + data[i].layergroupid +
+                '/{z}/{x}/{y}.png';
+            var layer = L.tileLayer(url);
+
+            // Save the layers by year
+            var year = layerDefs[i].year;
+            layersByYear[year] = layer;
+          }
+
+          // Add 1992 to the map
+          layersByYear['1992'].addTo(map);
+        });
+
+
       });
     </script>
   </body>
