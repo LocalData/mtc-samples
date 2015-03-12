@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link href="css/app.css" rel="stylesheet" media="screen">
+
+    <link rel="stylesheet" href="http://libs.cartocdn.com/cartodb.js/v3/themes/css/cartodb.css" />
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
+  </head>
+  <body>
+    <div id="map"></div>
+
+    <script src="http://code.jquery.com/jquery.js"></script>
+    <script src="http://libs.cartocdn.com/cartodb.js/v3/3.12/cartodb.js"></script>
+    <script src="http://cdn-geoweb.s3.amazonaws.com/esri-leaflet/1.0.0-rc.5/esri-leaflet.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+
+    <script type="text/javascript">
+      $(function(){
+        var map = L.map('map').setView([37.77493,-122.419416], 12);
+
+        var baseLayer = L.tileLayer('http://a.tiles.mapbox.com/v3/matth.map-zmpggdzn/{z}/{x}/{y}.png');
+        map.addLayer(baseLayer);
+
+        //Add your own layer
+        var esriLayer = new L.TileLayer('http://gis.mtc.ca.gov/mtc/rest/services/VitalSigns/LU5_Greenfield_1990_Cache/MapServer/tile/{z}/{y}/{x}').addTo(map);
+
+        cartodb.createLayer(map, 'http://localdata.cartodb.com/api/v2/viz/4a796c3c-c849-11e4-b0d5-0e018d66dc29/viz.json')
+          .addTo(map);
+      });
+    </script>
+  </body>
+</html>
