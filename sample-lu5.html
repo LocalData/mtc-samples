@@ -6,14 +6,21 @@
     <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
     <link href="css/app.css" rel="stylesheet" media="screen">
 
-    <link rel="stylesheet" href="http://libs.cartocdn.com/cartodb.js/v3/themes/css/cartodb.css" />
     <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
+
+    <style type="text/css">
+      #map .leaflet-container,
+      #map .leaflet-tile-container {
+        cursor: pointer;
+      }
+    </style>
   </head>
   <body>
     <div id="map"></div>
 
     <script src="http://code.jquery.com/jquery.js"></script>
-    <script src="http://libs.cartocdn.com/cartodb.js/v3/3.12/cartodb.js"></script>
+    <!--<script src="http://libs.cartocdn.com/cartodb.js/v3/3.12/cartodb.js"></script>-->
+    <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
     <script src="http://cdn-geoweb.s3.amazonaws.com/esri-leaflet/1.0.0-rc.5/esri-leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bluebird/2.9.13/bluebird.min.js"></script>
 
@@ -26,8 +33,60 @@
         var baseLayer = L.tileLayer('http://a.tiles.mapbox.com/v3/matth.map-zmpggdzn/{z}/{x}/{y}.png');
         map.addLayer(baseLayer);
 
+        var allLayers = 'http://gis.mtc.ca.gov/mtc/rest/services/VitalSigns/LU5_Greenfield_1992_2012/MapServer/11/query';
+
+        // When the map is clicked, display the development year.
+        map.on('click', function(event) {
+          var options = {
+            f: 'json',
+            geometryType: 'esriGeometryPoint',
+            inSR: '4326',
+            outFields: '*',
+            spatialRel: 'esriSpatialRelIntersects',
+            geometry: event.latlng.lng + ',' + event.latlng.lat
+          };
+
+          $.get(allLayers, options).done(function(response) {
+            var data = JSON.parse(response);
+            // If we got data, let's open a popup
+            if (data.features.length > 0) {
+              var popup = L.popup()
+                .setLatLng(event.latlng)
+                .setContent('This area was developed in ' + data.features[0].attributes.YEAR);
+
+              map.openPopup(popup);
+            }
+          });
+        });
+
+
         // Add the pre-1990 layer
-        var esriLayer = new L.TileLayer('http://gis.mtc.ca.gov/mtc/rest/services/VitalSigns/LU5_Greenfield_1990_Cache/MapServer/tile/{z}/{y}/{x}').addTo(map);
+        // var esriLayer = new L.TileLayer('http://gis.mtc.ca.gov/mtc/rest/services/VitalSigns/LU5_Greenfield_1990_Cache/MapServer/tile/{z}/{y}/{x}').addTo(map);
+        $.ajax({
+          url: 'https://localdata.cartodb.com/api/v1/map',
+          type: 'GET',
+          dataType: 'jsonp',
+          data: {
+            config: JSON.stringify({
+              version: '1.0.1',
+              layers:[{
+                type:'cartodb',
+                options:{
+                  sql: 'select * from lu5_greenfield_1990',
+                  cartocss: '#lu5_greenfield_1990 { polygon-fill: #9fa1a4; } ',
+                  cartocss_version: '2.1.1',
+                  interactivity: ['cartodb_id']
+                }
+              }]
+            })
+          }
+        }).done(function(data) {
+          var url = 'https://' + data.cdn_url.https +
+              '/localdata/api/v1/map/' + data.layergroupid +
+              '/{z}/{x}/{y}.png';
+          var layer = L.tileLayer(url).addTo(map);
+        });
+
 
         // Define the years and colors we'll want to add.
         var layerDefs = [{
@@ -126,8 +185,6 @@
           // Add 1992 to the map
           layersByYear['1992'].addTo(map);
         });
-
-
       });
     </script>
   </body>
