@@ -21,30 +21,32 @@
     </style>
   </head>
   <body>
-    <div id="ec3-a-city-select"></div>
-    <div id="ec3-a-county-select"></div>
-    <div id="ec3-a-chart"></div>
+
+    <div class="btn-group btn-group-justified"><a class="btn btn-primary btn-fix active" id="median-incomes">Median Incomes</a> <a class="btn btn-primary btn-fix" id="percent-growth">% Growth in Median Income since 1970</a></div>
+    <div id="ec-a-city-select"></div>
+    <div id="ec-a-county-select"></div>
+    <div id="ec-a-chart"></div>
 
     <div class="row">
-      <div class="col-lg-12" id="EC3-B">
+      <div class="col-lg-12" id="EC45-B">
         <div class="row">
           <div class="col-lg-8">
             <div class="map" id="map">&nbsp;</div>
           </div>
           <div class="col-lg-4">
             <div class="row">
-              <div id="ec3-b-bottom-cities"></div>
-              <div id="ec3-b-top-cities"></div>
+              <div id="ec-b-bottom-cities"></div>
+              <div id="ec-b-top-cities"></div>
             </div>
             <div class="row">
-              <div id="ec3-b-chart" style="height:300px;"></div>
+              <div id="ec-b-chart" style="height:300px;"></div>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <div id="ec3-c-chart"></div>
+    <div id="ec-c-chart"></div>
 
     <!-- Misc reference html -->
 
@@ -73,6 +75,7 @@
     <script src="http://code.jquery.com/jquery.js"></script>
     <!--<script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>-->
     <script type="text/javascript" src="https://api.tiles.mapbox.com/mapbox.js/v2.1.4/mapbox.js"></script>
+    <script src="http://cdn-geoweb.s3.amazonaws.com/esri-leaflet/1.0.0-rc.3/esri-leaflet.js"></script>
     <script src="http://cdn.kendostatic.com/2014.1.528/js/kendo.all.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.5.0/lodash.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bluebird/2.9.13/bluebird.min.js"></script>
@@ -84,6 +87,6 @@
     <script src="http://dev-mtc-vital-signs.pantheon.io/sites/all/themes/vitalsigns/js/colors.js"></script>
     <script src="http://dev-mtc-vital-signs.pantheon.io/sites/all/themes/vitalsigns/js/science.v1.min.js"></script>
 
-    <script src="js/viz/ec3abc.js"></script>
+    <script src="js/viz/ec45.js"></script>
   </body>
 </html>

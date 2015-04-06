@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>EC3: Unemployment</title>
+    <title>EC8: Rents</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
     <link href="css/app.css" rel="stylesheet" media="screen">
@@ -16,14 +16,15 @@
     <style type="text/css">
       #map {
         height: 300px;
-        width: 500px;
+        width: 700px;
       }
     </style>
   </head>
   <body>
-    <div id="ec3-a-city-select"></div>
-    <div id="ec3-a-county-select"></div>
-    <div id="ec3-a-chart"></div>
+    <div class="btn-group btn-group-justified"><a class="btn btn-primary btn-fix active" id="median-rents">Median Rents</a> <a class="btn btn-primary btn-fix" id="percent-growth">Growth in Median Rent since 1970</a></div>
+    <div id="ec8-a-city-select"></div>
+    <div id="ec8-a-county-select"></div>
+    <div id="ec8-a-chart"></div>
 
     <div class="row">
       <div class="col-lg-12" id="EC3-B">
@@ -44,6 +45,11 @@
       </div>
     </div>
 
+    <div class="btn-group btn-group-justified">
+      <a class="btn btn-primary btn-fix active" id="ec8-c-median-rents">Median Rents</a>
+      <a class="btn btn-primary btn-fix" id="ec8-c-percent-growth">Change in Median Monthly Rent Payment since 1970 (%)</a>
+      <a class="btn btn-primary btn-fix" id="ec8-c-percent-growth-2000">Change since 2000 (%)</a>
+    </div>
     <div id="ec3-c-chart"></div>
 
     <!-- Misc reference html -->
@@ -73,6 +79,7 @@
     <script src="http://code.jquery.com/jquery.js"></script>
     <!--<script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>-->
     <script type="text/javascript" src="https://api.tiles.mapbox.com/mapbox.js/v2.1.4/mapbox.js"></script>
+    <script src="http://cdn-geoweb.s3.amazonaws.com/esri-leaflet/1.0.0-rc.3/esri-leaflet.js"></script>
     <script src="http://cdn.kendostatic.com/2014.1.528/js/kendo.all.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.5.0/lodash.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bluebird/2.9.13/bluebird.min.js"></script>
@@ -80,10 +87,10 @@
 
 
     <!-- From MTC server -->
-    <script src="http://dev-mtc-vital-signs.pantheon.io/sites/all/themes/vitalsigns/js/geocities.js"></script>
+    <!-- <script src="http://dev-mtc-vital-signs.pantheon.io/sites/all/themes/vitalsigns/js/geocities.js"></script>-->
     <script src="http://dev-mtc-vital-signs.pantheon.io/sites/all/themes/vitalsigns/js/colors.js"></script>
     <script src="http://dev-mtc-vital-signs.pantheon.io/sites/all/themes/vitalsigns/js/science.v1.min.js"></script>
 
-    <script src="js/viz/ec3abc.js"></script>
+    <script src="js/viz/ec8.js"></script>
   </body>
 </html>
