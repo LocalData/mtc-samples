@@ -466,15 +466,33 @@
             ecBLeaderboard(_.filter(cityData, {'Year': FOCUSYEAR}));
 
             // Set up the map
-            L.mapbox.accessToken = 'pk.eyJ1IjoicG9zdGNvZGUiLCJhIjoiWWdxRTB1TSJ9.phHjulna79QwlU-0FejOmw';
-            var map = L.mapbox.map('map', 'postcode.kh28fdpk', {
-                infoControl: true,
-                attributionControl: false,
-                center: [37.783367, -122.062378],
-                zoom: 10,
-                minZoom: 8
-            });
-            L.control.scale().addTo(map);
+            // L.mapbox.accessToken = 'pk.eyJ1IjoicG9zdGNvZGUiLCJhIjoiWWdxRTB1TSJ9.phHjulna79QwlU-0FejOmw';
+            // var map = L.mapbox.map('map', 'postcode.kh28fdpk', {
+            //     infoControl: true,
+            //     attributionControl: false,
+            //     center: [37.783367, -122.062378],
+            //     zoom: 10,
+            //     minZoom: 8
+            // });
+            // L.control.scale().addTo(map);
+
+            cartodb.createVis('map', 'http://mtc.cartodb.com/api/v2/viz/3c4a4858-dd38-11e4-a2a8-0e0c41326911/viz.json')
+              .done(function(vis, layers) {
+                // layer 0 is the base layer, layer 1 is cartodb layer
+                // when setInteraction is disabled featureOver is triggered
+                layers[1].setInteraction(true);
+                layers[1].on('featureOver', function(e, latlng, pos, data, layerNumber) {
+                  cartodb.log.log(e, latlng, pos, data, layerNumber);
+                });
+
+                // you can get the native map to work with it
+                var map = vis.getNativeMap();
+
+                // now, perform any operations you need, e.g. assuming map is a L.Map object:
+                // map.setZoom(3);
+                // map.panTo([50.5, 30.5]);
+              });
+
 
             // Prep the tract data
             var focusYearData = _.filter(tractData, {'Year': FOCUSYEAR});
