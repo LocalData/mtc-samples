@@ -70,6 +70,16 @@
     var i;
 
     var DASH = 'ShortDash';
+    var COLOR_PAIRS = [
+        altColors[0],
+        altColors[0],
+        altColors[1],
+        altColors[1],
+        altColors[2],
+        altColors[2]
+    ];
+
+    var METRO_NAME_KEY = 'Metro Name'; // key for metro names
 
     var FOCUS_YEAR = 2013;
     var FOCUS_KEY = 'Median_HH_Inc_PlaceOfResidence_IA';
@@ -91,9 +101,9 @@
     var YEARS_SINCE_2000 = [ 9999 ];
 
     var cityData, countyData, regionData, countyWorkerData, regionWorkerData, metroData, tractData;
-    var ecAToggle = 'Median Incomes'; // Default mode of interactive A
-    var ecCToggle = 'Median Incomes'; // Default mode of interactive C
-    var selectedGeography;
+    var ecAToggle = 'Income'; // Default mode of interactive A
+    var ecCToggle = 'Median Income'; // Default mode of interactive C
+    var selectedGeography = 'Bay Area';
 
     $(function(){
 
@@ -108,16 +118,24 @@
         /* -- Interactive A --------------------------------------------------*/
 
         function graph(id, series) {
+            var colors;
             console.log("Graphing with", series);
+
+            if (ecAToggle === 'Income') {
+                colors = COLOR_PAIRS;
+            } else {
+                colors = altColors;
+            }
 
             var tooltip = {
                 headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
                 pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-                '<td style="padding:0"><b>${point.y:,.1f}</b></td></tr>',
+                '<td style="padding:0"><b>${point.y:,.0f}</b></td></tr>',
                 footerFormat: '</table>',
                 shared: true,
                 useHTML: true
             };
+
 
             var options = {
                 chart: {
@@ -127,7 +145,12 @@
                     text: ''
                 },
                 xAxis: {
-                    categories: YEARNAMES
+                    categories: YEARNAMES,
+                    tickmarkPlacement: 'on',
+                    labels: {
+                        step: 5,
+                        staggerLines: 1
+                    }
                 },
                 yAxis: {
                     title: {
@@ -141,11 +164,11 @@
                     reversed: true
                 },
                 tooltip: tooltip,
-                colors: altColors,
+                colors: colors,
                 series: series
             };
 
-            if (ecAToggle === 'Median Incomes') {
+            if (ecAToggle === 'Income') {
                 options.title.text = 'Historical Trend for Median Income';
 
                 options.yAxis.labels = {
@@ -196,45 +219,62 @@
         }
 
 
-        function getSeries(data, name) {
-            var series;
-            if (ecAToggle === 'Median Incomes') {
+        function getSeries(data, geography) {
+            var name, series;
+            var lineWidth = 1.5;
+            if (!geography) {
+                lineWidth = 3;
+            }
+
+            if (ecAToggle === 'Income') {
+                name = 'Median Household Income';
+                if (geography) {
+                    name += ' - ' + geography;
+                }
                 series = [{
-                    name: name + " Median Income of Households($)",
+                    name: name,
                     data: fillInBlanks(_.pluck(data, MEDIAN_HOUSEHOLD_INCOME)),
-                    connectNulls: true
+                    connectNulls: true,
+                    lineWidth: lineWidth
                 }];
 
                 // Median worker income only available for counties & region
-                if (_.has(data[0], MEDIAN_WORKER_INCOME)) {
+                if (_.has(data[0], MEDIAN_WORKER_INCOME) || name === '') {
+                    name = 'Median Worker Income';
+                    if (geography) {
+                        name += ' - ' + geography;
+                    }
                     series.push({
-                        name: name + " Median Income of Workers ($)",
+                        name: name,
                         data: fillInBlanks(_.pluck(data, MEDIAN_WORKER_INCOME)),
                         connectNulls: true,
-                        dashStyle: DASH
+                        dashStyle: DASH,
+                        lineWidth: lineWidth
                     });
                 }
             } else {
+                name = '% Growth in Median Household Income';
+                if (geography) {
+                    name += ' - ' + geography;
+                }
                 series = [{
-                    name: name + " Change in Median Income since 1970 (%)",
+                    name: name,
                     data: fillInBlanks(_.pluck(data, MEDIAN_HOUSEHOLD_INCOME_CHANGE)),
-                    connectNulls: true
+                    connectNulls: true,
+                    lineWidth: lineWidth
                 }];
             }
 
-            console.log("Created series", series);
-            console.log("From data", data);
             return series;
         }
 
         function selectLocation(e) {
             if (!e) {
                 selectedGeography = null;
-                graph('#ec-a-chart', getSeries(regionData, 'Regional'));
+                graph('#ec-a-chart', getSeries(regionData));
                 return;
             }
             // e might be an event or actual location data.
-            console.log("Selecting location", e);
 
             var location;
             if (e.Residence_Geo) {
@@ -246,6 +286,12 @@
             var city, county;
 
             county = location.Residence_Geo;
+            if (county === 'Bay Area') {
+                selectedGeography = 'Bay Area';
+                graph('#ec-a-chart', getSeries(regionData));
+                return;
+            }
+
             if (location.Residence_Geo_CountyRef) {
                 city = location.Residence_Geo;
                 county = location.Residence_Geo_CountyRef;
@@ -258,21 +304,18 @@
 
             // Get the regional data
             var graphData = [];
-            graphData = graphData.concat(getSeries(regionData, 'Regional'));
+            graphData = graphData.concat(getSeries(regionData));
 
             // Get the county data.
             var selectedCountyData = _.filter(countyData, {'Residence_Geo': county});
             graphData = graphData.concat(getSeries(selectedCountyData, county));
 
-            console.log('Getting data for', city, county, selectedCountyData);
 
             // Push the city data, if any.
             if (city) {
                 var selectedCityData = _.filter(cityData, {'Residence_Geo': city});
                 var citySeries = getSeries(selectedCityData, city);
-                console.log("Got city series", citySeries);
                 citySeries[0].data = cityBlanks(citySeries[0].data);
-                // citySeries[1].data = cityBlanks(citySeries[1].data);
                 graphData = graphData.concat(citySeries);
             }
 
@@ -280,23 +323,25 @@
         }
 
         function setupA() {
-            graph('#ec-a-chart', getSeries(regionData, 'Regional'));
+            graph('#ec-a-chart', getSeries(regionData));
 
             // Set up select boxes for county / city search
             // Could potentially use a cascading combo box:
             // http://demos.telerik.com/kendo-ui/combobox/cascadingcombobox
+            var baseSelect = [{'Residence_Geo': 'Bay Area'}];
+
             $("#ec-a-city-select").kendoComboBox({
                 text: "Select City...",
                 dataTextField: "Residence_Geo",
                 dataValueField: "Residence_Geo",
-                dataSource: _.uniq(cityData, 'Residence_Geo'),
+                dataSource: baseSelect.concat(_.uniq(cityData, 'Residence_Geo')),
                 select: selectLocation
             });
             $("#ec-a-county-select").kendoComboBox({
                 text: "Select County...",
                 dataTextField: "Residence_Geo",
                 dataValueField: "Residence_Geo",
-                dataSource: _.uniq(countyData, 'Residence_Geo'),
+                dataSource: baseSelect.concat(_.uniq(countyData, 'Residence_Geo')),
                 select: selectLocation
             });
 
@@ -307,7 +352,7 @@
                 $(this).addClass("active");
                 $(this).siblings('a').removeClass('active');
 
-                ecAToggle = "Median Incomes";
+                ecAToggle = "Income";
 
                 var county = ecACitySelect.dataItem();
                 var city = ecACountySelect.dataItem();
@@ -323,7 +368,7 @@
                 $(this).addClass("active");
                 $(this).siblings('a').removeClass('active');
 
-                ecAToggle = "% Growth in Median Rent since 1970";
+                ecAToggle = "% Growth in Median Income since 1970";
 
                 var county = ecACitySelect.dataItem();
                 var city = ecACountySelect.dataItem();
@@ -360,21 +405,24 @@
 
             var topText = "<div class='col-lg-6'><h4>Highest Median Income</h4>";
             _.each(top5, function(city, i) {
-                topText += "<h6>" + (i+1) + ': ' + city.Residence_Geo + ": $" + city[FOCUS_KEY].toLocaleString() + "</h6>";
+                topText += "<h6>" + (i+1) + '. ' + city.Residence_Geo + ": $" + city[FOCUS_KEY].toLocaleString() + "</h6>";
             });
             topText += '</div>';
-            $("#b-top-cities").html(topText);
+            $("#ec-b-top-cities").html(topText);
 
 
-            var bottomText = "<div class='col-lg-6'><h4>Lowest Median Income</h4><ol>";
+            var bottomText = "<div class='col-lg-6'><h4>Lowest Median Income</h4>";
             _.each(bottom5, function(city, i) {
-                bottomText += "<h6>" + (i+1) + ': ' + city.Residence_Geo + ": $" + city[FOCUS_KEY].toLocaleString() + "</h6>";
+                bottomText += "<h6>" + (i+1) + '. ' + city.Residence_Geo + ": $" + city[FOCUS_KEY].toLocaleString() + "</h6>";
             });
             topText += '</div>';
-            $("#b-bottom-cities").html(bottomText);
+            $("#ec-b-bottom-cities").html(bottomText);
         }
 
         function bBarChart(series, options) {
+            console.log("Creating chart with series", series);
+
+
             // http://dev-mtc-vital-signs.pantheon.io/sites/all/themes/vitalsigns/js/t3t4b-new.js?nlq112
             $('#ec-b-chart').highcharts({
                 chart: {
@@ -391,6 +439,9 @@
                     title: {
                         text: 'Median Income'
                     },
+                    labels: {
+                        format: "${value:,.0f}"
+                    },
                     startOnTick: false,
                     endOnTick: false
                 },
@@ -398,7 +449,7 @@
                     categories: options.categories
                 },
                 title: {
-                    text: ''
+                    text: 'Median Income'
                 },
                 tooltip: {
                     shared: true,
@@ -417,7 +468,7 @@
             });
 
             var region2013 = _.find(regionData, {
-                'Residence_Geo': FOCUS_YEAR // TODO -- this field is currently mislabeled
+                'Year': FOCUS_YEAR // TODO -- this field is currently mislabeled
             });
 
             var series = [
@@ -520,7 +571,7 @@
             legendControl.onAdd = function (map) {
                 var div = L.DomUtil.create('div', 'info legend');
                 $(div).addClass("col-lg-12");
-                $(div).append("<h5>Inflation-adjusted Median Household Income</h5>");
+                $(div).append("<h5>Median Household Income (inflation-adjusted)</h5>");
 
                 breaks.unshift(1);
                 // loop through our density intervals and generate a label
@@ -549,52 +600,43 @@
 
         }
 
-        function chartEC8C(mode) {
+        function chartECC(mode) {
             // Group the metro data as needed
             var series = [];
             var key, label, pointFormat, title, yAxisLabel;
-            var years = METRO_YEARS;
 
-            var dataByMetro = _.groupBy(metroData, 'Metro');
+            var dataByMetro = _.groupBy(metroData, METRO_NAME_KEY);
             _.each(dataByMetro, function(d, metro) {
-                if (mode === 'Median Rents'){
-                    title = 'Metro Comparison for Rents';
-                    label = 'Median Monthly Rent Payment ($)';
-                    key = 'Median_Contract_Rent_IA';
+                if (mode === 'Median Income'){
+                    title = 'Metro Comparison for Median Household Income';
+                    label = 'Median Income (inflation-adjusted)';
+                    key = FOCUS_KEY;
                     pointFormat = '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-                        '<td style="padding:0"><b>${point.y:,.1f}</b></td></tr>';
+                        '<td style="padding:0"><b>${point.y:,.0f}</b></td></tr>';
                     yAxisLabel = {
                         format: "${value:,.0f}"
                     };
-                } else if (mode === 'Change in Median Monthly Rent Payment since 1970 (%)') {
-                    title = 'Metro Comparison for Percent Change in Rents';
-                    label = 'Change in Median Monthly Rent Payment since 1970 (%)';
-                    key = 'Median_Contract_Rent_IA_PercentChg_1970';
-                    pointFormat = '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-                        '<td style="padding:0"><b>{point.y:,.1f}%</b></td></tr>';
-                    yAxisLabel = {
-                        format: "{value:,.0f}%"
-                    };
                 } else {
-                    years = YEARS_SINCE_2000;
-                    title = 'Metro Comparison for Percent Change in Rents';
-                    label = 'Change in Median Monthly Rent Payment since 2000 (%)';
-                    key = 'Median_Contract_Rent_IA_PercentChg_2000';
+                    if(metro === 'Miami' || metro === 'Washington') {
+                        return;
+                    }
+                    title = 'Metro Comparison for Median Household Income';
+                    label = 'Change in Median Income since 1970 (%)';
+                    key = MEDIAN_HOUSEHOLD_INCOME_CHANGE;
                     pointFormat = '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
                         '<td style="padding:0"><b>{point.y:,.1f}%</b></td></tr>';
                     yAxisLabel = {
                         format: "{value:,.0f}%"
                     };
-
-                    // Skip the first three values (years before 2000)
-                    d = d.slice(3);
                 }
+
                 series.push({
                     name: metro,
-                    data: _.pluck(d, key)
+                    data: fillInBlanks(_.pluck(d, key)),
+                    connectNulls: true
                 });
             });
-            series = _.sortBy(series, 'Metro');
+            series = _.sortBy(series, METRO_NAME_KEY);
 
             var options = {
                 chart: {
@@ -604,12 +646,18 @@
                     text: title
                 },
                 xAxis: {
-                    categories: years
+                    categories: YEARNAMES,
+                    tickmarkPlacement: 'on',
+                    labels: {
+                        step: 5,
+                        staggerLines: 1
+                    }
                 },
                 yAxis: {
                     title: {
                         text: label
-                    }
+                    },
+                    labels: yAxisLabel
                 },
                 tooltip: {
                     enabled: true,
@@ -623,55 +671,65 @@
                 series: series
             };
 
-            $('#ec3-c-chart').highcharts(options);
+            $('#ec-c-chart').highcharts(options);
         }
 
         // Create graph EC-3, showing unemployment trend for US metro areas
-        function setupEC8C() {
-            chartEC8C("Median Rents");
+        function setupC() {
+            chartECC("Median Income");
 
-            $('#ec8-c-median-rents').click(function(){
+            $('#ec-c-median').click(function(){
                 $(this).addClass("active");
                 $(this).siblings('a').removeClass('active');
 
-                chartEC8C("Median Rents");
+                chartECC("Median Income");
                 $(this).display();
             });
-            $('#ec8-c-percent-growth').click(function(){
+            $('#ec-c-percent').click(function(){
                 $(this).addClass("active");
                 $(this).siblings('a').removeClass('active');
 
-                chartEC8C("Change in Median Monthly Rent Payment since 1970 (%)");
-                $(this).display();
-            });
-            $('#ec8-c-percent-growth-2000').click(function(){
-                $(this).addClass("active");
-                $(this).siblings('a').removeClass('active');
-
-                chartEC8C("Change in Median Monthly Rent Payment since 2000 (%)");
-                $(this).display();
+                chartECC("Change in Median Income since 1970 (%)");
             });
         }
 
+        function round(n) {
+            if (n === null) {
+                return n;
+            }
 
-        function setupPercents(d) {
+            return Math.round(n/100) * 100;
+        }
+
+        function setupNumbers(d) {
             var i;
             for(i = 0; i < d.length; i++) {
-                d[i].Median_HH_Inc_PlaceOfResidence_IA_PerChg1970 *= 100;
+                // Set up percents
+                d[i][MEDIAN_HOUSEHOLD_INCOME_CHANGE] *= 100;
+
+                // Round up to nearest hundred
+                d[i][FOCUS_KEY] = round(d[i][FOCUS_KEY]);
+
+                if (_.has(d[i], MEDIAN_WORKER_INCOME)) {
+                    d[i][MEDIAN_WORKER_INCOME] = round(d[i][MEDIAN_WORKER_INCOME]);
+                }
             }
             return d;
         }
 
 
         // Get the data ready to visualize
-        function prepData(cityRaw, countyRaw, regionRaw, countyWorkplaceData, regionWorkplaceData, tractRaw) {
-            cityData    = setupPercents(cityRaw[0]);
-            countyData  = setupPercents(countyRaw[0]);
-            regionData  = setupPercents(regionRaw[0]);
-            tractData = setupPercents(tractRaw[0]);
+        function prepData(cityRaw, countyRaw, regionRaw, countyWorkplaceData, regionWorkplaceData, tractRaw, metroRaw, metroWorkplaceRaw) {
+            cityData    = setupNumbers(cityRaw[0]);
+            countyData  = setupNumbers(countyRaw[0]);
+            regionData  = setupNumbers(regionRaw[0]);
+            tractData   = setupNumbers(tractRaw[0]);
 
-            countyWorkerData = setupPercents(countyWorkplaceData[0]);
-            regionWorkerData = setupPercents(regionWorkplaceData[0]);
+            metroData              = setupNumbers(metroRaw[0]);
+            var metroWorkplaceData = setupNumbers(metroWorkplaceRaw[0]);
+
+            countyWorkerData = setupNumbers(countyWorkplaceData[0]);
+            regionWorkerData = setupNumbers(regionWorkplaceData[0]);
 
             // Join 4 & 5 for simplicity
             function joinData(left, right, key) {
@@ -693,8 +751,7 @@
             }
             joinData(countyData, countyWorkerData);
             joinData(regionData, regionWorkerData);
-
-            console.log("Got data", regionData);
+            joinData(metroData, metroWorkplaceData);
 
             // metroData   = setupPercents(metroRaw[0]);
             // tractData   = tractRaw[0];
@@ -702,7 +759,7 @@
             // Once we have the data, set up the visualizations
             setupA();
             setupB();
-            // setupEC8C();
+            setupC();
         }
 
 
@@ -713,7 +770,9 @@
             'http://54.149.29.2/ec/4/region',
             'http://54.149.29.2/ec/5/county',
             'http://54.149.29.2/ec/5/region',
-            'http://54.149.29.2/ec/4/tract'
+            'http://54.149.29.2/ec/4/tract',
+            'http://54.149.29.2/ec/4/metro',
+            'http://54.149.29.2/ec/5/metro'
         ];
         var requestArray = [];
         var i;

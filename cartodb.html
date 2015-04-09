@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CartoDB Scratchpad</title>
+    <link rel="stylesheet" href="http://libs.cartocdn.com/cartodb.js/v3/3.13/themes/css/cartodb.css" />
+    <script src="http://libs.cartocdn.com/cartodb.js/v3/3.13/cartodb.js"></script>
+
+    <style type="text/css">
+    #map {
+      height: 500px;
+      width: 500px;
+    }
+    </style>
+
+    <script type="text/javascript">
+      window.onload = function() {
+        cartodb.createVis('map', 'http://mtc.cartodb.com/api/v2/viz/3c4a4858-dd38-11e4-a2a8-0e0c41326911/viz.json')
+          .done(function(vis, layers) {
+            // layer 0 is the base layer, layer 1 is cartodb layer
+            // when setInteraction is disabled featureOver is triggered
+            layers[1].setInteraction(true);
+            layers[1].on('featureClick', function(e, latlng, pos, data, layerNumber) {
+              cartodb.log.log(e, latlng, pos, data, layerNumber);
+            });
+
+            // you can get the native map to work with it
+            var map = vis.getNativeMap();
+
+            // now, perform any operations you need, e.g. assuming map is a L.Map object:
+            // map.setZoom(3);
+            // map.panTo([50.5, 30.5]);
+          });
+      };
+
+    </script>
+
+</head>
+<body>
+<div id="map"></div>
+</body>
+</html>

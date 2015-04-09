@@ -278,7 +278,7 @@
             var cities = [];
             _.each(geocities.features, function(feature, i) {
                 var city = _.find(focusYearData, {
-                    Residence_Geo: feature.properties.NAME + " " // todo: cut space
+                    Residence_Geo: feature.properties.NAME
                 });
                 cities.push(city);
                 if (city) {

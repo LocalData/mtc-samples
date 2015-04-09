@@ -1,97 +1,65 @@
-/*globals jQuery, L, cartodb, allYellow, altColors, Highcharts, science: true */
+/*globals jQuery, L, cartodb, geocities, allYellow, altColors, Highcharts, science: true */
 (function($) {
     /*
-    http://econ-mtc-vital-signs.pantheon.io/rents
+    Job Creation
 
-    Median monthly rent payment
-
-
-    Line graph showing the median rent payments for a selected geography.
-    Default to region on load with two lines shown (inflation-adjusted and
-    non-inflation-adjusted). User can select county or city from dropdown menus
-    to get localized data - overlay so both county and region (or city and
-    county) are shown on same graph. User can hover over any year to see all
-    data points for that year. X-axis should be year, Y-axis should be rent.
-    User should be able to use button bar to switch from Median Rents to
-    % Growth in Median Rent since 1970.
-    LU1-A
-    http://54.149.29.2/ec/8/county
-    http://54.149.29.2/ec/8/city
-    http://54.149.29.2/ec/8/region
-    Historical Trend for Rents - "Geography" OR
-    Historical Trend for Percent Change in Rents - "Geography"
-    http://dev-mtc-vital-signs.pantheon.io/sites/all/themes/vitalsigns/js/lu1a.js?nlss6p
+    A
+    Stacked bar graph showing regional historical trend of jobs by industry by
+    default. Using dropdown menu, user can select a county of interest to see
+    its historical trend. X-axis should be years and Y-axis should be the number
+    of jobs. User should be able to turn on or off the bar chunks as needed.
+    Hovering over the bars should show the number and share of jobs for that
+    geography for the year selected (for example: 1991 "Professional & Business
+    Services: XXXXX (YY.Y%), etc.)
+    Similar to T1-2-C (but without 100% sum)
+    http://econ-mtc-vital-signs.pantheon.io/sites/all/themes/vitalsigns/js/t1t2c.js?nm1pp4
+    http://econ-mtc-vital-signs.pantheon.io/commute-mode-choice
 
 
-    Should be a census tract map of the region showing inflation-adjusted median
-    rents. When the user clicks on a tract, a bar graph in the right panel
-    should show the median rents of the tract, city, county, and region for
-    comparison purposes. There should also be text above it saying "The median
-    monthly rent payment of Census Tract XXXX in 2013 was $Y,YYY.". Below the
-    bar graph in side panel, a top 5 and bottom 5 list should show the highest
-    rent and lowest rent cities in the region. No button bar or dropdown menus
-    are needed.
-    http://54.149.29.2/ec/8/county
-    http://54.149.29.2/ec/8/city
-    http://54.149.29.2/ec/8/region
-    http://54.149.29.2/ec/8/tract
-    2013 Rents by Neighborhood
-    - Get tract geodata
-    - Load tract geodata on map
-    - Load tract geodata on cartodb?
+    B
+    Line graph showing the change in jobs in each industry sector since 1991.
+    Regional data shows by default. Using dropdown menu, user can select a
+    county of interest to see its trend. X-axis should be years starting in 1990
+    and Y-axis should be % change in jobs with a line for each industry displayed.
+    User should be able to turn on or off the lines as needed. Hovering over the
+    lines should show the performance of all industries for that year (+X%, +Y%,
+    -Z%, etc.) in popup.
+    LU-1-A
+
+    C
+    See PowerPoint presentation. *** User should be able to generate each of
+    those bubble charts by selecting her county from dropdown menu; by default,
+    should show regional data. X-axis is job growth and Y-axis is location
+    quotient. Hovering over a bubble should list the X, Y data points for that
+    bubble. Bubbles should be sized based on the number of jobs. The color
+    should be dictated by quadrants (see PowerPoint quadrants) - green for
+    upper-right, yellow for upper-left and lower-right, and red for lower-left.
+    Call MTC for more information if needed - this is a complex interactive.
 
 
-    Line graph showing the inflation-adjusted median rent (or % growth) of the
-    10 major metro areas. X-axis should show years and Y-axis should show either
-    $ or % growth (for either 1970 or 2000 as base year). User should be able to
-    turn on or off metro areas in graph. User should be able to hover over graph
-    to see all metros' rents for the selected year. Button bar allows for switch
-    between $ and % modes.
-    http://54.149.29.2/ec/8/metro
-    Metro Comparison for Rents OR Metro Comparison for Percent Change in Rents
-    - Get button bar
-    - ORganize data by two types
-    - Handle click on button bar
+    D
+    100% stacked bar graph showing the 10 metros' breakdown of total jobs in
+    2013. No dropdown menus or button bars. X-axis is share of jobs and Y-axis
+    is the 10 metros with Bay Area bolded. Hovering over a metro should yield a
+    popup with the breakdown of jobs (number and %) for that metro.
+    T1-2-C
+    http://econ-mtc-vital-signs.pantheon.io/sites/all/themes/vitalsigns/js/t1t2c.js?nm1pp4
+    http://econ-mtc-vital-signs.pantheon.io/commute-mode-choice
 
 
     MISC
-    http://54.149.29.2/counties
-    http://54.149.29.2/cities
 
     TODO
-    - Load map
-    - Get top & bottom
-    - handle percents correctly
 
 
     Requests
-    - The data for tracts is inconsistent.
-        The featureserver data has full tracts specified in the format 06075031000
-        However, the data at http://54.149.29.2/ec/8/tract has the shorter
-        version (eg "31000"). It would be best if they are consistent
     */
 
     var i;
 
-    var DASH = 'ShortDash';
-    var COLOR_PAIRS = [
-        altColors[0],
-        altColors[0],
-        altColors[1],
-        altColors[1],
-        altColors[2],
-        altColors[2]
-    ];
+    var DASH_FORMAT = 'ShortDash';
 
     var FOCUSYEAR = 2013;
-    var MEDIAN_RENT = 'Median_Contract_Rent';
-    var MEDIAN_RENT_ADJUSTED = 'Median_Contract_Rent_IA';
-    var MEDIAN_RENT_CHANGE = 'Median_Contract_Rent_PercentChg_1970';
-    var MEDIAN_RENT_CHANGE_ADJUSTED = 'Median_Contract_Rent_IA_PercentChg_1970';
-
-    var CARTO_FIELDS = 'cartodb_id, county, tract, median_contract_rent_ia';
-    var CARTO_BASE_QUERY = 'https://mtc.cartodb.com/api/v2/sql?format=GeoJSON&q=SELECT cartodb_id, the_geom, county, tract, median_contract_rent_ia FROM ec_tracts WHERE cartodb_id = ';
-
     var FIRSTYEAR = 1970;
     var MAXYEAR = 2013;
     var ACTIVEYARNAMES = [1970, 1980, 1990, 2000, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013];
@@ -103,10 +71,14 @@
     var METROYEARNAMES = [1970, 1980, 1990, 2000, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013];
     var CITYBLANKS = [null, null, null, null, null, null, null, null, null, null];
 
+
+    var EC1_KEYS = ["Farm","MLC","Manuf","TTU","Inform","FA","PBS","EHS","LH","Govt", "Other"];
+    var EC2_KEYS = ["pctchng_EHS","pctchng_FA","pctchng_Farm","pctchng_Govt", "pctchng_Inform","pctchng_LH","pctchng_Manuf","pctchng_MLC", "pctchng_Other", "pctchng_PBS","pctchng_TTU"];
+
     var cityData, countyData, regionData, metroData, tractData;
-    var ec8aToggle = 'Median Monthly Rent Payment';
+    var ec8aToggle = 'Median Rents';
     var ec8cToggle = 'Median Rents';
-    var selectedGeography = 'Bay Area';
+    var selectedGeography;
 
     $(function(){
         Highcharts.setOptions({
@@ -119,6 +91,7 @@
         /* -- EC-8 A (Regional rent graph) -----------------------------------*/
 
         function graph(id, series) {
+
             var tooltip = {
                 headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
                 pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
@@ -136,12 +109,7 @@
                     text: ''
                 },
                 xAxis: {
-                    categories: YEARNAMES,
-                    tickmarkPlacement: 'on',
-                    labels: {
-                        step: 5,
-                        staggerLines: 1
-                    }
+                    categories: YEARNAMES
                 },
                 yAxis: {
                     title: {
@@ -159,14 +127,12 @@
                 series: series
             };
 
-            if (ec8aToggle === 'Median Monthly Rent Payment') {
+            if (ec8aToggle === 'Median Rents') {
                 options.title.text = 'Historical Trend for Rents';
 
                 options.yAxis.labels = {
                     format: "${value:,.0f}"
                 };
-
-                options.colors = COLOR_PAIRS;
             } else {
                 options.tooltip.pointFormat = '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
                 '<td style="padding:0"><b>{point.y:,.1f}%</b></td></tr>';
@@ -211,42 +177,29 @@
             return cityClean;
         }
 
-        function getSeries(data, geography) {
-            var name, nonIAName, series;
-            if (ec8aToggle === 'Median Monthly Rent Payment') {
-                name = '';
-                nonIAName = '';
-                if (geography) {
-                    name += geography + ' (inflation-adjusted)';
-                    nonIAName += geography + ' (not inflation-adjusted)';
-                } else {
-                    name = 'Bay Area (not inflation-adjusted)';
-                    nonIAName = 'Bay Area (inflation-adjusted)';
-                }
-
+        function getSeries(data, name) {
+            var series;
+            if (ec8aToggle === 'Median Rents') {
                 series = [{
-                    name: name,
+                    name: name + " Median Rent (inflation-adjusted)",
                     data: fillInBlanks(_.pluck(data, MEDIAN_RENT_ADJUSTED)),
                     connectNulls: true
                 }, {
-                    name: nonIAName,
+                    name: name + " Median Rent",
                     data: fillInBlanks(_.pluck(data, MEDIAN_RENT)),
                     connectNulls: true,
-                    dashStyle: DASH
+                    dashStyle: DASH_FORMAT
                 }];
             } else {
-                name = '% Growth in Median Rent since 1970 (inflation-adjusted)';
-
-                if (geography) {
-                    name = geography;
-                } else {
-                    name = 'Bay Area';
-                }
-
                 series = [{
-                    name: name,
+                    name: name + " % Growth in Median Rent since 1970 (inflation-adjusted)",
                     data: fillInBlanks(_.pluck(data, MEDIAN_RENT_CHANGE_ADJUSTED)),
                     connectNulls: true
+                }, {
+                    name: name + " % Growth in Median Rent since 1970",
+                    data: fillInBlanks(_.pluck(data, MEDIAN_RENT_CHANGE)),
+                    connectNulls: true,
+                    dashStyle: DASH_FORMAT
                 }];
             }
             return series;
@@ -254,8 +207,8 @@
 
         function selectLocation(e) {
             if (!e) {
-                selectedGeography = 'Bay Area';
-                graph('#ec8-a-chart', getSeries(regionData));
+                selectedGeography = null;
+                graph('#ec8-a-chart', getSeries(regionData, 'Regional'));
                 return;
             }
 
@@ -270,25 +223,18 @@
             var city, county;
 
             county = location.County;
-
-            if (county === 'Bay Area') {
-                selectedGeography = 'Bay Area';
-                graph('#ec8-a-chart', getSeries(regionData));
-                return;
-            }
-
             if (location.City) {
                 city = location.City;
                 selectedGeography = city;
                 $("#ec8-a-county-select").data("kendoComboBox").text('Select County...');
             } else {
-                selectedGeography = county + ' County';
+                selectedGeography = county;
                 $("#ec8-a-city-select").data("kendoComboBox").text('Select City...');
             }
 
             // Get the regional data
             var graphData = [];
-            graphData = graphData.concat(getSeries(regionData));
+            graphData = graphData.concat(getSeries(regionData, 'Regional'));
 
             // Get the county data.
             var selectedCountyData = _.filter(countyData, {'County': county});
@@ -308,10 +254,7 @@
         }
 
         function setupEC8A() {
-            graph('#ec8-a-chart', getSeries(regionData));
-
-            // So users can return to the bay area data
-            var baseSelect = [{'County': 'Bay Area', 'City': 'Bay Area', 'name': 'Bay Area'}];
+            graph('#ec8-a-chart', getSeries(regionData, 'Regional'));
 
             // Set up select boxes for county / city search
             // Could potentially use a cascading combo box:
@@ -320,21 +263,14 @@
                 text: "Select City...",
                 dataTextField: "City",
                 dataValueField: "City",
-                dataSource: baseSelect.concat(_.uniq(cityData, 'City')),
+                dataSource: _.uniq(cityData, 'City'),
                 select: selectLocation
             });
-
-            var i;
-            var counties = _.uniq(countyData, 'County');
-            for (i = 0; i < counties.length; i++) {
-                counties[i].name = counties[i].County + ' County';
-            }
-
             $("#ec8-a-county-select").kendoComboBox({
                 text: "Select County...",
-                dataTextField: "name",
+                dataTextField: "County",
                 dataValueField: "County",
-                dataSource: baseSelect.concat(counties),
+                dataSource: _.uniq(countyData, 'County'),
                 select: selectLocation
             });
 
@@ -345,7 +281,7 @@
                 $(this).addClass("active");
                 $(this).siblings('a').removeClass('active');
 
-                ec8aToggle = "Median Monthly Rent Payment";
+                ec8aToggle = "Median Rents";
 
                 var county = ec8CitySelect.dataItem();
                 var city = ec8CountySelect.dataItem();
@@ -377,10 +313,22 @@
         }
 
         /* -- EC-8 B (Map) ---------------------------------------------------*/
+        // Given an object
+        function getRange(data, property) {
+          var range = [];
+          $.each(data, function(key, v) {
+            if(v[property] !== null) {
+              range.push(v[property]);
+            }
+          });
+          var breaks = science.stats.quantiles(range, [0, 0.25, 0.50, 0.75]);
+          return breaks;
+        }
+
         function ecBLeaderboard(data) {
             data = _.sortBy(data, MEDIAN_RENT_ADJUSTED);
             var bottom5 = data.slice(0,5);
-            var top = _.filter(data, {Median_Contract_Rent_IA: 2001 });
+            var top5 = _.takeRight(data, 5).reverse();
 
             var bottomText = "<div class='col-lg-6'><h4>Lowest Rents</h4>";
             _.each(bottom5, function(city, i) {
@@ -389,10 +337,11 @@
             bottomText += '</div>';
             $("#ec-b-bottom-cities").html(bottomText);
 
-            var topText = "<div class='col-lg-6'><h4>Highest Rents (above $2,000)</h4><h6>";
-            var topCities = _.pluck(top, 'City');
-            topText += topCities.join(', ');
-            topText += '</h6></div>';
+            var topText = "<div class='col-lg-6'><h4>Highest Rents</h4>";
+            _.each(top5, function(city, i) {
+                topText += "<h6>"  + (i+1) + '. ' + city.City + ": >$" + city[MEDIAN_RENT_ADJUSTED].toLocaleString() + "</h6>";
+            });
+            topText += '</div>';
             $("#ec-b-top-cities").html(topText);
         }
 
@@ -413,7 +362,6 @@
                     title: {
                         text: 'Rent'
                     },
-                    max: 2000,
                     startOnTick: false,
                     endOnTick: false,
                     labels: {
@@ -429,13 +377,7 @@
                 tooltip: {
                     shared: true,
                     crosshairs: false,
-                    pointFormatter: function() {
-                        if (this.y === 2001) {
-                            return '<b>&gt;$2,000</b>';
-                        }
-
-                        return '<b>$' + this.y.toLocaleString() + '</b>';
-                    }
+                    pointFormat: '<b>${point.y:,.0f}</b>'
                 },
                 colors: allYellow
             });
@@ -457,7 +399,9 @@
 
             var series = [
             {
-                name: 'Median Rent',
+                name: 'The median monthly rent payment of Census Tract ' +
+                    data.tract + ' in 2013 was ' + '$' +
+                    data.median_contract_rent_ia.toLocaleString(),
                 data: [
                     data.median_contract_rent_ia,
                     null, // City TODO
@@ -465,17 +409,6 @@
                     region2013.Median_Contract_Rent_IA
                 ]
             }];
-
-            var title = 'The median monthly rent payment of Census Tract <strong class="economy">';
-            title += data.tract + '</strong> in 2013 was <strong class="economy">';
-            if (data.median_contract_rent_ia === 2001) {
-                title += '&gt;$2,000';
-            } else {
-                title += '$' + data.median_contract_rent_ia.toLocaleString();
-            }
-            title += '</strong>';
-
-            $('#ec-b-title').html(title);
 
             ecbBarChart(series, {
                 categories: [
@@ -516,12 +449,11 @@
             // L.control.scale().addTo(map);
 
             // Prep the tract data
+            var focusYearData = _.filter(tractData, {'Year': FOCUSYEAR});
             var joinedFeatures = [];
-            var breaks = [1051, 1256, 1462, 1701, 2000];
+            var breaks = getRange(focusYearData, 'Median_Contract_Rent_IA');
 
-            // Breaks now set in CartoDB
-            // TODO get breaks automatically from Carto
-            // getRange(focusYearData, 'Median_Contract_Rent_IA');
+            console.log("Setting up map");
 
             cartodb.createVis('map', 'http://mtc.cartodb.com/api/v2/viz/3c4a4858-dd38-11e4-a2a8-0e0c41326911/viz.json')
               .done(function(vis, layers) {
@@ -536,100 +468,120 @@
                 // you can get the native map to work with it
                 var map = vis.getNativeMap();
 
+                // Add the legend
+                var div = L.DomUtil.create('div', 'info legend');
+                $(div).addClass("col-lg-12");
+                $(div).append("<h5>Inflation-adjusted Median Rents</h5>");
 
-                var legend = L.control({position: 'bottomright'});
-                legend.onAdd = function (map) {
-                    var div = L.DomUtil.create('div', 'info legend');
-                    // $(div).addClass("col-lg-8");
-                    $(div).append("<h5>Inflation-adjusted Median Rents</h5>");
+                breaks.unshift(1);
+                // loop through our density intervals and generate a label
+                // with a colored square for each interval
+                var i;
+                for (i = 0; i < breaks.length; i++) {
+                    var start = Math.round(breaks[i]*100)/100;
+                    var end = Math.round(breaks[i + 1]*100)/100;
 
-                    // breaks.unshift(1);
-                    // loop through our density intervals and generate a label
-                    // with a colored square for each interval
-                    var i;
-                    for (i = 0; i < breaks.length; i++) {
-                        var start = Math.round(breaks[i]*100)/100;
-                        var end = Math.round(breaks[i + 1]*100)/100 - 1;
+                    var legendText = '<div><div class="col-lg-1" style="background:' + allYellow[i] + ';">&nbsp; </div><div class="col-lg-10">';
+                    legendText += start.toLocaleString();
 
-                        var legendText = '<div><div class="col-lg-1" style="background:' + allYellow[i] + ';">&nbsp; </div><div class="col-lg-10">';
-                        legendText += start.toLocaleString();
-
-                        if (Math.round(breaks[i + 1]*100)/100) {
-                            // If there is a next value, display it.
-                            legendText += '&ndash;' + end.toLocaleString() + '</div></div>';
-                        } else {
-                            // Otherwise we're at the end of the legend.
-                            legendText +='+ </div></div>';
-                        }
-                        $(div).append(legendText);
+                    if (Math.round(breaks[i + 1]*100)/100) {
+                        // If there is a next value, display it.
+                        legendText += '&ndash;' + end.toLocaleString() + '</div></div>';
+                    } else {
+                        // Otherwise we're at the end of the legend.
+                        legendText +='+ </div></div>';
                     }
-                    return div;
-                };
-                legend.addTo(map);
+                    $(div).append(legendText);
+                }
+
+                var container = L.DomUtil.create('div', 'map-legends wax-legends');
+                var legend = L.DomUtil.create('div', 'map-legend wax-legend', container);
+                console.log("Created legend text", $(div).html());
+                console.log("Created legend", legend);
+                // TODO
+                // legend.innerHTML($(div).html());
+
+                // legendControl.addTo(map);
+
+
               });
+
+
+
+
+
+            function style(feature) {
+                var color;
+                var data = _.find(focusYearData, { Tract: parseInt(feature.properties.TRACT.slice(5), 10) });
+                if (!data) {
+                    console.log("Missing data for", feature.properties);
+                }
+                feature.properties = _.merge(feature.properties, data);
+                var u = feature.properties.Median_Contract_Rent_IA;
+                if (u > breaks[3]) {
+                    color = allYellow[4];
+                } else if (u > breaks[2]) {
+                    color = allYellow[3];
+                } else if (u > breaks[1]) {
+                    color = allYellow[2];
+                } else if (u > breaks[0]) {
+                    color = allYellow[1];
+                } else {
+                    color = allYellow[0];
+                }
+                return {
+                  color: color,
+                  fillColor: color,
+                  fillOpacity: 0.8,
+                  weight: 0.5
+                };
+            }
         }
 
         function chartEC8C(mode) {
             // Group the metro data as needed
             var series = [];
             var key, label, pointFormat, title, yAxisLabel;
-            var years = YEARNAMES;
-            var step = 5;
+            var years = METROYEARNAMES;
 
             var dataByMetro = _.groupBy(metroData, 'Metro');
             _.each(dataByMetro, function(d, metro) {
                 if (mode === 'Median Rents'){
                     title = 'Metro Comparison for Rents';
-                    label = 'Median Monthly Rent Payment (inflation-adjusted)';
+                    label = 'Median Monthly Rent Payment ($)';
                     key = 'Median_Contract_Rent_IA';
                     pointFormat = '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
                         '<td style="padding:0"><b>${point.y:,.0f}</b></td></tr>';
                     yAxisLabel = {
                         format: "${value:,.0f}"
                     };
-                    series.push({
-                        name: metro,
-                        data: fillInBlanks(_.pluck(d, key)),
-                        connectNulls: true
-                    });
-                } else if (mode === '% Change in Median Monthly Rent Payment since 1970') {
-                    // These two metros are missing data
-                    if(metro === 'Miami' || metro === 'Washington') {
-                        return;
-                    }
-
+                } else if (mode === 'Change in Median Monthly Rent Payment since 1970 (%)') {
                     title = 'Metro Comparison for Percent Change in Rents';
-                    label = mode + '<br> (inflation-adjusted)';
+                    label = 'Change in Median Monthly Rent Payment since 1970 (%)';
                     key = 'Median_Contract_Rent_IA_PercentChg_1970';
                     pointFormat = '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
                         '<td style="padding:0"><b>{point.y:,.1f}%</b></td></tr>';
                     yAxisLabel = {
                         format: "{value:,.0f}%"
                     };
-                    series.push({
-                        name: metro,
-                        data: fillInBlanks(_.pluck(d, key)),
-                        connectNulls: true
-                    });
                 } else {
                     years = YEARS_SINCE_2000;
                     title = 'Metro Comparison for Percent Change in Rents';
-                    label = mode + '<br> (inflation-adjusted)';
+                    label = 'Change in Median Monthly Rent Payment since 2000 (%)';
                     key = 'Median_Contract_Rent_IA_PercentChg_2000';
                     pointFormat = '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
                         '<td style="padding:0"><b>{point.y:,.1f}%</b></td></tr>';
                     yAxisLabel = {
                         format: "{value:,.0f}%"
                     };
-                    step = 1;
 
                     // Skip the first three values (years before 2000)
                     d = d.slice(3);
-                    series.push({
-                        name: metro,
-                        data: _.pluck(d, key)
-                    });
                 }
+                series.push({
+                    name: metro,
+                    data: _.pluck(d, key)
+                });
             });
             series = _.sortBy(series, 'Metro');
 
@@ -641,12 +593,7 @@
                     text: title
                 },
                 xAxis: {
-                    categories: years,
-                    tickmarkPlacement: 'on',
-                    labels: {
-                        step: step,
-                        staggerLines: 1
-                    }
+                    categories: years
                 },
                 yAxis: {
                     title: {
@@ -683,95 +630,94 @@
                 $(this).addClass("active");
                 $(this).siblings('a').removeClass('active');
 
-                chartEC8C("% Change in Median Monthly Rent Payment since 1970");
+                chartEC8C("Change in Median Monthly Rent Payment since 1970 (%)");
                 $(this).display();
             });
             $('#ec8-c-percent-growth-2000').click(function(){
                 $(this).addClass("active");
                 $(this).siblings('a').removeClass('active');
 
-                chartEC8C("% Change in Median Monthly Rent Payment since 2000");
+                chartEC8C("Change in Median Monthly Rent Payment since 2000 (%)");
                 $(this).display();
             });
         }
 
-        function setupPercents(d) {
+        function round(n) {
+            if (n === null) {
+                return n;
+            }
+
+            return Math.round(n/100) * 100;
+        }
+
+
+        function setupNumbers(d) {
             var i;
             for(i = 0; i < d.length; i++) {
-                d[i].Median_Contract_Rent_IA_PercentChg_1970 *= 100;
-                d[i].Median_Contract_Rent_PercentChg_1970 *= 100;
-
-                // only for metros
-                d[i].Median_Contract_Rent_IA_PercentChg_2000 *= 100;
+                _.each(EC1_KEYS, function(k) {
+                    d[i][k] *= 100;
+                });
+                _.each(EC1_KEYS, function(k) {
+                    d[i][k] = round(d[i][k]);
+                });
             }
             return d;
         }
 
+        function joinData(left, right) {
+            var i, objectToJoin;
+            for (i = 0; i < left.length; i++) {
+                objectToJoin =  _.find(right, {
+                    Year: left[i].Year,
+                    Workplace_Geo: left[i].Residence_Geo
+                });
 
-        // Get the data ready to visualize
-        function prepData(cityRaw, countyRaw, regionRaw, metroRaw) {
-            cityData    = setupPercents(cityRaw[0]);
-            countyData  = setupPercents(countyRaw[0]);
-            regionData  = setupPercents(regionRaw[0]);
-            metroData   = setupPercents(metroRaw[0]);
-
-            // Once we have the data, set up the visualizations
-            setupEC8A();
-            setupEC8B();
-            setupEC8C();
+                left = _.assign(left[i], objectToJoin);
+            }
+            return left;
         }
 
+        // Get the data ready to visualize
+        function prepData(region1, region2, county1, county2, metro) {
+            region1     = setupNumbers(region1[0]);
+            region2     = setupNumbers(region2[0]);
+            county1     = setupNumbers(county1[0]);
+            county2     = setupNumbers(county2[0]);
+            metroData   = setupNumbers(metro[0]);
+
+            // Once we have the data, set up the visualizations
+            setupECA();
+            setupECB();
+            // setupBubbles();
+            setupECD();
+        }
+
+
         // Request all the data
-        var cityPromise = $.ajax({
+        var regionPromise = $.ajax({
             dataType: "json",
-            url: "http://54.149.29.2/ec/8/city"
+            url: "http://54.149.29.2/ec/1/region"
+        });
+        var region2Promise = $.ajax({
+            dataType: "json",
+            url: "http://54.149.29.2/ec/2/region"
         });
         var countyPromise = $.ajax({
             dataType: "json",
-            url: "http://54.149.29.2/ec/8/county"
+            url: "http://54.149.29.2/ec/1/county"
         });
-        var regionPromise = $.ajax({
+        var county2Promise = $.ajax({
             dataType: "json",
-            url: "http://54.149.29.2/ec/8/region"
+            url: "http://54.149.29.2/ec/2/county"
         });
         var metroPromise = $.ajax({
             dataType: "json",
-            url: "http://54.149.29.2/ec/8/metro"
+            url: "http://54.149.29.2/ec/1/metro"
         });
-        // Tracts no longer needed -- used in CartoDB.
-        // var tractPromise = $.ajax({
-        //     dataType: "json",
-        //     url: "http://54.149.29.2/ec/8/tract"
-        // });
 
-        $.when(cityPromise, countyPromise, regionPromise, metroPromise).done(prepData);
+        // Technically it could be faster to group these into separate listeners
+        // but the requests are quite fast, and it's simpler to do the data cleaning
+        // all at once.
+        $.when(regionPromise, region2Promise, countyPromise, county2Promise, metroPromise).done(prepData);
     });
 })(jQuery);
-
-
-/** choropleth visualization
-
-#ec_tracts{
-  polygon-fill: #7f6829;
-  polygon-opacity: 0.8;
-  line-color: #7f6829;
-  line-width: 0.5;
-  line-opacity: 0.5;
-}
-#ec_tracts [ median_contract_rent_ia <= 2001] {
-   polygon-fill: #7f6829;
-}
-#ec_tracts [ median_contract_rent_ia <= 1701] {
-   polygon-fill: #ae8f04;
-}
-#ec_tracts [ median_contract_rent_ia <= 1462] {
-   polygon-fill: #d9b305;
-}
-#ec_tracts [ median_contract_rent_ia <= 1256] {
-   polygon-fill: #d3bb6d;
-}
-#ec_tracts [ median_contract_rent_ia <= 1051] {
-   polygon-fill: #dfc888;
-}
-
-*/
