@@ -110,6 +110,9 @@ regionPromise, countyPromise: true
                     reversedStacks: false,
                     stackLabels: {
                         enabled: false
+                    },
+                    labels: {
+                        format: "{value:,.0f}%"
                     }
                 },
                 legend: {
@@ -218,10 +221,19 @@ regionPromise, countyPromise: true
         }
 
 
+        function setupCounties(d) {
+            var i;
+            for(i = 0; i < d.length; i++) {
+                d[i][COUNTY_KEY] = d[i][COUNTY_KEY] + ' County';
+            }
+            return d;
+        }
+
+
         // Get the data ready to visualize
         function prepData(region, county) {
             regionData = setupNumbers(_.clone(region[0], true));
-            countyData = setupNumbers(_.clone(county[0], true));
+            countyData = setupNumbers(setupCounties(_.clone(county[0], true)));
 
             // Once we have the data, set up the visualizations
             setup();

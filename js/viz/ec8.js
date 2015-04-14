@@ -95,7 +95,7 @@
     var FIRSTYEAR = 1970;
     var MAXYEAR = 2013;
     var ACTIVEYARNAMES = [1970, 1980, 1990, 2000, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013];
-    var YEARS_SINCE_2000 = [2000, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013];
+    var YEARS_SINCE_2000 = [2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013];
     var YEARNAMES = [];
     for (i = 1970; i <= 2013; i++) {
         YEARNAMES.push(i);
@@ -152,7 +152,8 @@
                     }
                 },
                 legend: {
-                    reversed: true
+                    reversed: true,
+                    symbolWidth: 35
                 },
                 tooltip: tooltip,
                 colors: altColors,
@@ -220,8 +221,8 @@
                     name += geography + ' (inflation-adjusted)';
                     nonIAName += geography + ' (not inflation-adjusted)';
                 } else {
-                    name = 'Bay Area (not inflation-adjusted)';
-                    nonIAName = 'Bay Area (inflation-adjusted)';
+                    name = 'Bay Area (inflation-adjusted)';
+                    nonIAName = 'Bay Area (not inflation-adjusted)';
                 }
 
                 series = [{
@@ -292,14 +293,17 @@
 
             // Get the county data.
             var selectedCountyData = _.filter(countyData, {'County': county});
-            graphData = graphData.concat(getSeries(selectedCountyData, county));
+            graphData = graphData.concat(getSeries(selectedCountyData, county + ' County'));
 
             // Push the city data, if any.
             if (city) {
                 var selectedCityData = _.filter(cityData, {'City': city});
                 var citySeries = getSeries(selectedCityData, city);
                 citySeries[0].data = cityBlanks(citySeries[0].data);
-                citySeries[1].data = cityBlanks(citySeries[1].data);
+
+                if (citySeries[1]) {
+                    citySeries[1].data = cityBlanks(citySeries[1].data);
+                }
                 graphData = graphData.concat(citySeries);
 
             }
@@ -370,8 +374,6 @@
                 }else {
                     selectLocation(city);
                 }
-
-                $(this).display();
             });
 
         }
@@ -389,10 +391,10 @@
             bottomText += '</div>';
             $("#ec-b-bottom-cities").html(bottomText);
 
-            var topText = "<div class='col-lg-6'><h4>Highest Rents (above $2,000)</h4><h6>";
-            var topCities = _.pluck(top, 'City');
+            var topText = "<div class='col-lg-6'><h4>Highest Rents</h4><h6>";
+            var topCities = _.pluck(top, 'City').sort();
             topText += topCities.join(', ');
-            topText += '</h6></div>';
+            topText += ': above $2,000.</h6></div>';
             $("#ec-b-top-cities").html(topText);
         }
 
@@ -448,7 +450,7 @@
             var countyName = data.county;
             var county2013 = _.find(countyData, {
                 'Year': FOCUSYEAR,
-                County: countyName
+                County: countyName + ' County'
             });
 
             var region2013 = _.find(regionData, {
@@ -621,13 +623,18 @@
                     yAxisLabel = {
                         format: "{value:,.0f}%"
                     };
-                    step = 1;
+                    step = 2;
+
+                    // we need to insert 4 blank years to cover missing data
+                    // between 2000 and 2005:
+                    var values = _.pluck(d, key).slice(3);
+                    var data = [values[0], null, null, null, null].concat(values.slice(1));
 
                     // Skip the first three values (years before 2000)
-                    d = d.slice(3);
                     series.push({
                         name: metro,
-                        data: _.pluck(d, key)
+                        data: data,
+                        connectNulls: true
                     });
                 }
             });

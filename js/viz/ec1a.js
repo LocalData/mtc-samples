@@ -1,7 +1,7 @@
 /*globals jQuery, L, cartodb, geocities, allYellow, altColors, Highcharts, science: true */
 (function($) {
     /*
-    Industries
+    Job creation
 
     A
     Stacked bar graph showing regional historical trend of jobs by industry by
@@ -75,12 +75,10 @@
         }
 
         function graph(id, series) {
-            console.log("Graphing", series);
-
             var tooltip = {
                 headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
                 pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-                '<td style="padding:0"><b>{point.y:,.0f}</b> ({point.percentage:,.1f})%</td></tr>',
+                '<td style="padding:0"><b>{point.y:,.0f}</b> {point.percentage:,.1f}(%)</td></tr>',
                 footerFormat: '</table>',
                 shared: true,
                 useHTML: true
@@ -104,7 +102,7 @@
                     title: {
                         text: 'Number of Jobs'
                     },
-                    reversedStacks: false,
+                    reversedStacks: true,
                     stackLabels: {
                         enabled: false
                     }
@@ -196,6 +194,15 @@
         }
 
 
+        function setupCounties(d) {
+            var i;
+            for(i = 0; i < d.length; i++) {
+                d[i][COUNTY_KEY] = d[i][COUNTY_KEY] + ' County';
+            }
+            return d;
+        }
+
+
         function setupNumbers(d) {
             var i;
             for(i = 0; i < d.length; i++) {
@@ -209,7 +216,7 @@
         // Get the data ready to visualize
         function prepData(region, county) {
             regionData = setupNumbers(region[0]);
-            countyData = setupNumbers(county[0]);
+            countyData = setupNumbers(setupCounties(county[0]));
 
             // Once we have the data, set up the visualizations
             setupECA();

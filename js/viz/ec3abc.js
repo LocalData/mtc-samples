@@ -320,7 +320,9 @@
                     };
                 }
             }).addTo(map);
-            map.fitBounds(cityLayer.getBounds());
+
+            console.log("Got bounds", cityLayer.getBounds());
+            map.fitBounds(cityLayer.getBounds()).zoomIn();
 
             // Add the legend
             var legendControl = new L.mapbox.legendControl();

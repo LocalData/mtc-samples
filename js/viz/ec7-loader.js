@@ -1,5 +1,5 @@
 /*globals jQuery, L, cartodb, geocities, allYellow, altColors, Highcharts, science: true */
-var tractPromise, cityPromise, countyPromise, regionPromise;
+var cityPromise, countyPromise, regionPromise;
 
 (function($) {
     /*
@@ -7,21 +7,17 @@ var tractPromise, cityPromise, countyPromise, regionPromise;
     */
 
     // Request all the data
-    // tractPromise = $.ajax({
-    //     dataType: "json",
-    //     url: "http://54.149.29.2/ec/6/tract"
-    // });
     cityPromise = $.ajax({
         dataType: "json",
-        url: "http://54.149.29.2/ec/6/city"
+        url: "http://54.149.29.2/ec/7/city"
     });
     countyPromise = $.ajax({
         dataType: "json",
-        url: "http://54.149.29.2/ec/6/county"
+        url: "http://54.149.29.2/ec/7/county"
     });
     regionPromise = $.ajax({
         dataType: "json",
-        url: "http://54.149.29.2/ec/6/region"
+        url: "http://54.149.29.2/ec/7/region"
     });
 
 })(jQuery);

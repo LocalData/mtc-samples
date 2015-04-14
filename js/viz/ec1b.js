@@ -1,7 +1,7 @@
 /*globals jQuery, L, cartodb, geocities, allYellow, altColors, Highcharts, science: true */
 (function($) {
     /*
-    Industries
+    Job creation
 
     B
     Line graph showing the change in jobs in each industry sector since 1991.
@@ -30,9 +30,9 @@
         "pctchng_FA": "Financial Activities",
         "pctchng_Govt": "Government",
         "pctchng_Inform": "Information",
+        "pctchng_LH": "Leisure & Hospitality",
         "pctchng_Manuf": "Manufacturing",
         "pctchng_MLC": "Mining, Logging & Construction",
-        "pctchng_LH": "Leisure & Hospitality",
         "pctchng_Other": "Other",
         "pctchng_PBS": "Professional & Business Services",
         "pctchng_TTU": "Trade, Transportation & Utilities"
@@ -68,8 +68,6 @@
         }
 
         function graph(id, series) {
-            console.log("Graphing", series);
-
             var tooltip = {
                 headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
                 pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
@@ -95,7 +93,7 @@
                     }
                 },
                 legend: {
-                    reversed: true
+                    reversed: false
                 },
                 colors: altColors,
                 tooltip: tooltip,
@@ -166,6 +164,16 @@
             var ec8CountySelect = $("#ec-b-county-select").data("kendoComboBox");
         }
 
+
+        function setupCounties(d) {
+            var i;
+            for(i = 0; i < d.length; i++) {
+                d[i][COUNTY_KEY] = d[i][COUNTY_KEY] + ' County';
+            }
+            return d;
+        }
+
+
         function setupNumbers(d) {
             var i;
             for(i = 0; i < d.length; i++) {
@@ -179,7 +187,7 @@
         // Get the data ready to visualize
         function prepData(region, county) {
             regionData = setupNumbers(region[0]);
-            countyData = setupNumbers(county[0]);
+            countyData = setupNumbers(setupCounties(county[0]));
 
             // Once we have the data, set up the visualizations
             setupECB();

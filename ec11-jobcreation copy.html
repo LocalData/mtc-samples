@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>EC6: Labor Force</title>
+    <title>EC8: Rents</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <link href="css/app.css" rel="stylesheet" media="screen">
@@ -13,6 +13,8 @@
     <link href="http://cdn.kendostatic.com/2014.1.528/styles/kendo.dataviz.min.css" rel="stylesheet" />
     <link href="http://cdn.kendostatic.com/2014.1.528/styles/kendo.dataviz.default.min.css" rel="stylesheet" />
 
+<!--     <link type="text/css" rel="stylesheet" href="https://api.tiles.mapbox.com/mapbox.js/v2.1.4/mapbox.css" media="all" />
+ -->
     <link rel="stylesheet" href="http://libs.cartocdn.com/cartodb.js/v3/3.13/themes/css/cartodb.css" />
 
     <style type="text/css">
@@ -26,41 +28,16 @@
     <div id="ec-a-county-select"></div>
     <div id="ec-a-chart"></div>
 
-    <div id="ec-b-year-select"></div>
+    <div id="ec-b-county-select"></div>
     <div id="ec-b-chart"></div>
-
-
-    <div class="row">
-      <div class="col-lg-12" id="EC3-B">
-        <div class="row">
-          <div class="col-lg-8">
-            <div class="map" id="map">&nbsp;</div>
-          </div>
-          <div class="col-lg-4">
-            <div class="row">
-              <div id="ec-c-bottom-cities"></div>
-              <div id="ec-c-top-cities"></div>
-            </div>
-            <div class="row">
-              <div id="ec-c-title" class="map_info">
-                <div class="initial_map">
-                Click on a shape on the map for more information.
-                </div>
-              </div>
-              <div id="ec-c-chart" style="height:300px;"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
 
     <div id="ec-d-chart"></div>
 
+
     <!-- libraries -->
     <script src="http://code.jquery.com/jquery.js"></script>
-
-    <script src="http://libs.cartocdn.com/cartodb.js/v3/3.13/cartodb.js"></script>
+    <!--<script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>-->
+    <!--<script type="text/javascript" src="https://api.tiles.mapbox.com/mapbox.js/v2.1.4/mapbox.js"></script>-->
 
     <script src="http://cdn.kendostatic.com/2014.1.528/js/kendo.all.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.5.0/lodash.js"></script>
@@ -73,10 +50,8 @@
     <script src="http://dev-mtc-vital-signs.pantheon.io/sites/all/themes/vitalsigns/js/colors.js"></script>
     <script src="http://dev-mtc-vital-signs.pantheon.io/sites/all/themes/vitalsigns/js/science.v1.min.js"></script>
 
-    <script src="js/viz/ec6-loader.js"></script>
-    <script src="js/viz/ec6a.js"></script>
-    <script src="js/viz/ec6b.js"></script>
-    <script src="js/viz/ec6c.js"></script>
-    <script src="js/viz/ec6d.js"></script>
+    <script src="js/viz/ec1a.js"></script>
+    <script src="js/viz/ec1b.js"></script>
+    <script src="js/viz/ec1d.js"></script>
   </body>
 </html>

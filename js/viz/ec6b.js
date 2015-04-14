@@ -1,5 +1,5 @@
 /*globals
-jQuery, L, cartodb, geocities, allYellow, altColors, Highcharts, science,
+jQuery, L, cartodb, geocities, kendo, allYellow, altColors, Highcharts, science,
 regionPromise, countyPromise: true
 */
 (function($) {
@@ -124,6 +124,9 @@ regionPromise, countyPromise: true
                     reversedStacks: false,
                     stackLabels: {
                         enabled: false
+                    },
+                    labels: {
+                        format: "{value:,.0f}%"
                     }
                 },
                 legend: {
@@ -139,9 +142,7 @@ regionPromise, countyPromise: true
                 series: series
             };
 
-            if (selectedYear) {
-                options.title.text += ' - ' + selectedYear;
-            }
+            options.title.text += ' - ' + selectedYear;
 
             $(CHART_ID).highcharts(options);
         }
@@ -150,7 +151,6 @@ regionPromise, countyPromise: true
         function getSeries(year) {
             var bayYearData = _.find(regionData, {'Year': year});
             var countyYearData = _.filter(countyData, {'Year': year});
-            console.log("Starting with", bayYearData, countyYearData);
 
             var dataByCategory = {};
 
@@ -166,8 +166,6 @@ regionPromise, countyPromise: true
                 });
             });
 
-            console.log("set up data", dataByCategory);
-
             var series = [];
             _.each(LABOR_TOTALS, function(name, key) {
                 series.push({
@@ -178,8 +176,17 @@ regionPromise, countyPromise: true
             return series;
         }
 
-        function selectYear(e) {
-            selectedYear = parseInt(e.item.text(), 10);
+
+        // Used for dropdown menu
+        // function selectYear(e) {
+        //     selectedYear = parseInt(e.item.text(), 10);
+        //     graph(getSeries(selectedYear));
+        // }
+
+
+        function sliderSelectYear(e) {
+            selectedYear = YEARNAMES[e.value];
+            console.log("Selected year", selectedYear);
             graph(getSeries(selectedYear));
         }
 
@@ -188,28 +195,32 @@ regionPromise, countyPromise: true
             graph(getSeries(FOCUSYEAR));
 
 
-            $("#ec-b-year-select").kendoComboBox({
-                text: "Select year...",
-                // dataTextField: COUNTY_KEY,
-                // dataValueField: COUNTY_KEY,
-                dataSource: YEARNAMES,
-                select: selectYear
+            // $("#ec-b-year-select").kendoComboBox({
+            //     text: "Select year...",
+            //     // dataTextField: COUNTY_KEY,
+            //     // dataValueField: COUNTY_KEY,
+            //     dataSource: YEARNAMES,
+            //     select: selectYear
+            // });
+
+            function getYearForSlider(value) {
+                return YEARNAMES[value];
+            }
+            var templateString = "# getYearForSlider(value) #";
+
+            var slider = $("#ec-b-year-select").kendoSlider({
+                min: 0,
+                max: 4,
+                tickPlacement: "none",
+                change: sliderSelectYear,
+                slide: sliderSelectYear,
+                value: 4,
+                tooltip: {
+                    template: function(e) {
+                        return YEARNAMES[e.value];
+                    }
+                }
             });
-
-            // var slider = $("#ec-b-year-select").kendoSlider({
-            //     min: 1980,
-            //     max: 2013,
-            //     smallStep: 2,
-            //     largeStep: 2,
-            //     tickPlacement: "none",
-            //     change: sliderChanget9b,
-            //     slide: sliderChanget9b,
-            //     value: 2012,
-            //     tooltip: {
-            //         enabled: false
-            //     }
-            // }).data("kendoSlider");
-
 
             var ec8CountySelect = $("#ec-b-year-select").data("kendoComboBox");
         }

@@ -154,14 +154,15 @@
                 },
                 yAxis: {
                     title: {
-                        text: ecAToggle
+                        text: ecAToggle + ' (inflation-adjusted)'
                     },
                     labels: {
                         format: "${value:,.0f}"
                     }
                 },
                 legend: {
-                    reversed: true
+                    reversed: true,
+                    symbolWidth: 35
                 },
                 tooltip: tooltip,
                 colors: colors,
@@ -224,12 +225,13 @@
             var lineWidth = 1.5;
             if (!geography) {
                 lineWidth = 3;
+                geography = 'Bay Area';
             }
 
             if (ecAToggle === 'Income') {
                 name = 'Median Household Income';
                 if (geography) {
-                    name += ' - ' + geography;
+                    name = geography + ' - ' + 'Household';
                 }
                 series = [{
                     name: name,
@@ -240,9 +242,9 @@
 
                 // Median worker income only available for counties & region
                 if (_.has(data[0], MEDIAN_WORKER_INCOME) || name === '') {
-                    name = 'Median Worker Income';
+                    // name = 'Median Worker Income';
                     if (geography) {
-                        name += ' - ' + geography;
+                        name =  geography + ' - ' + 'Worker';
                     }
                     series.push({
                         name: name,
@@ -271,7 +273,7 @@
         function selectLocation(e) {
             if (!e) {
                 selectedGeography = null;
-                graph('#ec-a-chart', getSeries(regionData));
+                graph('#ec-a-chart', getSeries(regionData, 'Bay Area'));
                 return;
             }
             // e might be an event or actual location data.
@@ -288,7 +290,7 @@
             county = location.Residence_Geo;
             if (county === 'Bay Area') {
                 selectedGeography = 'Bay Area';
-                graph('#ec-a-chart', getSeries(regionData));
+                graph('#ec-a-chart', getSeries(regionData, 'Bay Area'));
                 return;
             }
 
@@ -467,9 +469,20 @@
                 Residence_Geo: countyName + ' County'
             });
 
+            console.log("Setting up interaction", feature);
+
+            // Find the regional data for this year
             var region2013 = _.find(regionData, {
-                'Year': FOCUS_YEAR // TODO -- this field is currently mislabeled
+                'Year': FOCUS_YEAR
             });
+
+            // Set up the map title
+            var title = 'The median monthly income of Census Tract <strong class="economy">';
+            title += feature.properties.TRACT; //.substr(feature.properties.TRACT.length - 6);
+            title += '</strong> in ' + FOCUS_YEAR + ' was <strong class="economy">$';
+            title += feature.properties[FOCUS_KEY].toLocaleString();
+            title += '.</strong>';
+            $('#ec-b-title').html(title);
 
             var series = [
             {
@@ -478,7 +491,7 @@
                     feature.properties[FOCUS_KEY].toLocaleString(),
                 data: [
                     feature.properties[FOCUS_KEY],
-                    500, // City
+                    500, // City TODO -- use carto query
                     county2013[FOCUS_KEY],
                     region2013[FOCUS_KEY]
                 ]
@@ -520,7 +533,7 @@
                 infoControl: true,
                 attributionControl: false,
                 center: [37.783367, -122.062378],
-                zoom: 10,
+                zoom: 9,
                 minZoom: 8
             });
             L.control.scale().addTo(map);
@@ -571,7 +584,7 @@
             legendControl.onAdd = function (map) {
                 var div = L.DomUtil.create('div', 'info legend');
                 $(div).addClass("col-lg-12");
-                $(div).append("<h5>Median Household Income (inflation-adjusted)</h5>");
+                $(div).append("<h5>Median Household Income<br> (inflation-adjusted)</h5>");
 
                 breaks.unshift(1);
                 // loop through our density intervals and generate a label
@@ -582,11 +595,11 @@
                     var end = Math.round(breaks[i + 1]*100)/100;
 
                     var legendText = '<div><div class="col-lg-1" style="background:' + allYellow[i] + ';">&nbsp; </div><div class="col-lg-10">';
-                    legendText += start.toLocaleString();
+                    legendText += '$' + start.toLocaleString();
 
                     if (Math.round(breaks[i + 1]*100)/100) {
                         // If there is a next value, display it.
-                        legendText += '&ndash;' + end.toLocaleString() + '</div></div>';
+                        legendText += '&ndash; $' + end.toLocaleString() + '</div></div>';
                     } else {
                         // Otherwise we're at the end of the legend.
                         legendText +='+ </div></div>';
@@ -621,7 +634,7 @@
                         return;
                     }
                     title = 'Metro Comparison for Median Household Income';
-                    label = 'Change in Median Income since 1970 (%)';
+                    label = '% Change in Median Income (inflation-adjusted)';
                     key = MEDIAN_HOUSEHOLD_INCOME_CHANGE;
                     pointFormat = '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
                         '<td style="padding:0"><b>{point.y:,.1f}%</b></td></tr>';
@@ -630,11 +643,19 @@
                     };
                 }
 
+                var lineWidth = 2;
+                if (metro === 'Bay Area') {
+                    lineWidth = 3;
+                }
+
                 series.push({
                     name: metro,
                     data: fillInBlanks(_.pluck(d, key)),
-                    connectNulls: true
+                    connectNulls: true,
+                    lineWidth: lineWidth
                 });
+
+
             });
             series = _.sortBy(series, METRO_NAME_KEY);
 
@@ -705,7 +726,9 @@
             var i;
             for(i = 0; i < d.length; i++) {
                 // Set up percents
-                d[i][MEDIAN_HOUSEHOLD_INCOME_CHANGE] *= 100;
+                if (d[i][MEDIAN_HOUSEHOLD_INCOME_CHANGE] !== null) {
+                    d[i][MEDIAN_HOUSEHOLD_INCOME_CHANGE] *= 100;
+                }
 
                 // Round up to nearest hundred
                 d[i][FOCUS_KEY] = round(d[i][FOCUS_KEY]);

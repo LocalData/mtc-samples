@@ -1,7 +1,7 @@
 /*globals jQuery, L, cartodb, geocities, allYellow, altColors, Highcharts, science: true */
 (function($) {
     /*
-    Industries
+    Job creation
 
     D
     100% stacked bar graph showing the 10 metros' breakdown of total jobs in
@@ -20,6 +20,7 @@
 
     var i;
 
+    var CHART_TITLE = 'Metro Comparison for 2013 Jobs by Industry';
     var DASH_FORMAT = 'ShortDash';
     var COUNTY_KEY = 'GeoName';
     var INDUSTRIES = {
@@ -62,11 +63,6 @@
         }
 
         function graph(id, series) {
-            console.log("Graphing ec1d", series);
-
-
-            console.log("Metros", _.pluck(_.uniq(metroData, 'Metro'), 'Metro'));
-
             var tooltip = {
                 headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
                 pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
@@ -81,7 +77,7 @@
                     type: 'bar'
                 },
                 title: {
-                    text: 'Metro Comparison for Jobs by Industry'
+                    text: CHART_TITLE
                 },
                 xAxis: {
                     categories: _.pluck(_.uniq(metroData, 'Metro'), 'Metro'),
