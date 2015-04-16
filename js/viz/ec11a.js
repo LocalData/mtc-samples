@@ -1,5 +1,5 @@
 /*globals
-jQuery, L, cartodb, geocities, allYellow, altColors, Highcharts, science,
+jQuery, L, cartodb, geocities, econColors, altColors, Highcharts, science,
 regionPromise, countyPromise, cityPromise: true
 */
 (function($) {
@@ -149,10 +149,11 @@ regionPromise, countyPromise, cityPromise: true
 
             var nameA = 'Below national poverty level';
             var nameB = 'Below 200% of national poverty level';
-            if (geography) {
-                nameA += ' - ' + geography;
-                nameB += ' - ' + geography;
+            if (!geography) {
+                geography = 'Bay Area';
             }
+            nameA += ' - ' + geography;
+            nameB += ' - ' + geography;
 
             series.push({
                 name: nameA,
@@ -168,14 +169,25 @@ regionPromise, countyPromise, cityPromise: true
             return series;
         }
 
+
+        function resetCombos(mode) {
+            var combo;
+            combo = $("#ec-a-county-select").data("kendoComboBox");
+            combo.text('Select County...');
+            combo = $("#ec-a-city-select").data("kendoComboBox");
+            combo.text('Select City...');
+        }
+
+
         function selectLocation(e) {
             var city, county, series;
+            resetCombos();
+
             if (!e) {
                 selectedGeography = 'Bay Area';
                 graph('#ec-a-chart', getSeries(regionData));
                 return;
             }
-
             series = getSeries(regionData);
 
             // e might be an event or actual location data.
@@ -207,6 +219,7 @@ regionPromise, countyPromise, cityPromise: true
             if (city) {
                 var selectedCityData = _.filter(cityData, {'City': city});
                 series = series.concat(getSeries(selectedCityData, city));
+            } else {
             }
 
             // Create the graphs
@@ -214,7 +227,7 @@ regionPromise, countyPromise, cityPromise: true
         }
 
         function setup() {
-            graph('#ec-a-chart', getSeries(regionData, 'Regional'));
+            graph('#ec-a-chart', getSeries(regionData, 'Bay Area'));
 
             var baseSelect = [{ 'City': 'Bay Area' }];
             $("#ec-a-city-select").kendoComboBox({

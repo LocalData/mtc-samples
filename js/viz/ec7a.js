@@ -1,5 +1,5 @@
 /*globals
-jQuery, L, cartodb, geocities, allYellow, altColors, Highcharts, science,
+jQuery, L, cartodb, geocities, econColors, altColors, Highcharts, science,
 regionPromise, countyPromise, cityPromise: true
 */
 (function($) {
@@ -177,7 +177,9 @@ regionPromise, countyPromise, cityPromise: true
                     categories: YEARNAMES,
                     tickmarkPlacement: 'on',
                     labels: {
-                        step: 2
+                        step: 2,
+                        maxStaggerLines: 1,
+                        staggerLines: 1
                     },
                     title: {
                         text: 'Year'

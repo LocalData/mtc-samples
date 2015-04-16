@@ -1,5 +1,5 @@
 /*globals
-jQuery, L, cartodb, geocities, allYellow, altColors, Highcharts, science,
+jQuery, L, cartodb, geocities, econColors, altColors, Highcharts, science,
 regionPromise, countyPromise: true
 */
 (function($) {
@@ -54,7 +54,7 @@ regionPromise, countyPromise: true
             formatter: function() {
                 // Show the largest points first
                 var points = _.sortBy(this.points, 'y').reverse();
-                var s = '<table>';
+                var s = '<span style="font-size:10px">' + this.x + '</span><table>';
                 _.each(points, function(p) {
                     s += '<tr><td><strong style="color:' + p.series.color + '">';
                     s += p.series.name + ':';

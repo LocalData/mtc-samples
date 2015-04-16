@@ -1,4 +1,4 @@
-/*globals jQuery, L, cartodb, geocities, allYellow, altColors, Highcharts, science: true */
+/*globals jQuery, L, cartodb, geocities, econColors, altColors, Highcharts, science: true */
 (function($) {
     /*
     Job creation
@@ -89,6 +89,9 @@
                     min: 0,
                     title: {
                         text: 'Share of Total Jobs in Metro Area'
+                    },
+                    labels: {
+                        format: '{value}%'
                     },
                     reversedStacks: false
                 },

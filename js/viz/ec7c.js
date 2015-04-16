@@ -1,5 +1,5 @@
 /*globals
-jQuery, L, cartodb, geocities, allYellow, altColors, Highcharts, science,
+jQuery, L, cartodb, geocities, econColors, altColors, Highcharts, science,
 regionPromise, countyPromise, cityPromise: true
 */
 (function($) {
@@ -31,6 +31,7 @@ regionPromise, countyPromise, cityPromise: true
     $(function(){
         var i;
         var metroData;
+        var dates;
 
         var CHART_BASE_TITLE = 'Metro Comparison for Home Prices';
         var CHART_ID = '#ec-c-chart';
@@ -120,10 +121,13 @@ regionPromise, countyPromise, cityPromise: true
                     text: mode.title
                 },
                 xAxis: {
-                    categories: YEARNAMES,
+                    categories: dates,
                     tickmarkPlacement: 'on',
+                    minTickInterval: 2,
                     labels: {
-                        step: 2
+                        step: 12,
+                        maxStaggerLines: 1,
+                        staggerLines: 1
                     },
                     title: {
                         text: 'Year'
@@ -207,6 +211,20 @@ regionPromise, countyPromise, cityPromise: true
         // Get the data ready to visualize
         function prepData(metro) {
             metroData = setupNumbers(metro);
+
+            // Set up the date labels
+            dates = [];
+            _.each(metroData, function(d) {
+                if (d.Month === 1) {
+                    dates.push(d.Year);
+                } else {
+                    dates.push(d.Month + '/' + d.Year);
+                }
+
+            });
+            console.log("Dates", dates);
+            dates = _.uniq(dates);
+
 
             // Once we have the data, set up the visualizations
             setup();

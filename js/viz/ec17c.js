@@ -1,5 +1,5 @@
 /*globals
-jQuery, L, cartodb, geocities, allYellow, altColors, Highcharts, science,
+jQuery, L, cartodb, geocities, econColors, altColors, Highcharts, science,
 regionPromise, countyPromise: true
 */
 (function($) {
@@ -140,6 +140,11 @@ regionPromise, countyPromise: true
                     name: name,
                     data: _.pluck(data, FOCUS_KEY)
                 };
+
+                // Hide smaller ports to start with
+                if (_.last(_.pluck(data, FOCUS_KEY)) < 1000) {
+                    s.visible = false;
+                }
 
                 if (_.contains(BOTTOM_PORTS, name)) {
                     s.dashStyle = DASH_FORMAT;

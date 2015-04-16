@@ -1,4 +1,4 @@
-/*globals jQuery, L, cartodb, geocities, allYellow, altColors, Highcharts, science: true */
+/*globals jQuery, L, cartodb, geocities, econColors, altColors, Highcharts, science: true */
 var cityPromise, countyPromise, regionPromise;
 
 (function($) {

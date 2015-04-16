@@ -1,5 +1,5 @@
 /*globals
-jQuery, L, cartodb, geocities, allYellow, altColors, Highcharts, science,
+jQuery, L, cartodb, geocities, econColors, altColors, Highcharts, science,
 regionPromise, countyPromise, cityPromise: true
 */
 (function($) {
@@ -43,18 +43,16 @@ regionPromise, countyPromise, cityPromise: true
 
         var FOCUS_KEY = 'H_Share_morethan35percent';
 
-
         var FOCUS_FIELDS = [{
-            name: '<20% of income',
+            name: 'Less than 20% of income',
             key: 'H_Share_lessthan20percent'
         },{
-            name: '20-34',
+            name: '20% to 34% of income',
             key: 'H_Share_20to34percent'
         },{
-            name: '>35%',
+            name: 'At least 35% of income',
             key: 'H_Share_morethan35percent'
         }];
-
 
         Highcharts.setOptions({
             lang: {
@@ -109,6 +107,9 @@ regionPromise, countyPromise, cityPromise: true
                 xAxis: {
                     categories: _.uniq(_.pluck(metroData, 'Metro')),
                     tickmarkPlacement: 'on',
+                    labels: {
+                        formatter: formatter
+                    },
                     title: {
                         text: XAXIS_LABEL
                     }

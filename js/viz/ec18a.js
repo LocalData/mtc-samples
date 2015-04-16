@@ -1,21 +1,23 @@
 /*globals
-jQuery, L, cartodb, geocities, econColors, altColors, Highcharts, science,
+jQuery, L, cartodb, geocities, econColors, allBlue, altColors, Highcharts, science,
 regionPromise, countyPromise, cityPromise: true
 */
 (function($) {
     /*
-    Affordability
+    Freight
+    Bidirectional bar graph, similar to commute flow approach. On the right side,
+    exports (broken into vessel and air freight) and on the left side, imports.
+    Colors for export types should be somewhat similar and different from imports
+    to signify what is going on. Legend should indicate the three bar "chunks".
+    Years will be listed vertically along the y-axis with 2005 at the top and
+    2013 at the bottom. Hovering over a bar for a year should show all three
+    series' data.
 
-    C
-    Clustered column graph showing the share of cost-burdened (>35% of income)
-    households for each county, clustered by income bracket. User should be able
-    to hover over an income bracket and see all nine counties' share of burdened
-    households. X-axis is income brackets and Y-axis is share of burdened
-    households. No dropdown menus or button bars.
+    http://54.149.29.2/ec/18/region2    "
+    X-axis: Freight Value (in millions of dollars)
+    Y-axis: Year"
 
-    X-axis: Household Income
-    Y-axis: Cost-Burdened Share of Households"
-    2013 Housing Affordability by Income Level - Cost-Burdened Household Shares
+    Historical Trend for Freight Value
 
     MISC
 
@@ -27,17 +29,28 @@ regionPromise, countyPromise, cityPromise: true
 
     $(function(){
         var i;
-        var cityData, countyData, regionData;
+        var regionData;
 
-        var CHART_BASE_TITLE = '2013 Housing Affordability by Income Level - Cost-Burdened Household Shares';
-        var CHART_ID = '#ec-c-chart';
-        var COUNTY_KEY = 'Geography';
-        var YAXIS_LABEL = 'Cost-Burdened Share of Households'; //'Share of Income Spent on Housing';
-        var XAXIS_LABEL = 'Household Income';
-        var counties = {};
-        var brackets = {};
+        var CHART_BASE_TITLE = 'Historical Trend for Freight Value';
+        var CHART_ID = '#ec-a-chart';
+        var YAXIS_LABEL = ''; //'Share of Income Spent on Housing';
+        var XAXIS_LABEL = 'Freight Value (in millions of dollars)';
 
-        var FOCUS_FIELD = 'H_Share_morethan35percent';
+        var FOCUS_FIELD = 'Value';
+        var TYPE_FIELD = 'Type';
+        var FOCUS_FIELDS = {
+            'Export Air': {
+                color: econColors[1]
+            },
+            'Export Vessel': {
+                color: econColors[2]
+            },
+            'Imports': {
+                color: allBlue[0]
+            }
+        };
+
+        var YEARS = [2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013];
 
         Highcharts.setOptions({
             lang: {
@@ -57,22 +70,21 @@ regionPromise, countyPromise, cityPromise: true
 
 
         function getAllSeries() {
-            var series = [];
+            var exportVessel = _.pluck(_.filter(regionData, { Type: 'Export Vessel' }), FOCUS_FIELD);
+            var exportAir = _.pluck(_.filter(regionData, { Type: 'Export Air' }), FOCUS_FIELD);
+            var imports = _.pluck(_.filter(regionData, { Type: 'Imports' }), FOCUS_FIELD);
 
-            _.each(counties, function(county) {
-                var data = [];
-                var dataForCounty = _.filter(countyData, { Geography: county });
+            var series = [{
+                name: 'Vessel',
+                data: exportVessel
+            },{
+                name: 'Air Freight',
+                data: exportAir
+            },{
+                name: 'Imports',
+                data: imports
+            }];
 
-                _.each(brackets, function(bracket, key) {
-                    var bracketData = _.find(dataForCounty, { Income_Bracket: key });
-                    data.push(bracketData[FOCUS_FIELD]);
-                });
-
-                series.push({
-                    name: county,
-                    data: data
-                });
-            });
 
             console.log("Got series", series);
 
@@ -101,7 +113,7 @@ regionPromise, countyPromise, cityPromise: true
                     text: title
                 },
                 xAxis: {
-                    categories: _.values(brackets),
+                    categories: YEARS,
                     tickmarkPlacement: 'on',
                     title: {
                         text: XAXIS_LABEL
@@ -117,8 +129,7 @@ regionPromise, countyPromise, cityPromise: true
                     reversedStacks: true,
                     stackLabels: {
                         enabled: false
-                    },
-                    max: 100
+                    }
                 },
                 legend: {
                     enabled: true
@@ -166,33 +177,28 @@ regionPromise, countyPromise, cityPromise: true
         function setupNumbers(d) {
             var i, j;
             for(i = 0; i < d.length; i++) {
-                d[i][FOCUS_FIELD] = percent(d[i][FOCUS_FIELD]);
+                // Make the imports negative
+                if (d[i][TYPE_FIELD] === 'Imports') {
+                    d[i][FOCUS_FIELD] = -d[i][FOCUS_FIELD];
+                }
             }
             return d;
         }
 
 
         // Get the data ready to visualize
-        function prepData(county) {
-            countyData = setupNumbers(county);
-
-            // Set up labels / series
-            counties = _.uniq(_.pluck(countyData, COUNTY_KEY));
-
-            // Set up labels / series
-            _.each(countyData, function(r) {
-                brackets[r.Income_Bracket] = r.Income_Bracket_Label;
-            });
+        function prepData(region) {
+            regionData = setupNumbers(region);
 
             // Once we have the data, set up the visualizations
             setup();
         }
 
 
-        var countyPromise = $.ajax({
+        var regionPromise = $.ajax({
             dataType: "json",
-            url: "http://54.149.29.2/ec/10/countyInc"
+            url: "http://54.149.29.2/ec/18/region2"
         });
-        $.when(countyPromise).done(prepData);
+        $.when(regionPromise).done(prepData);
     });
 })(jQuery);

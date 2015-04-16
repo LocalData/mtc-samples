@@ -1,5 +1,5 @@
 /*globals
-jQuery, L, cartodb, geocities, allYellow, altColors, Highcharts, science,
+jQuery, L, cartodb, geocities, econColors, altColors, Highcharts, science,
 regionPromise, countyPromise, cityPromise: true
 */
 (function($) {
@@ -44,13 +44,13 @@ regionPromise, countyPromise, cityPromise: true
         var XAXIS_LABEL = '';
 
         var FOCUS_FIELDS = [{
-            name: '<20% of income',
+            name: 'Less than 20% of income',
             key: 'H_Share_lessthan20percent'
         },{
-            name: '20-34',
+            name: '20% to 34% of income',
             key: 'H_Share_20to34percent'
         },{
-            name: '>35%',
+            name: 'At least 35% of income',
             key: 'H_Share_morethan35percent'
         }];
 
@@ -168,7 +168,8 @@ regionPromise, countyPromise, cityPromise: true
                     categories: YEARNAMES,
                     tickmarkPlacement: 'on',
                     labels: {
-                        step: 5
+                        step: 5,
+                        staggerLines: 1
                     },
                     title: {
                         text: XAXIS_LABEL

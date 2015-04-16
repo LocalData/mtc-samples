@@ -1,4 +1,4 @@
-/*globals jQuery, L, cartodb, geocities, allYellow, altColors, Highcharts, science: true */
+/*globals jQuery, L, cartodb, geocities, econColors, altColors, Highcharts, science: true */
 (function($) {
     /*
     Job creation
@@ -190,6 +190,8 @@
             if (selectedGeography !== 'Bay Area') {
                 options.plotOptions.bubble.zMax = Z_MAX;
                 console.log("Using new min", options.plotOptions.bubble);
+            } else {
+                options.plotOptions.bubble.zMax = Z_MAX * 2;
             }
 
             $(CHART_ID).highcharts(options);

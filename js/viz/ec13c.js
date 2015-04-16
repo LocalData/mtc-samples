@@ -1,5 +1,5 @@
 /*globals
-jQuery, L, cartodb, geocities, allYellow, altColors, Highcharts, science,
+jQuery, L, cartodb, geocities, econColors, altColors, Highcharts, science,
 regionPromise, countyPromise: true
 */
 (function($) {
@@ -145,8 +145,10 @@ regionPromise, countyPromise: true
         function getSeries(mode) {
             var series = [];
             var groups = _.groupBy(mode.data, GEO_KEY);
-            console.log("Trying with data", mode.data);
-            _.each(groups, function(data, name) {
+            var orderedCities = _.keys(groups).sort();
+
+            _.each(orderedCities, function(name) {
+                var data = groups[name];
                 var lineWidth = 1.5;
                 if (name === 'Bay Area') {
                     lineWidth = 3.5;

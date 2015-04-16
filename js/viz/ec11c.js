@@ -1,5 +1,5 @@
 /*globals
-jQuery, L, cartodb, geocities, allYellow, altColors, Highcharts, science,
+jQuery, L, cartodb, geocities, econColors, altColors, Highcharts, science,
 regionPromise, countyPromise, cityPromise, metroPromise: true
 */
 (function($) {
@@ -145,7 +145,7 @@ regionPromise, countyPromise, cityPromise, metroPromise: true
             console.log("setting up series", data);
             var series = [];
             series = [{
-                name: 'Labor Force Participation',
+                name: 'Below 200% of Poverty Level',
                 data: _.pluck(metroData, FOCUS_FIELD)
             }];
             return series;

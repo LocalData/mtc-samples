@@ -1,4 +1,4 @@
-/*globals jQuery, L, cartodb, geocities, allYellow, altColors, Highcharts, science: true */
+/*globals jQuery, L, cartodb, geocities, econColors, altColors, Highcharts, science: true */
 (function($) {
     /*
     Job Creation
@@ -379,7 +379,7 @@
                     crosshairs: false,
                     pointFormat: '<b>${point.y:,.0f}</b>'
                 },
-                colors: allYellow
+                colors: econColors
             });
         }
 
@@ -481,7 +481,7 @@
                     var start = Math.round(breaks[i]*100)/100;
                     var end = Math.round(breaks[i + 1]*100)/100;
 
-                    var legendText = '<div><div class="col-lg-1" style="background:' + allYellow[i] + ';">&nbsp; </div><div class="col-lg-10">';
+                    var legendText = '<div><div class="col-lg-1" style="background:' + econColors[i] + ';">&nbsp; </div><div class="col-lg-10">';
                     legendText += start.toLocaleString();
 
                     if (Math.round(breaks[i + 1]*100)/100) {
@@ -519,15 +519,15 @@
                 feature.properties = _.merge(feature.properties, data);
                 var u = feature.properties.Median_Contract_Rent_IA;
                 if (u > breaks[3]) {
-                    color = allYellow[4];
+                    color = econColors[4];
                 } else if (u > breaks[2]) {
-                    color = allYellow[3];
+                    color = econColors[3];
                 } else if (u > breaks[1]) {
-                    color = allYellow[2];
+                    color = econColors[2];
                 } else if (u > breaks[0]) {
-                    color = allYellow[1];
+                    color = econColors[1];
                 } else {
-                    color = allYellow[0];
+                    color = econColors[0];
                 }
                 return {
                   color: color,

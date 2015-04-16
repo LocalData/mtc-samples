@@ -1,4 +1,4 @@
-/*globals jQuery, L, geocities, allYellow, altColors, Highcharts, science: true */
+/*globals jQuery, L, geocities, cartodb, econColors, altColors, Highcharts, science: true */
 (function($) {
     /*
     http://54.149.29.2/ec/3/city
@@ -100,6 +100,9 @@
     var METRO_YEARS = [1970, 1980, 1990, 2000, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013];
     var YEARS_SINCE_2000 = [ 9999 ];
 
+    var CARTO_CITY_POINT_QUERY = 'SELECT name FROM cities WHERE ST_Intersects( the_geom, ST_SetSRID(ST_POINT({{lng}}, {{lat}}) , 4326))';
+    var sql = new cartodb.SQL({ user: 'mtc' });
+
     var cityData, countyData, regionData, countyWorkerData, regionWorkerData, metroData, tractData;
     var ecAToggle = 'Income'; // Default mode of interactive A
     var ecCToggle = 'Median Income'; // Default mode of interactive C
@@ -154,7 +157,7 @@
                 },
                 yAxis: {
                     title: {
-                        text: ecAToggle + ' (inflation-adjusted)'
+                        text: 'Income (inflation-adjusted)'
                     },
                     labels: {
                         format: "${value:,.0f}"
@@ -181,13 +184,15 @@
                 options.title.text = 'Historical Trend for Median Income';
 
                 options.yAxis.labels = {
-                    format: "{value:,.1f}%"
+                    format: "{value}%"
                 };
             }
 
-            if (selectedGeography) {
-                options.title.text += ' - ' + selectedGeography;
+            if (!selectedGeography) {
+                selectedGeography = 'Bay Area';
             }
+
+            options.title.text += ' - ' + selectedGeography;
 
             $(id).highcharts(options);
         }
@@ -257,7 +262,7 @@
             } else {
                 name = '% Growth in Median Household Income';
                 if (geography) {
-                    name += ' - ' + geography;
+                    name = geography + ' - ' + 'Household';
                 }
                 series = [{
                     name: name,
@@ -394,7 +399,7 @@
               range.push(v[property]);
             }
           });
-          var breaks = science.stats.quantiles(range, [0, 0.25, 0.50, 0.75]);
+          var breaks = science.stats.quantiles(range, [0, 0.2, 0.4, 0.6, 0.8]);
           return breaks;
         }
 
@@ -422,13 +427,10 @@
         }
 
         function bBarChart(series, options) {
-            console.log("Creating chart with series", series);
-
-
-            // http://dev-mtc-vital-signs.pantheon.io/sites/all/themes/vitalsigns/js/t3t4b-new.js?nlq112
             $('#ec-b-chart').highcharts({
                 chart: {
-                    defaultSeriesType: 'bar'
+                    defaultSeriesType: 'bar',
+                    height: 300
                 },
                 series: series,
                 exporting: {
@@ -458,20 +460,27 @@
                     crosshairs: false,
                     pointFormat: '<b>${point.y:,.0f}</b>'
                 },
-                colors: allYellow
+                colors: econColors
             });
         }
 
-        function mapInteraction(event, feature) {
+        function mapInteraction(event, feature, city) {
+            // Check if we have city data
+            city = city.rows[0];
+            if(city) {
+                city = city.name;
+            }
+
+            // Get the data we'll need to graph
             var countyName = feature.properties.County;
             var county2013 = _.find(countyData, {
                 'Year': FOCUS_YEAR,
                 Residence_Geo: countyName + ' County'
             });
-
-            console.log("Setting up interaction", feature);
-
-            // Find the regional data for this year
+            var city2013 = _.find(cityData, {
+                'Year': FOCUS_YEAR,
+                Residence_Geo: city
+            });
             var region2013 = _.find(regionData, {
                 'Year': FOCUS_YEAR
             });
@@ -484,32 +493,47 @@
             title += '.</strong>';
             $('#ec-b-title').html(title);
 
-            var series = [
-            {
+            // Start setting up the series
+            var series = {
                 name: 'The median monthly income of Census Tract ' +
                     feature.properties.TRACT + ' in 2013 was ' + '$' +
                     feature.properties[FOCUS_KEY].toLocaleString(),
                 data: [
-                    feature.properties[FOCUS_KEY],
-                    500, // City TODO -- use carto query
-                    county2013[FOCUS_KEY],
-                    region2013[FOCUS_KEY]
+                    feature.properties[FOCUS_KEY]
                 ]
-            }];
+            };
+            var categories = [
+                'Tract ' + feature.properties.TRACT
+            ];
 
-            bBarChart(series, {
-                categories: [
-                    'Tract ' + feature.properties.TRACT,
-                    'cityName',
-                    countyName,
-                    'Bay Area'
-                ]
+            // Add city data, if any
+            if (city && city2013) {
+                series.data.push(city2013[FOCUS_KEY]);
+                categories.push(city);
+            }
+
+            // Add the rest of the data: county & region
+            series.data.push(county2013[FOCUS_KEY]);
+            series.data.push(region2013[FOCUS_KEY]);
+            categories.push(countyName);
+            categories.push('Bay Area');
+
+            bBarChart([series], {
+                categories: categories
             });
         }
 
         function setupMapInteraction(feature, layer) {
             layer.on('click', function(event) {
-                mapInteraction(event, feature);
+                var latlng = event.latlng;
+                var cityPromise = sql.execute(CARTO_CITY_POINT_QUERY, {
+                    lat: latlng.lat,
+                    lng: latlng.lng
+                });
+
+                cityPromise.done(function(cityResult) {
+                    mapInteraction(event, feature, cityResult);
+                });
             });
         }
 
@@ -543,30 +567,49 @@
             var joinedFeatures = [];
             var breaks = getRange(focusYearData, FOCUS_KEY);
 
+            // Round the breaks to nearest thousand
+            for (var i = 0; i < breaks.length; i++) {
+                breaks[i] = Math.round(breaks[i] / 1000) * 1000;
+            }
+
+            var colors = _.clone(econColors).reverse(); // reverse so darker = higher income
+
             function style(feature) {
                 var color;
                 var data = _.find(focusYearData, { Residence_Geo: parseInt(feature.properties.TRACT.slice(5), 10) });
+
                 if (!data) {
                     console.log("Missing data for", feature.properties);
                 }
+
                 feature.properties = _.merge(feature.properties, data);
                 var u = feature.properties[FOCUS_KEY];
-                if (u > breaks[3]) {
-                    color = allYellow[4];
+
+                if (u > breaks[4]) {
+                    color = colors[4];
+                }else if (u > breaks[3]) {
+                    color = colors[3];
                 } else if (u > breaks[2]) {
-                    color = allYellow[3];
+                    color = colors[2];
                 } else if (u > breaks[1]) {
-                    color = allYellow[2];
-                } else if (u > breaks[0]) {
-                    color = allYellow[1];
-                } else {
-                    color = allYellow[0];
+                    color = colors[1];
+                } else if (u >= breaks[0]) {
+                    color = colors[0];
                 }
+
+                var opacity = 0.9;
+                var weight = 0.5;
+
+                if(!u) {
+                   opacity = 0;
+                   weight = 0;
+                }
+
                 return {
                   color: color,
                   fillColor: color,
-                  fillOpacity: 0.8,
-                  weight: 0.5
+                  fillOpacity: opacity,
+                  weight: weight
                 };
             }
 
@@ -586,26 +629,31 @@
                 $(div).addClass("col-lg-12");
                 $(div).append("<h5>Median Household Income<br> (inflation-adjusted)</h5>");
 
-                breaks.unshift(1);
                 // loop through our density intervals and generate a label
                 // with a colored square for each interval
                 var i;
                 for (i = 0; i < breaks.length; i++) {
-                    var start = Math.round(breaks[i]*100)/100;
-                    var end = Math.round(breaks[i + 1]*100)/100;
+                    var s = '<div><div class="col-lg-1" style="background:' + colors[i] + ';">&nbsp; </div><div class="col-lg-10">';
 
-                    var legendText = '<div><div class="col-lg-1" style="background:' + allYellow[i] + ';">&nbsp; </div><div class="col-lg-10">';
-                    legendText += '$' + start.toLocaleString();
-
-                    if (Math.round(breaks[i + 1]*100)/100) {
-                        // If there is a next value, display it.
-                        legendText += '&ndash; $' + end.toLocaleString() + '</div></div>';
-                    } else {
-                        // Otherwise we're at the end of the legend.
-                        legendText +='+ </div></div>';
+                    if (i === 0) {
+                        s += '$' + breaks[i].toLocaleString() + ' - $' + breaks[i+1].toLocaleString();
                     }
-                    $(div).append(legendText);
+
+                    if (i !== breaks.length - 1 && i !== 0) {
+                        s += '$' + (breaks[i] + 1).toLocaleString() + ' - $' + breaks[i+1].toLocaleString();
+                    }
+
+                    if (i === breaks.length - 1) {
+                        s += '$' + (breaks[i] + 1).toLocaleString() + '+';
+                    }
+
+                    $(div).append(s);
+
+                    // $(div).append('<div><div class="col-lg-1" style="background:' + colors[i] + ';">&nbsp; </div><div class="col-lg-8">' +
+                    //     Math.round(breaks[i]*100)/100 + (Math.round(breaks[i + 1]*100)/100 ? '&ndash;' + Math.round(breaks[i + 1]*100)/100 + '</div>' : '+'));
                 }
+
+
                 return div;
 
             };

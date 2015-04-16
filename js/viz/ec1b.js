@@ -1,4 +1,4 @@
-/*globals jQuery, L, cartodb, geocities, allYellow, altColors, Highcharts, science: true */
+/*globals jQuery, L, cartodb, geocities, econColors, altColors, Highcharts, science: true */
 (function($) {
     /*
     Job creation
@@ -90,6 +90,9 @@
                 yAxis: {
                     title: {
                         text: 'Percent Change in Jobs since 1990'
+                    },
+                    labels: {
+                        format: '{value:,.0f}%'
                     }
                 },
                 legend: {

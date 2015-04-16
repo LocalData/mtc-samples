@@ -1,4 +1,4 @@
-/*globals jQuery, L, cartodb, geocities, allYellow, altColors, Highcharts, science: true */
+/*globals jQuery, L, cartodb, geocities, econColors, altColors, Highcharts, science: true */
 (function($) {
     /*
     Job creation
@@ -78,7 +78,7 @@
             var tooltip = {
                 headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
                 pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-                '<td style="padding:0"><b>{point.y:,.0f}</b> {point.percentage:,.1f}(%)</td></tr>',
+                '<td style="padding:0"><b>{point.y:,.0f}</b> ({point.percentage:,.1f}%)</td></tr>',
                 footerFormat: '</table>',
                 shared: true,
                 useHTML: true
@@ -120,9 +120,11 @@
                 series: series
             };
 
-            if (selectedGeography) {
-                options.title.text += ' - ' + selectedGeography;
+            if (!selectedGeography) {
+                selectedGeography = 'Bay Area';
             }
+
+            options.title.text += ' - ' + selectedGeography;
 
             $(id).highcharts(options);
         }

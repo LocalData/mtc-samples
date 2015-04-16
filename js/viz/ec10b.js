@@ -1,5 +1,5 @@
 /*globals
-jQuery, L, cartodb, geocities, allYellow, altColors, Highcharts, science,
+jQuery, L, cartodb, geocities, econColors, altColors, Highcharts, science,
 regionPromise, countyPromise, cityPromise: true
 */
 (function($) {
@@ -42,21 +42,20 @@ regionPromise, countyPromise, cityPromise: true
         var XAXIS_LABEL = 'Household Income';
         var categories = {};
 
-
         var FOCUS_FIELDS = [{
-            name: '<20% of income',
+            name: 'Less than 20% of income',
             key: 'H_Share_lessthan20percent'
         },{
-            name: '20-34',
+            name: '20% to 34% of income',
             key: 'H_Share_20to24percent'
         },{
-            name: '25-29',
+            name: '25% to 29% of income',
             key: 'H_Share_25to29percent'
         },{
-            name: '30-34',
+            name: '30% to 34% of income',
             key: 'H_Share_30to34percent'
         },{
-            name: '>35%',
+            name: 'At least 35% of income',
             key: 'H_Share_morethan35percent'
         }];
 

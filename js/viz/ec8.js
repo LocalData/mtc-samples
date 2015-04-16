@@ -1,4 +1,4 @@
-/*globals jQuery, L, cartodb, allYellow, altColors, Highcharts, science: true */
+/*globals jQuery, L, cartodb, econColors, altColors, Highcharts, science: true */
 (function($) {
     /*
     http://econ-mtc-vital-signs.pantheon.io/rents
@@ -83,14 +83,14 @@
         altColors[2]
     ];
 
-    var FOCUSYEAR = 2013;
+    var FOCUS_YEAR = 2013;
     var MEDIAN_RENT = 'Median_Contract_Rent';
     var MEDIAN_RENT_ADJUSTED = 'Median_Contract_Rent_IA';
     var MEDIAN_RENT_CHANGE = 'Median_Contract_Rent_PercentChg_1970';
     var MEDIAN_RENT_CHANGE_ADJUSTED = 'Median_Contract_Rent_IA_PercentChg_1970';
 
-    var CARTO_FIELDS = 'cartodb_id, county, tract, median_contract_rent_ia';
-    var CARTO_BASE_QUERY = 'https://mtc.cartodb.com/api/v2/sql?format=GeoJSON&q=SELECT cartodb_id, the_geom, county, tract, median_contract_rent_ia FROM ec_tracts WHERE cartodb_id = ';
+    var CARTO_CITY_POINT_QUERY = 'SELECT name FROM cities WHERE ST_Intersects( the_geom, ST_SetSRID(ST_POINT({{lat}}, {{lng}}) , 4326))';
+    var sql = new cartodb.SQL({ user: 'mtc' });
 
     var FIRSTYEAR = 1970;
     var MAXYEAR = 2013;
@@ -176,6 +176,8 @@
                 options.yAxis.labels = {
                     format: "{value:,.0f}%"
                 };
+
+                options.yAxis.title.text +=  ' (inflation-adjusted)';
             }
 
             if (selectedGeography) {
@@ -394,7 +396,7 @@
             var topText = "<div class='col-lg-6'><h4>Highest Rents</h4><h6>";
             var topCities = _.pluck(top, 'City').sort();
             topText += topCities.join(', ');
-            topText += ': above $2,000.</h6></div>';
+            topText += ': above $2,000</h6></div>';
             $("#ec-b-top-cities").html(topText);
         }
 
@@ -402,7 +404,8 @@
             console.log("Chart with data", series, options);
             $('#ec-b-chart').highcharts({
                 chart: {
-                    defaultSeriesType: 'bar'
+                    defaultSeriesType: 'bar',
+                    height: 300
                 },
                 series: series,
                 exporting: {
@@ -426,7 +429,7 @@
                     categories: options.categories
                 },
                 title: {
-                    text: series[0].name
+                    // text: series[0].name
                 },
                 tooltip: {
                     shared: true,
@@ -439,34 +442,50 @@
                         return '<b>$' + this.y.toLocaleString() + '</b>';
                     }
                 },
-                colors: allYellow
+                colors: econColors
             });
         }
 
-        function ec8MapInteraction(data) {
-            console.log("Map interation with data", data);
+        function ec8MapInteraction(data, city) {
+            // Check if we have city data
+            city = city.rows[0];
+            if(city) {
+                city = city.name;
+            }
 
-            var cityName = 'cityName'; //feature.properties.City;
             var countyName = data.county;
             var county2013 = _.find(countyData, {
-                'Year': FOCUSYEAR,
-                County: countyName + ' County'
+                'Year': FOCUS_YEAR,
+                County: countyName
             });
-
             var region2013 = _.find(regionData, {
-                'Year': FOCUSYEAR
+                'Year': FOCUS_YEAR
+            });
+            var city2013 = _.find(cityData, {
+                'Year': FOCUS_YEAR,
+                'City': city
             });
 
-            var series = [
-            {
+            // Start setting up the series
+            var series = {
                 name: 'Median Rent',
-                data: [
-                    data.median_contract_rent_ia,
-                    null, // City TODO
-                    county2013.Median_Contract_Rent_IA,
-                    region2013.Median_Contract_Rent_IA
-                ]
-            }];
+                data: []
+            };
+            var categories = [
+                'Tract ' + data.tract
+            ];
+
+            series.data.push(data.median_contract_rent_ia);
+
+            if (city && city2013) {
+                series.data.push(city2013[MEDIAN_RENT_ADJUSTED]);
+                categories.push(city);
+            }
+
+            series.data.push(county2013[MEDIAN_RENT_ADJUSTED]);
+            series.data.push(region2013[MEDIAN_RENT_ADJUSTED]);
+            categories.push(countyName + ' County');
+            categories.push('Bay Area');
 
             var title = 'The median monthly rent payment of Census Tract <strong class="economy">';
             title += data.tract + '</strong> in 2013 was <strong class="economy">';
@@ -475,55 +494,28 @@
             } else {
                 title += '$' + data.median_contract_rent_ia.toLocaleString();
             }
-            title += '</strong>';
+            title += '.</strong>';
 
             $('#ec-b-title').html(title);
 
-            ecbBarChart(series, {
-                categories: [
-                    'Tract ' + data.tract,
-                    cityName,
-                    countyName,
-                    'Bay Area'
-                ]
+            ecbBarChart([series], {
+                categories: categories
             });
         }
 
+
         // Set up the interactive map
         function setupEC8B() {
-            // Reference JS:
-            // http://dev-mtc-vital-signs.pantheon.io/sites/all/themes/vitalsigns/js/t3t4b-new.js?nlqyte
-            // http://matth-mtc-vital-signs.pantheon.io/sites/all/themes/vitalsigns/js/lu1c.js?nknpo6
-            // Should be a census tract map of the region showing inflation-adjusted median
-            // rents. When the user clicks on a tract, a bar graph in the right panel
-            // should show the median rents of the tract, city, county, and region for
-            // comparison purposes. There should also be text above it saying "The median
-            // monthly rent payment of Census Tract XXXX in 2013 was $Y,YYY.". Below the
-            // bar graph in side panel, a top 5 and bottom 5 list should show the highest
-            // rent and lowest rent cities in the region. No button bar or dropdown menus
-            // are needed.
 
             // Set up the top 5 / bottom 5 employment rate lists
-            ecBLeaderboard(_.filter(cityData, {'Year': FOCUSYEAR}));
-
-            // Set up the map
-            // L.mapbox.accessToken = 'pk.eyJ1IjoicG9zdGNvZGUiLCJhIjoiWWdxRTB1TSJ9.phHjulna79QwlU-0FejOmw';
-            // var map = L.mapbox.map('map', 'postcode.kh28fdpk', {
-            //     infoControl: true,
-            //     attributionControl: false,
-            //     center: [37.783367, -122.062378],
-            //     zoom: 10,
-            //     minZoom: 8
-            // });
-            // L.control.scale().addTo(map);
+            ecBLeaderboard(_.filter(cityData, {'Year': FOCUS_YEAR}));
 
             // Prep the tract data
             var joinedFeatures = [];
-            var breaks = [1051, 1256, 1462, 1701, 2000];
+            var breaks = [287, 1052, 1257, 1463, 1702];
 
             // Breaks now set in CartoDB
             // TODO get breaks automatically from Carto
-            // getRange(focusYearData, 'Median_Contract_Rent_IA');
 
             cartodb.createVis('map', 'http://mtc.cartodb.com/api/v2/viz/3c4a4858-dd38-11e4-a2a8-0e0c41326911/viz.json')
               .done(function(vis, layers) {
@@ -532,8 +524,17 @@
 
                 // layers[1].getSubLayer(0).setInteractivity(CARTO_FIELDS);
                 layers[1].on('featureClick', function(e, latlng, pos, data, layerNumber) {
-                    ec8MapInteraction(data);
+                    // Get city data, if any
+                    var cityPromise = sql.execute(CARTO_CITY_POINT_QUERY, {
+                        lat: latlng[1],
+                        lng: latlng[0]
+                    });
+
+                    cityPromise.done(function(cityResult) {
+                        ec8MapInteraction(data, cityResult);
+                    });
                 });
+
 
                 // you can get the native map to work with it
                 var map = vis.getNativeMap();
@@ -542,8 +543,9 @@
                 var legend = L.control({position: 'bottomright'});
                 legend.onAdd = function (map) {
                     var div = L.DomUtil.create('div', 'info legend');
-                    // $(div).addClass("col-lg-8");
-                    $(div).append("<h5>Inflation-adjusted Median Rents</h5>");
+                    $(div).append("<h5>Median Rents</h5>");
+
+                    var colors = _.clone(econColors).reverse();
 
                     // breaks.unshift(1);
                     // loop through our density intervals and generate a label
@@ -553,12 +555,12 @@
                         var start = Math.round(breaks[i]*100)/100;
                         var end = Math.round(breaks[i + 1]*100)/100 - 1;
 
-                        var legendText = '<div><div class="col-lg-1" style="background:' + allYellow[i] + ';">&nbsp; </div><div class="col-lg-10">';
+                        var legendText = '<div style="width:150px; margin-bottom: 5px;"><div class="col-lg-1" style="margin-right: 8px; background:' + colors[i] + ';">&nbsp; </div><div>$';
                         legendText += start.toLocaleString();
 
                         if (Math.round(breaks[i + 1]*100)/100) {
                             // If there is a next value, display it.
-                            legendText += '&ndash;' + end.toLocaleString() + '</div></div>';
+                            legendText += '&ndash; $' + end.toLocaleString() + '</div></div>';
                         } else {
                             // Otherwise we're at the end of the legend.
                             legendText +='+ </div></div>';
@@ -745,11 +747,6 @@
             dataType: "json",
             url: "http://54.149.29.2/ec/8/metro"
         });
-        // Tracts no longer needed -- used in CartoDB.
-        // var tractPromise = $.ajax({
-        //     dataType: "json",
-        //     url: "http://54.149.29.2/ec/8/tract"
-        // });
 
         $.when(cityPromise, countyPromise, regionPromise, metroPromise).done(prepData);
     });

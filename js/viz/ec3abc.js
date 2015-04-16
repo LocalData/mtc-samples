@@ -1,4 +1,4 @@
-/*globals jQuery, L, geocities, allGray, allYellow, altColors, science: true */
+/*globals jQuery, L, geocities, allGray, econColors, altColors, science: true */
 (function($) {
     /*
     http://54.149.29.2/ec/3/city
@@ -71,12 +71,20 @@
                     text: 'Historical Trend for Unemployment Rate'
                 },
                 xAxis: {
-                    categories: YEARNAMES
+                    categories: YEARNAMES,
+                    labels: {
+                        step: 2,
+                        staggerLines: 1
+                    }
                 },
                 yAxis: {
                     min: 0,
+                    max: 15,
                     title: {
-                        text: 'Unemployment Rate (%)'
+                        text: 'Unemployment Rate'
+                    },
+                    labels: {
+                        format: '{value}%'
                     }
                 },
                 legend: {
@@ -94,9 +102,11 @@
                 series: series
             };
 
-            if (selectedGeography) {
-                options.title.text += ' - ' + selectedGeography;
+            if (!selectedGeography) {
+                selectedGeography = 'Bay Area';
             }
+
+            options.title.text += ' - ' + selectedGeography;
 
             $(id).highcharts(options);
         }
@@ -153,7 +163,7 @@
               range.push(v[property]);
             }
           });
-          var breaks = science.stats.quantiles(range, [0, 0.25, 0.50, 0.75]);
+          var breaks = science.stats.quantiles(range, [0, 0.2, 0.4, 0.6, 0.8]);
           return breaks;
         }
 
@@ -185,7 +195,8 @@
             // http://dev-mtc-vital-signs.pantheon.io/sites/all/themes/vitalsigns/js/t3t4b-new.js?nlq112
             $('#ec3-b-chart').highcharts({
                 chart: {
-                    defaultSeriesType: 'bar'
+                    defaultSeriesType: 'bar',
+                    height: 300
                 },
                 series: series,
                 exporting: {
@@ -206,14 +217,14 @@
                     categories: options.categories
                 },
                 title: {
-                    text: options.categories[0]
+                    text: '' // options.categories[0]
                 },
                 tooltip: {
                     shared: true,
                     crosshairs: false,
                     pointFormat: '<b>{point.y:.1f}%</b>'
                 },
-                colors: allYellow
+                colors: econColors
             });
         }
 
@@ -234,6 +245,14 @@
                 'Year': FOCUSYEAR,
                 Residence_Geo: countyName
             });
+
+
+            var title = 'The unemployment rate of <strong class="economy">';
+            title += cityName + '</strong> in 2013 was <strong class="economy">';
+            title += feature.properties.unemployment; //.toLocaleString();
+            title += '%.</strong>';
+
+            $('#ec-b-title').html(title);
 
             var series = [
             {
@@ -288,35 +307,45 @@
             });
             geocities.features = features;
 
+
+
             // Display the city data based on breaks
+            var colors = _.clone(econColors).reverse();
             var breaks = getRange(cities, 'Unemployment_Rate');
+
             var cityLayer = L.geoJson(geocities, {
                 onEachFeature: ec3bSetupMapInteraction,
                 style: function(f) {
                     var color;
                     var u = f.properties.unemployment;
-                    if (u > breaks[3]) {
-                        color = allYellow[4];
+
+                    if (u > breaks[4]) {
+                        color = colors[4];
+                    } else if (u > breaks[3]) {
+                        color = colors[3];
                     } else if (u > breaks[2]) {
-                        color = allYellow[3];
+                        color = colors[2];
                     } else if (u > breaks[1]) {
-                        color = allYellow[2];
-                    } else if (u > breaks[0]) {
-                        color = allYellow[1];
-                    } else {
-                        color = allYellow[0];
+                        color = colors[1];
+                    } else if (u >= breaks[0]) {
+                        color = colors[0];
                     }
 
-                    //if (!u) {
-                    //    color = allGray[0];
-                    //}
+                    var opacity = 0.9;
+                    var weight = 0.5;
+
+                    if(!u) {
+                       // console.log("No unemployment data for", f.properties);
+                       opacity = 0;
+                       weight = 0;
+                    }
 
                     // feature.properties.unemployment
                     return {
                       color: '#4F4F4F',
                       fillColor: color,
-                      fillOpacity: 0.8,
-                      weight: 0.5
+                      fillOpacity: opacity,
+                      weight: weight
                     };
                 }
             }).addTo(map);
@@ -331,12 +360,29 @@
                 $(div).addClass("col-lg-12");
                 $(div).append("<h5>Unemployment Rate</h5>");
 
-                breaks.unshift(1);
                 var i;
                 // loop through our density intervals and generate a label with a colored square for each interval
+                //
+
                 for (i = 0; i < breaks.length; i++) {
-                    $(div).append('<div><div class="col-lg-1" style="background:' + allYellow[i] + ';">&nbsp; </div><div class="col-lg-8">' +
-                        Math.round(breaks[i]*100)/100 + (Math.round(breaks[i + 1]*100)/100 ? '&ndash;' + Math.round(breaks[i + 1]*100)/100 + '</div>' : '+'));
+                    var s = '<div><div class="col-lg-1" style="background:' + colors[i] + ';">&nbsp; </div><div class="col-lg-8">';
+
+                    if (i === 0) {
+                        s += breaks[i].toFixed(1) + '% - ' + breaks[i+1].toFixed(1) + '%';
+                    }
+
+                    if (i !== breaks.length - 1 && i !== 0) {
+                        s += (breaks[i] + 0.1).toFixed(1) + '% - ' + breaks[i+1].toFixed(1) + '%';
+                    }
+
+                    if (i === breaks.length - 1) {
+                        s += (breaks[i] + 0.1).toFixed(1) + '%+';
+                    }
+
+                    $(div).append(s);
+
+                    // $(div).append('<div><div class="col-lg-1" style="background:' + colors[i] + ';">&nbsp; </div><div class="col-lg-8">' +
+                    //     Math.round(breaks[i]*100)/100 + (Math.round(breaks[i + 1]*100)/100 ? '&ndash;' + Math.round(breaks[i + 1]*100)/100 + '</div>' : '+'));
                 }
                 // $(div).append('<div><div class="col-lg-1" style="background:' + allGray[0] + ';">&nbsp; </div><div class="col-lg-8">No data</div>');
 
@@ -370,12 +416,19 @@
                     text: 'Metro Comparison for Unemployment Rate'
                 },
                 xAxis: {
-                    categories: METROYEARNAMES
+                    categories: METROYEARNAMES,
+                    labels: {
+                        step: 2,
+                        staggerLines: 1
+                    }
                 },
                 yAxis: {
                     min: 0,
                     title: {
-                        text: 'Unemployment Rate (%)'
+                        text: 'Unemployment Rate'
+                    },
+                    labels: {
+                        format: '{value}%'
                     }
                 },
                 tooltip: {

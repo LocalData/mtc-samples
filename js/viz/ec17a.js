@@ -1,5 +1,5 @@
 /*globals
-jQuery, L, cartodb, geocities, allYellow, allBlue, altColors, Highcharts, science,
+jQuery, L, cartodb, geocities, econColors, allBlue, altColors, Highcharts, science,
 regionPromise, countyPromise: true
 */
 (function($) {
@@ -165,11 +165,11 @@ regionPromise, countyPromise: true
             var series = [{
                 name: IMPORT_LABEL + ' - full',
                 data: _.pluck(importData, FOCUS_KEY),
-                color: allYellow[2]
+                color: econColors[2]
             }, {
                 name: IMPORT_LABEL + ' - empty',
                 data: _.pluck(importEmptyData, FOCUS_KEY),
-                color: allYellow[1]
+                color: econColors[1]
             }, {
                 name: EXPORT_LABEL + ' - full',
                 data: _.pluck(exportData, FOCUS_KEY),
