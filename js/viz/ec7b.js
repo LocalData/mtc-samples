@@ -1,6 +1,6 @@
 /*globals
-jQuery, L, cartodb, geocities, econColors, altColors, Highcharts, turf, chroma,
-Promise, regionPromise, countyPromise, cityPromise: true
+jQuery, L, geocities, econColors, Highcharts, turf, chroma,
+regionPromise, countyPromise, cityPromise, _
 */
 (function($) {
     /*
@@ -50,6 +50,10 @@ Promise, regionPromise, countyPromise, cityPromise: true
         var cityYearData;
         var tractData = {}; // Store tract data by year as we get it.
         var chartOptions = {};
+        var cityLayer;
+        var tractLayer;
+        var pointLayer;
+
 
         var point_styles = {
             radius: 5,
@@ -85,43 +89,6 @@ Promise, regionPromise, countyPromise, cityPromise: true
             1200000,
             1500000
         ];
-
-
-        // We tract active layers keyed by year then mode
-        // For example: activeLayer[2001]['Tract']
-        // We need to do this because if you change modes or years while an ESRI
-        // feature layer is loading, it will apply that old data to the new layer
-        // once it finally loads.
-        //
-        // This isn't foolproof but will reduce occurances of that bug.
-        //
-        // TODO:
-        // - Fix issue where switching back and forth between two zooms
-        // (eg tract<-> point) quickly will cause data to double-load :-/
-        // Maybe each layer needs to get a unique ID?
-        function setActiveLayer(layer) {
-            console.log("Set active layer", layer);
-            if (!_.has(activeLayer, activeYear)) {
-                activeLayer[activeYear] = {};
-            }
-
-            activeLayer[activeYear][activeMode] = layer;
-        }
-
-
-        function getRemoveActiveLayer(year, mode) {
-            return function() {
-                activeLayer[year][mode].on('load', function(event) {
-                    console.log("Removing layer after load", year, mode, event);
-                    _.each(event.target._layers, function(l) {
-                        map.removeLayer(l);
-                    });
-                    delete activeLayer[year][mode];
-                });
-
-                map.removeLayer(activeLayer[year][mode]);
-            };
-        }
 
 
         function prepTracts(d) {
@@ -388,89 +355,59 @@ Promise, regionPromise, countyPromise, cityPromise: true
         }
 
 
-        function showCities() {
-            console.log("Showing cities");
-
-            activeMode = CITY_MODE;
-
-            var layer = L.geoJson(geocities, {
+        function setupCities() {
+            cityLayer = L.geoJson(geocities, {
                 onEachFeature: setupInteraction,
                 style: style
-            }).addTo(map);
-            setActiveLayer(layer);
+            });
+            
+            if (map.getZoom() < 11) {
+              cityLayer.addTo(map);
+            }
+
+            // Simple GeoJSON layers don't have an automatic facility for
+            // restricting themselves to a minZoom/maxZoom
+            map.on('zoomend', function (event) {
+              var zoom = event.target.getZoom();
+              if (zoom >= 11) {
+                map.removeLayer(cityLayer);
+              } else {
+                cityLayer.addTo(map);
+              }
+            });
         }
 
 
-        function showTracts() {
-            console.log("Showing tracts");
-
-            activeMode = TRACT_MODE;
-
-            if (activeLayer[activeYear] && activeLayer[activeYear][activeMode]) {
-                console.log("Danger: adding active data when we already have layer");
-            }
-
+        function setupTracts() {
             // Get the tract data
-            var layer = L.esri.featureLayer('http://gis.mtc.ca.gov/mtc/rest/services/VitalSigns/LU_Features/FeatureServer/1', {
+            tractLayer = L.esri.featureLayer('http://gis.mtc.ca.gov/mtc/rest/services/VitalSigns/LU_Features/FeatureServer/1', {
+                cacheLayers: false,
                 onEachFeature: setupInteraction,
                 simplifyFactor: 0.2,
                 precision: 5,
                 fields: ['TRACT', 'OBJECTID', 'COUNTYFP'],
+                minZoom: 11,
+                maxZoom: 13,
                 style: style
             }).addTo(map);
-            setActiveLayer(layer);
         }
 
 
-        function showPoints() {
-            console.log("Showing points");
-
-            activeMode = POINT_MODE;
-
-            var layer = L.esri.featureLayer('http://gis.mtc.ca.gov/mtc/rest/services/VitalSigns/EC7/FeatureServer/0', {
+        function setupPoints() {
+            pointLayer = L.esri.featureLayer('http://gis.mtc.ca.gov/mtc/rest/services/VitalSigns/EC7/FeatureServer/0', {
+                cacheLayers: false,
                 onEachFeature: setupInteraction,
                 fields: ['price_IA', 'GEOID10', 'CityName', 'county', 'OBJECTID'], //'OBJECTID'
                 pointToLayer: pointToLayer,
+                minZoom: 14,
                 where: 'year=' + activeYear
             }).addTo(map);
-            setActiveLayer(layer);
         }
 
-
-        function zoomDispatcher(event) {
-            var zoom = event.target.getZoom();
-
-            if (zoom >= 14 && activeMode !== POINT_MODE) {
-                getRemoveActiveLayer(activeYear, activeMode)();
-                showPoints();
-                return;
-            }
-
-            if (14 > zoom && zoom >= 11 && activeMode !== TRACT_MODE) {
-                getRemoveActiveLayer(activeYear, activeMode)();
-                showTracts();
-                return;
-            }
-
-            if (11 > zoom && zoom >= 5 && activeMode !== CITY_MODE) {
-                getRemoveActiveLayer(activeYear, activeMode)();
-                showCities();
-            }
-        }
-
-
-        function dispatch() {
-            if (activeMode === POINT_MODE) {
-                showPoints();
-            }
-
-            if (activeMode === TRACT_MODE) {
-                showTracts();
-            }
-
-            if (activeMode === CITY_MODE) {
-                showCities();
-            }
+        function refreshMap() {
+            cityLayer.setStyle(style);
+            tractLayer.setStyle(style);
+            pointLayer.setWhere('year=' + activeYear);
         }
 
 
@@ -485,7 +422,7 @@ Promise, regionPromise, countyPromise, cityPromise: true
             tractPromise.done(function(tractDataForYear) {
                 tractDataForYear = prepTracts(tractDataForYear);
                 tractData[activeYear] = _.indexBy(tractDataForYear, TRACT_KEY);
-                dispatch();
+                refreshMap();
 
                 // Show the chart if we're supposed to
                 if (!_.isEmpty(chartOptions)) {
@@ -496,8 +433,6 @@ Promise, regionPromise, countyPromise, cityPromise: true
 
 
         function sliderSelectYear(e) {
-            getRemoveActiveLayer(activeYear, activeMode)();
-
             activeYear = e.value;
 
 
@@ -506,7 +441,7 @@ Promise, regionPromise, countyPromise, cityPromise: true
             cityYearData = _.indexBy(_.filter(cityData, {'Year': activeYear }), CITY_KEY);
 
             if (_.has(tractData, activeYear)) {
-                dispatch();
+                refreshMap();
                 // Show the chart if we're supposed to
                 if (!_.isEmpty(chartOptions)) {
                     getSeries();
@@ -534,9 +469,9 @@ Promise, regionPromise, countyPromise, cityPromise: true
                 autocomplete: true
             });
 
-            showCities();
-
-            map.on('zoomend', zoomDispatcher);
+            setupCities();
+            setupPoints();
+            setupTracts();
 
             // Set up the slider
             var slider = $("#ec-b-year-select").kendoSlider({
