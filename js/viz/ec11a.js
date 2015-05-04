@@ -147,6 +147,16 @@ regionPromise, countyPromise, cityPromise: true
         function getSeries(data, geography) {
             var series = [];
 
+            var dataA = _.pluck(data, KEY_100);
+            var dataB = _.pluck(data, KEY_200);
+
+            // If there isn't enough data, we may need to pre-fill.
+            if (_.pluck(data, KEY_100).length < ACTIVE_YEARS.length) {
+                dataA = [null, null, null, null, null, null, null].concat(dataA);
+                dataB = [null, null, null, null, null, null, null].concat(dataB);
+            }
+
+
             var nameA = 'Below national poverty level';
             var nameB = 'Below 200% of national poverty level';
             if (!geography) {
@@ -157,14 +167,14 @@ regionPromise, countyPromise, cityPromise: true
 
             series.push({
                 name: nameA,
-                data: fillInBlanks(_.pluck(data, KEY_100)),
-                connectNulls: true
+                data: fillInBlanks(dataA),
+                connectNulls: true,
+                dashStyle: DASH
             });
             series.push({
                 name: nameB,
-                data: fillInBlanks(_.pluck(data, KEY_200)),
-                connectNulls: true,
-                dashStyle: DASH
+                data: fillInBlanks(dataB),
+                connectNulls: true
             });
             return series;
         }
@@ -219,7 +229,6 @@ regionPromise, countyPromise, cityPromise: true
             if (city) {
                 var selectedCityData = _.filter(cityData, {'City': city});
                 series = series.concat(getSeries(selectedCityData, city));
-            } else {
             }
 
             // Create the graphs

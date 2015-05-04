@@ -63,9 +63,9 @@ Promise, regionPromise, countyPromise, cityPromise: true
         function formatter() {
             if (this.value === 'Bay Area') {
                 return '<span style="font-weight:800;color:#000;">' + this.value + '</span>';
-            } else {
-                return this.value;
             }
+
+            return this.value;
         }
 
 
@@ -102,14 +102,6 @@ Promise, regionPromise, countyPromise, cityPromise: true
                     shared: true,
                     crosshairs: false,
                     pointFormat: '<b>{point.y:,.1f}%</b>'
-
-                    // pointFormatter: function() {
-                    //     if (this.y === 2001) {
-                    //         return '<b>&gt;$2,000</b>';
-                    //     }
-//
-                    //     return '<b>$' + this.y.toLocaleString() + '</b>';
-                    // }
                 },
                 colors: econColors
             });
@@ -209,7 +201,7 @@ Promise, regionPromise, countyPromise, cityPromise: true
             var title = 'The labor force participation of Census Tract <strong class="economy">';
             title += data.tract + '</strong> in 2013 was <strong class="economy">';
             title += (data[CARTO_FOCUS_KEY] * 100).toFixed(1); //.toLocaleString();
-            title += '%.</strong>';
+            title += '%</strong>.';
 
             $('#ec-c-title').html(title);
 
@@ -257,6 +249,7 @@ Promise, regionPromise, countyPromise, cityPromise: true
                 var legend = L.control({position: 'bottomright'});
                 legend.onAdd = function (map) {
                     var div = L.DomUtil.create('div', 'info legend');
+                    var colors = _.clone(econColors, true).reverse();
                     $(div).append("<h5>2013 Labor Force Participation<br> by Neighborhood</h5>");
 
                     // breaks.unshift(1);
@@ -267,7 +260,7 @@ Promise, regionPromise, countyPromise, cityPromise: true
                         var start = Math.round(breaks[i]*100)/100;
                         var end = Math.round(breaks[i + 1]*100)/100 - 1;
 
-                        var legendText = '<div><div class="col-lg-1" style="background:' + econColors[i] + ';">&nbsp; </div><div class="col-lg-10">';
+                        var legendText = '<div class="legend-row"><div class="legend-color" style="background:' + colors[i] + ';">&nbsp; </div><div class="legend-text">';
                         legendText += start.toLocaleString();
 
                         if (Math.round(breaks[i + 1]*100)/100) {

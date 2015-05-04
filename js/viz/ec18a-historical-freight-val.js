@@ -33,8 +33,8 @@ regionPromise, countyPromise, cityPromise: true
 
         var CHART_BASE_TITLE = 'Historical Trend for Freight Value';
         var CHART_ID = '#ec-a-chart';
-        var YAXIS_LABEL = 'Freight Value (in billions of dollars)';
-        var XAXIS_LABEL = '';
+        var YAXIS_LABEL = ''; //'Share of Income Spent on Housing';
+        var XAXIS_LABEL = 'Freight Value (in millions of dollars)';
 
         var FOCUS_FIELD = 'Value';
         var TYPE_FIELD = 'Type';
@@ -75,18 +75,18 @@ regionPromise, countyPromise, cityPromise: true
             var imports = _.pluck(_.filter(regionData, { Type: 'Imports' }), FOCUS_FIELD);
 
             var series = [{
-                name: 'Exports - Vessel',
-                data: exportVessel,
-                color: econColors[3]
+                name: 'Vessel',
+                data: exportVessel
             },{
-                name: 'Exports - Air',
-                data: exportAir,
-                color: econColors[2]
+                name: 'Air Freight',
+                data: exportAir
             },{
                 name: 'Imports',
-                data: imports,
-                color: allBlue[1]
+                data: imports
             }];
+
+
+            console.log("Got series", series);
 
             return series;
         }
@@ -97,31 +97,7 @@ regionPromise, countyPromise, cityPromise: true
             var tooltip = {
                 headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
                 pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-                '<td style="padding:0"><b>{point.y:,.0f}</b></td></tr>',
-                formatter: function() {
-                    var points = this.points;
-                    var s = '<table>';
-
-                    // Year header
-                    s += '<tr><td><span style="font-size:10px">' + points[0].key + '</span></td><td></td></tr>';
-
-                    // Show each TEU
-                    _.each(points, function(p) {
-                        var val = p.y;
-                        if (val < 0) {
-                            val = -val;
-                        }
-
-                        s += '<tr><td><strong style="color:' + p.series.color + '">';
-                        s += p.series.name + ':';
-                        s += '</strong></td><td>$';
-                        s += (val / 1000000000).toFixed(1); //.toLocaleString();
-                        s += ' billion</tr>';
-                    });
-
-                    s += '</table>';
-                    return s;
-                },
+                '<td style="padding:0"><b>{point.y:,.1f}%</b></td></tr>',
                 footerFormat: '</table>',
                 shared: true,
                 useHTML: true
@@ -131,7 +107,7 @@ regionPromise, countyPromise, cityPromise: true
 
             var options = {
                 chart: {
-                    type: 'bar'
+                    type: 'column'
                 },
                 title: {
                     text: title
@@ -148,15 +124,7 @@ regionPromise, countyPromise, cityPromise: true
                         text: YAXIS_LABEL
                     },
                     labels: {
-                        step: 2,
-                        format: '${value:,.0f}',
-                        formatter: function() {
-                            var val = this.value / 1000000000;
-                            if (val < 0) {
-                                return '$' + (-val).toLocaleString() + 'B';
-                            }
-                            return '$' + val.toLocaleString() + 'B';
-                        }
+                        format: '{value:,.0f}%'
                     },
                     reversedStacks: true,
                     stackLabels: {
@@ -164,14 +132,10 @@ regionPromise, countyPromise, cityPromise: true
                     }
                 },
                 legend: {
-                    enabled: true,
-                    reversed: true
+                    enabled: true
                 },
                 colors: altColors,
                 plotOptions: {
-                    series: {
-                        stacking: 'normal'
-                    }
                 },
                 tooltip: tooltip,
                 series: series
@@ -213,9 +177,6 @@ regionPromise, countyPromise, cityPromise: true
         function setupNumbers(d) {
             var i, j;
             for(i = 0; i < d.length; i++) {
-
-                // d[i][FOCUS_FIELD] = d[i][FOCUS_FIELD];
-
                 // Make the imports negative
                 if (d[i][TYPE_FIELD] === 'Imports') {
                     d[i][FOCUS_FIELD] = -d[i][FOCUS_FIELD];
@@ -236,7 +197,7 @@ regionPromise, countyPromise, cityPromise: true
 
         var regionPromise = $.ajax({
             dataType: "json",
-            url: "http://54.149.29.2/ec/19/region"
+            url: "http://54.149.29.2/ec/18/region2"
         });
         $.when(regionPromise).done(prepData);
     });

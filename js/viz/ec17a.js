@@ -1,19 +1,22 @@
 /*globals
-jQuery, L, cartodb, geocities, econColors, allBlue, altColors, Highcharts, science,
+jQuery, L, cartodb, geocities, econColors, altColors, Highcharts, science,
 regionPromise, countyPromise: true
 */
 (function($) {
     /*
-    Freight
-
     A
-    Line graph showing the TEUs moved through the Port of Oakland. Years should
-    be shown on the x-axis with volume on the y-axis. No drop-down menus,
-    button bar, or legend is required. Hovering over the line should show the
-    data (Year placed above "Port of Oakland Container Volume: __ units")
+    Area graph showing the passengers boarding at the four Bay Area airports
+    stacked on top of one another - should not sum to 100% like mode choice.
+    Years should be shown on the x-axis with passenger totals on the y-axis.
+    No drop-down menus, button bar required. Legend should be below with the
+    names of the four airports (San Francisco (SFO), Oakland (OAK),
+    San Jose (SJC), and Santa Rosa (STS)). Hovering over the line should show
+    the data for all four airports in that year (Year placed above "SFO
+    Airport: __ enplanements")
 
-    Y-axis: Container Volume (in thousands of TEUs)
-    Historical Trend for Freight Activity - Port of Oakland
+    Y-axis: Boardings (in thousands)
+    Historical Trend for Airport Activity - Passengers
+
 
     MISC
 
@@ -28,24 +31,25 @@ regionPromise, countyPromise: true
         var i;
         var portData;
 
-        var CHART_ID = '#ec-a-chart';
-        var CHART_BASE_TITLE = 'Historical Trend for Freight Activity - Port of Oakland';
-        var Y_LABEL = 'Container Volume (in thousands of TEUs)';
-        var FOCUS_KEY = 'TEU';
+        var CHART_BASE_TITLE = 'Historical Trend for Airport Activity - Passengers';
 
-        var IMPORT_LABEL = 'Imports';
-        var EXPORT_LABEL = 'Exports';
-
-        var IMPORT = 'Import';
-        var EXPORT = 'Export';
-
-        var MINYEAR = 1990;
-        var MAXYEAR = 2013;
-        var YEARNAMES = [];
-        for (i = MINYEAR; i <= MAXYEAR; i++) {
-            YEARNAMES.push(i);
-        }
+        var yearnames;
         var DASH_FORMAT = 'ShortDash';
+        var CHART_ID = '#ec-a-chart';
+
+        var YEAR_KEY = 'Year';
+        var GEO_KEY = 'Airport';
+        var FOCUS_KEY = 'Enplanements';
+        var Y_AXIS = 'Boardings';
+
+        var LABELS = {
+            'Oakland': 'Oakland (OAK)',
+            'San Francisco': 'San Francisco (SFO)',
+            'San Jose': 'San Jose (SJC)',
+            'Santa Rosa': 'Santa Rosa (STS)'
+        };
+
+        var groups;
 
         Highcharts.setOptions({
             lang: {
@@ -54,26 +58,24 @@ regionPromise, countyPromise: true
             }
         });
 
-        /* -- EC-8 A (Regional rent graph) -----------------------------------*/
+
         function formatter() {
             if (this.value === 'Bay Area') {
                 return '<span style="font-weight:800;color:#000;">' + this.value + '</span>';
-            } else {
-                return this.value;
             }
-        }
 
+            return this.value;
+        }
 
         function graph(series) {
             var tooltip = {
                 // headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
                 // pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-                // '<td style="padding:0"><b>{point.y:,.0f} TEUs</b></td></tr>',
+                // '<td style="padding:0"><b>{point.y:,.0f}</b> tons</td></tr>',
                 // footerFormat: '</table>',
                 formatter: function() {
                     var points = this.points;
                     var s = '<table>';
-                    var sum = 0;
 
                     // Year header
                     s += '<tr><td><span style="font-size:10px">' + points[0].key + '</span></td><td></td></tr>';
@@ -82,17 +84,10 @@ regionPromise, countyPromise: true
                     _.each(points, function(p) {
                         s += '<tr><td><strong style="color:' + p.series.color + '">';
                         s += p.series.name + ':';
-                        s += '</strong></td><td>';
-                        s += (p.y * 1000).toLocaleString();
-                        s += ' units</tr>';
-                        sum += p.y;
+                        s += '</strong></td><td> <strong>';
+                        s += (p.y).toLocaleString();
+                        s += ' boardings</strong></tr>';
                     });
-
-                    // Show at total at the bottom
-                    s += '<tr><td><strong>Total:';
-                    s += '</strong></td><td> <strong>';
-                    s += (sum * 1000).toLocaleString();
-                    s += ' units</strong></tr>';
 
                     s += '</table>';
                     return s;
@@ -100,8 +95,6 @@ regionPromise, countyPromise: true
                 shared: true,
                 useHTML: true
             };
-
-            console.log("Chart with", series);
 
             var options = {
                 chart: {
@@ -111,19 +104,16 @@ regionPromise, countyPromise: true
                     text: CHART_BASE_TITLE
                 },
                 xAxis: {
-                    categories: YEARNAMES,
+                    categories: yearnames,
                     tickmarkPlacement: 'on',
                     title: {
                         text: 'Year'
-                    },
-                    labels: {
-                        step: 2
                     }
                 },
                 yAxis: {
                     min: 0,
                     title: {
-                        text: Y_LABEL
+                        text: Y_AXIS
                     },
                     // labels: {
                     //     format: mode.format
@@ -155,30 +145,24 @@ regionPromise, countyPromise: true
             $(CHART_ID).highcharts(options);
         }
 
-
         function getSeries() {
-            var importData = _.filter(portData, { Type: IMPORT, 'TEU Type': 'Full' });
-            var importEmptyData = _.filter(portData, { Type: IMPORT, 'TEU Type': 'Empty' });
-            var exportData = _.filter(portData, { Type: EXPORT, 'TEU Type': 'Full' });
-            var exportEmptyData = _.filter(portData, { Type: EXPORT, 'TEU Type': 'Empty' });
 
-            var series = [{
-                name: IMPORT_LABEL + ' - full',
-                data: _.pluck(importData, FOCUS_KEY),
-                color: econColors[2]
-            }, {
-                name: IMPORT_LABEL + ' - empty',
-                data: _.pluck(importEmptyData, FOCUS_KEY),
-                color: econColors[1]
-            }, {
-                name: EXPORT_LABEL + ' - full',
-                data: _.pluck(exportData, FOCUS_KEY),
-                color: allBlue[2]
-            }, {
-                name: EXPORT_LABEL + ' - empty',
-                data: _.pluck(exportEmptyData, FOCUS_KEY),
-                color: allBlue[1]
-            }];
+            var series = [];
+            var groupedData = _.groupBy(portData, GEO_KEY);
+            _.each(groups, function(name) {
+                var data = groupedData[name];
+                var zIndex = 1;
+                if (name === 'Santa Rosa (STS)') {
+                    zIndex = 3;
+                }
+
+                series.push({
+                    name: name,
+                    zIndex: zIndex,
+                    data: _.pluck(data, FOCUS_KEY)
+                });
+            });
+
             return series;
         }
 
@@ -202,7 +186,11 @@ regionPromise, countyPromise: true
                 return n;
             }
 
-            return Math.round(n/1000);
+            if (1000 > n) {
+                return n;
+            }
+
+            return Math.round(n/1000) * 1000;
         }
 
 
@@ -211,29 +199,43 @@ regionPromise, countyPromise: true
         }
 
 
-        function setupNumbers(d) {
+        function prep(d) {
             var i;
             for(i = 0; i < d.length; i++) {
                  d[i][FOCUS_KEY] = roundThousands(d[i][FOCUS_KEY]);
+
+                 d[i].Airport = LABELS[d[i].Airport];
             }
             return d;
         }
 
 
+        function getYears(data) {
+            return _.chain(data).pluck('Year').uniq().value().sort();
+        }
+
+
         // Get the data ready to visualize
-        function prepData(port) {
-            portData = setupNumbers(port);
+        function prepData(ports) {
+            portData = prep(ports);
+
+            yearnames = getYears(portData);
+
+            // Sort the cities by 2013 values (smaller on top)
+            groups = _.chain(portData)
+                        .filter({ Year: 2013})
+                        .sortBy(FOCUS_KEY)
+                        .pluck(GEO_KEY)
+                        .value();
 
             // Once we have the data, set up the visualizations
             setup();
         }
 
-
         var portPromise = $.ajax({
             dataType: "json",
-            url: "http://54.149.29.2/ec/17/oakland"
+            url: "http://54.149.29.2/ec/17/passengers"
         });
-
 
         $.when(portPromise).done(prepData);
     });

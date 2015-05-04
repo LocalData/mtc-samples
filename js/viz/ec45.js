@@ -490,7 +490,7 @@
             title += feature.properties.TRACT; //.substr(feature.properties.TRACT.length - 6);
             title += '</strong> in ' + FOCUS_YEAR + ' was <strong class="economy">$';
             title += feature.properties[FOCUS_KEY].toLocaleString();
-            title += '.</strong>';
+            title += '</strong>.';
             $('#ec-b-title').html(title);
 
             // Start setting up the series
@@ -568,7 +568,8 @@
             var breaks = getRange(focusYearData, FOCUS_KEY);
 
             // Round the breaks to nearest thousand
-            for (var i = 0; i < breaks.length; i++) {
+            var i;
+            for (i = 0; i < breaks.length; i++) {
                 breaks[i] = Math.round(breaks[i] / 1000) * 1000;
             }
 
@@ -633,7 +634,7 @@
                 // with a colored square for each interval
                 var i;
                 for (i = 0; i < breaks.length; i++) {
-                    var s = '<div><div class="col-lg-1" style="background:' + colors[i] + ';">&nbsp; </div><div class="col-lg-10">';
+                    var s = '<div class="legend-row"><div class="legend-color" style="background:' + colors[i] + ';">&nbsp; </div><div class="legend-text">';
 
                     if (i === 0) {
                         s += '$' + breaks[i].toLocaleString() + ' - $' + breaks[i+1].toLocaleString();
@@ -655,7 +656,6 @@
 
 
                 return div;
-
             };
             legendControl.addTo(map);
 

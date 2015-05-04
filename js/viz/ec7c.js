@@ -81,15 +81,14 @@ regionPromise, countyPromise, cityPromise: true
         function formatter() {
             if (this.value === 'Bay Area') {
                 return '<span style="font-weight:800;color:#000;">' + this.value + '</span>';
-            } else {
-                return this.value;
             }
+
+            return this.value;
         }
 
         function getSeries() {
             var series = [];
             var dataByMetro = _.groupBy(metroData, METRO_NAME_KEY);
-            console.log(dataByMetro);
             _.each(dataByMetro, function(data, name) {
                 series.push({
                     name:  name,
@@ -103,7 +102,6 @@ regionPromise, countyPromise, cityPromise: true
 
         function chart() {
             var series = getSeries();
-            console.log("Using series", series);
 
             var tooltip = {
                 headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
@@ -215,16 +213,15 @@ regionPromise, countyPromise, cityPromise: true
             // Set up the date labels
             dates = [];
             _.each(metroData, function(d) {
-                if (d.Month === 1) {
-                    dates.push(d.Year);
-                } else {
-                    dates.push(d.Month + '/' + d.Year);
-                }
+                // if (d.Month === 1) {
+                //     dates.push(d.Year);
+                // } else {
+                //
+                // }
+                dates.push(d.Month + '/' + d.Year);
 
             });
-            console.log("Dates", dates);
             dates = _.uniq(dates);
-
 
             // Once we have the data, set up the visualizations
             setup();

@@ -36,12 +36,17 @@ regionPromise, countyPromise, cityPromise: true
         var i;
         var cityData, countyData, regionData;
 
-        var CHART_BASE_TITLE = 'Share of Population Historical Trend for Housing Affordability for ';
+        var CHART_BASE_TITLE = 'Historical Trend for Housing Affordability for ';
         var CHART_ID = '#ec-a-chart';
         var COUNTY_KEY = 'Geography';
         var HOUSEHOLD_KEY = 'Household_Type';
         var YAXIS_LABEL = 'Share of Population';
         var XAXIS_LABEL = '';
+        var colors = _.clone(altColors, true);
+
+        // Get the colors in a more natural order
+        // (higher share = red)
+        var COLORS = [colors[2], colors[1], colors[0]];
 
         var FOCUS_FIELDS = [{
             name: 'Less than 20% of income',
@@ -89,9 +94,8 @@ regionPromise, countyPromise, cityPromise: true
         function formatter() {
             if (this.value === 'Bay Area') {
                 return '<span style="font-weight:800;color:#000;">' + this.value + '</span>';
-            } else {
-                return this.value;
             }
+            return this.value;
         }
 
 
@@ -190,7 +194,7 @@ regionPromise, countyPromise, cityPromise: true
                 legend: {
                     enabled: true
                 },
-                colors: altColors,
+                colors: COLORS,
                 plotOptions: {
                     area: {
                         stacking: 'percent',

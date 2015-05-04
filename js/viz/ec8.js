@@ -429,7 +429,7 @@
                     categories: options.categories
                 },
                 title: {
-                    // text: series[0].name
+                    text: 'Median Monthly Rent'
                 },
                 tooltip: {
                     shared: true,
@@ -439,7 +439,7 @@
                             return '<b>&gt;$2,000</b>';
                         }
 
-                        return '<b>$' + this.y.toLocaleString() + '</b>';
+                        return '<b>$' + Math.round(this.y).toLocaleString() + '</b>';
                     }
                 },
                 colors: econColors
@@ -494,7 +494,7 @@
             } else {
                 title += '$' + data.median_contract_rent_ia.toLocaleString();
             }
-            title += '.</strong>';
+            title += '</strong>.';
 
             $('#ec-b-title').html(title);
 
@@ -555,7 +555,7 @@
                         var start = Math.round(breaks[i]*100)/100;
                         var end = Math.round(breaks[i + 1]*100)/100 - 1;
 
-                        var legendText = '<div style="width:150px; margin-bottom: 5px;"><div class="col-lg-1" style="margin-right: 8px; background:' + colors[i] + ';">&nbsp; </div><div>$';
+                        var legendText = '<div class="legend-row"><div class="legend-color" style="background:' + colors[i] + ';">&nbsp; </div><div class="legend-text">$';
                         legendText += start.toLocaleString();
 
                         if (Math.round(breaks[i + 1]*100)/100) {

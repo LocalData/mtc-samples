@@ -19,21 +19,51 @@
 
     <style type="text/css">
       #map {
-        height: 300px;
-        width: 700px;
+        height: 500px;
+        width: 900px;
       }
     </style>
   </head>
   <body>
-    <div class="btn-group btn-group-justified">
-        <a class="btn btn-primary btn-fix active" id="median-prices">Median Home Prices</a><a class="btn btn-primary btn-fix" id="home-price-growth">% Growth in Median Home Prices since 1990</a>
+    <h3 id="map_title">Home Prices by Year</h3>
+    <div class="row">
+      <div class="col-lg-12" id="EC8-B">
+        <div class="row">
+
+          <div class="col-lg-8 col-md-8">
+            <div class="map" id="map">&nbsp;</div>
+          </div>
+
+          <div class="col-lg-4 col-md-4 map_chart_">
+            <div class="initial_map" style="font-size:16px; height: auto;">
+              Explore prices by year
+            </div>
+            <div id="ec-b-year-select"></div>
+            <div id="ec-b-title" class="map_info">
+              <div class="initial_map" style="font-size:16px; height:auto;">
+              Zoom in to see more details, including individual home sales.
+              Click on a shape on the map for more information.
+              </div>
+            </div>
+            <div class="row">
+              <div id="ec-b-bottom-cities"></div>
+              <div id="ec-b-top-cities"></div>
+            </div>
+
+            <div id="ec-b-chart" style="float:left;width:100%;"></div>
+          </div>
+        </div>
+      </div>
     </div>
+
+
     <div id="ec-a-city-select"></div>
     <div id="ec-a-county-select"></div>
+    <div class="btn-group btn-group-justified" style="margin-top:15px">
+        <a class="btn btn-primary btn-fix active" id="median-prices">Median Home Prices</a><a class="btn btn-primary btn-fix" id="home-price-growth">% Growth in Median Home Prices since 1990</a>
+    </div>
     <div id="ec-a-chart"></div>
 
-    <div id="ec-b-year-select"></div>
-    <div id="ec-b-chart"></div>
 
     <div class="btn-group btn-group-justified">
         <a class="btn btn-primary btn-fix active" id="ec-c-median-prices">Median Home Prices</a><a class="btn btn-primary btn-fix" id="ec-c-home-price-growth">% Growth in Median Home Prices since 1997</a>
@@ -44,8 +74,8 @@
 
     <!-- libraries -->
     <script src="http://code.jquery.com/jquery.js"></script>
-    <!--<script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>-->
-    <!--<script type="text/javascript" src="https://api.tiles.mapbox.com/mapbox.js/v2.1.4/mapbox.js"></script>-->
+    <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+    <script type="text/javascript" src="https://api.tiles.mapbox.com/mapbox.js/v2.1.4/mapbox.js"></script>
 
     <script src="http://cdn.kendostatic.com/2014.1.528/js/kendo.all.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.5.0/lodash.js"></script>
@@ -54,12 +84,19 @@
 
 
     <!-- From MTC server -->
-    <!-- <script src="http://dev-mtc-vital-signs.pantheon.io/sites/all/themes/vitalsigns/js/geocities.js"></script>-->
+    <script src="http://dev-mtc-vital-signs.pantheon.io/sites/all/themes/vitalsigns/js/geocities.js"></script>
     <script src="http://dev-mtc-vital-signs.pantheon.io/sites/all/themes/vitalsigns/js/colors.js"></script>
     <script src="http://dev-mtc-vital-signs.pantheon.io/sites/all/themes/vitalsigns/js/science.v1.min.js"></script>
 
+
+    <script src="//api.tiles.mapbox.com/mapbox.js/plugins/turf/v2.0.0/turf.min.js"></script>
+
+    <script src="js/esri-leaflet.js"></script>
+
+    <script src="js/chroma.min.js"></script>
     <script src="js/viz/ec7-loader.js"></script>
     <script src="js/viz/ec7a.js"></script>
+    <script src="js/viz/ec7b.js"></script>
     <script src="js/viz/ec7c.js"></script>
   </body>
 </html>

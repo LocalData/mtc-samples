@@ -89,8 +89,8 @@ regionPromise, countyPromise, cityPromise: true
                     s += '<tr><td><strong style="color:' + this.series.color + '">';
                     s += this.key + ':';
                     s += '</strong></td><td>$';
-                    s += (this.y * 10000000).toLocaleString();
-                    s += '</tr>';
+                    s += (this.y / 100).toFixed(1);
+                    s += ' billion</tr>';
 
                     s += '</table>';
                     return s;
@@ -124,9 +124,9 @@ regionPromise, countyPromise, cityPromise: true
                 legend: {
                     layout: 'vertical',
                     align: 'right',
-                    verticalAlign: 'top',
-                    x: -150,
-                    y: 35,
+                    verticalAlign: 'middle',
+                    x: -250,
+                    //y: 35,
                     itemMarginBottom: 5
                 },
                 tooltip: tooltip,
@@ -196,7 +196,7 @@ regionPromise, countyPromise, cityPromise: true
 
         var regionPromise = $.ajax({
             dataType: "json",
-            url: "http://54.149.29.2/ec/18/region1"
+            url: "http://54.149.29.2/ec/19/ports"
         });
         $.when(regionPromise).done(prepData);
     });

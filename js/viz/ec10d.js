@@ -40,6 +40,11 @@ regionPromise, countyPromise, cityPromise: true
         var XAXIS_LABEL = '';
         var categories = [];
 
+        // Get the colors in a more natural order
+        // (higher share = red)
+        var colors = _.clone(altColors, true);
+        var COLORS = [colors[2], colors[1], colors[0]];
+
 
         var FOCUS_KEY = 'H_Share_morethan35percent';
 
@@ -129,7 +134,7 @@ regionPromise, countyPromise, cityPromise: true
                 legend: {
                     enabled: true
                 },
-                colors: altColors,
+                colors: COLORS,
                 plotOptions: {
                     series: {
                         stacking: 'percent'

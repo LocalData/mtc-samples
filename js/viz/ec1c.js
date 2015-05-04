@@ -76,15 +76,13 @@
         function formatter() {
             if (this.value === 'Bay Area') {
                 return '<span style="font-weight:800;color:#000;">' + this.value + '</span>';
-            } else {
-                return this.value;
             }
+
+            return this.value;
         }
 
 
-        function quadrants() {
-            var chart = this;
-
+        function quadrants(chart) {
             //Calculate the quadrant coordinates; toPixels uses point values
             var x0 = chart.xAxis[0].toPixels(0, false);
             var x1 = chart.xAxis[0].toPixels(50, false);
@@ -103,10 +101,117 @@
         }
 
 
-        function graph(series) {
+        function addLabels(chart, isNapa) {
+            var text, textBBox, x, y;
+
+            console.log("Add labels for chart?", chart);
+
+            // Add labels for all the quadrants
+            text = chart.renderer.text(
+                '<strong>Declining</strong> industries<br><strong>strong</strong> concentration',
+                chart.plotLeft + 5,
+                chart.plotTop + 15
+            )
+            .css({
+                color: COLORS[1]
+            })
+            .attr({
+                zIndex: 5
+            }).add();
+
+
+            // Quadrant 2
+            text = chart.renderer.text(
+                '<strong>Growing</strong> industries<br><strong>strong</strong> concentration'
+            )
+            .css({
+                color: COLORS[2]
+            }).add();
+
+            textBBox = text.getBBox();
+            x = chart.xAxis[0].toPixels(200) - (textBBox.width + 5);
+            y = chart.plotTop  + 15;
+            console.log(x, y);
+            text.attr({
+                x: x,
+                y: y,
+                zIndex: 5
+            });
+
+
+            // Quadrant 3
+            text = chart.renderer.text(
+                '<strong>Growing</strong> industries<br><strong>weak</strong> concentration'
+            )
+            .css({
+                color: COLORS[3]
+            }).add();
+
+            textBBox = text.getBBox();
+            x = chart.xAxis[0].toPixels(200) - (textBBox.width + 5);
+            y = chart.yAxis[0].toPixels(0) - (textBBox.height - 5);
+            console.log(x, y);
+            text.attr({
+                x: x,
+                y: y,
+                zIndex: 5
+            });
+
+
+            // Quadrant 4
+            text = chart.renderer.text(
+                '<strong>Declining</strong> industries<br><strong>weak</strong> concentration',
+                chart.plotLeft + 15,
+                chart.plotTop + 15
+            )
+            .css({
+                color: COLORS[4]
+            }).add();
+
+            textBBox = text.getBBox();
+            x = chart.plotLeft + 5;
+            y = chart.yAxis[0].toPixels(0) - (textBBox.height - 5);
+            console.log(x, y);
+            text.attr({
+                x: x,
+                y: y,
+                zIndex: 5
+            });
+
+
+
+            // Add the napa label
+            // LQ 12
+            // Jobs 5000
+            // PercntChng_1990 0.47
+            if (isNapa) {
+                text = chart.renderer.text('<strong style="color:#b7d25c">Farming</strong><br>% Change in Employment: 47.1%<br>Location Quotient: 12<br>Jobs: 5,000').add();
+                textBBox = text.getBBox();
+                x = chart.xAxis[0].toPixels(47);
+                y = chart.plotTop + 15;
+                console.log(x, y);
+                text.attr({
+                    x: x,
+                    y: y,
+                    zIndex: 5
+                });
+
+                // Future: arrow
+                // chart.renderer.path(['M', 250, 110, 'L', 250, 185, 'L', 245, 180, 'M', 250, 185, 'L', 255, 180])
+                //     .attr({
+                //         'stroke-width': 2,
+                //         stroke: COLORS[2]
+                //     })
+                //     .add();
+            }
+        }
+
+
+        function chart(series, isNapa) {
             var tooltip = {
                 useHTML: true,
                 formatter: function() {
+                    console.log("Tooltip!");
                     var s = '<strong style="colorDisabled:' + this.series.color + ';">' + this.series.name + ':</strong>';
                     s += '<table><tr><td><strong>% Change in Employment</strong></td>';
                     s += '<td>' + this.point.x.toFixed(1) + '%</td></tr>';
@@ -124,17 +229,33 @@
                 }
             };
 
+            console.log("Charting bubbles", series);
+
+            series = _.sortBy(series, function(s) {
+                if (s.quadrant === 1) {
+                    return 5;
+                }
+                return s.quadrant;
+            });
+
             var options = {
                 chart: {
                     type: 'bubble',
                     zoomType: 'xy',
                     height: 500,
+                    ignoreHiddenSeries: false,
                     events: {
                         // load: quadrants
                     }
                 },
                 plotOptions: {
                     bubble: {
+                        // events: {
+                        //     legendItemClick: function () {
+                        //         // Disable clicks on the legend
+                        //         return false;
+                        //     }
+                        // }
                     }
                 },
                 title: {
@@ -189,54 +310,56 @@
 
             if (selectedGeography !== 'Bay Area') {
                 options.plotOptions.bubble.zMax = Z_MAX;
-                console.log("Using new min", options.plotOptions.bubble);
             } else {
                 options.plotOptions.bubble.zMax = Z_MAX * 2;
             }
 
-            $(CHART_ID).highcharts(options);
+            $(CHART_ID).highcharts(options, function(chart) {
+                // After loading, show labels if this is Napa
+                addLabels(chart, isNapa);
+            });
         }
 
         function getSeries(rawData) {
             var series = [];
 
             // If we want quadrants with a background color:
-            // series.push({
-            //     name: 'Q1',
-            //     type: 'polygon',
-            //     data: [[-80,1], [-80, 2.5], [0, 2.5], [0, 1]],
-            //     color: Highcharts.Color(COLORS[1]).setOpacity(0.5).get(),
-            //     enableMouseTracking: false,
-            //     showInLegend: false,
-            //     animation: false
-            // });
-            // series.push({
-            //     name: 'Q2',
-            //     type: 'polygon',
-            //     data: [[0, 1], [0, 2.5], [200, 2.5], [200, 1]],
-            //     color: Highcharts.Color(COLORS[2]).setOpacity(0.5).get(),
-            //     enableMouseTracking: false,
-            //     showInLegend: false,
-            //     animation: false
-            // });
-            // series.push({
-            //     name: 'Q3',
-            //     type: 'polygon',
-            //     data: [[0, 1], [0, 0], [200, 0], [200, 1]],
-            //     color: Highcharts.Color(COLORS[3]).setOpacity(0.5).get(),
-            //     enableMouseTracking: false,
-            //     showInLegend: false,
-            //     animation: false
-            // });
-            // series.push({
-            //     name: 'Q4',
-            //     type: 'polygon',
-            //     data: [[0, 1], [0, 0], [-80, 0], [-80, 1]],
-            //     color: Highcharts.Color(COLORS[4]).setOpacity(0.5).get(),
-            //     enableMouseTracking: false,
-            //     showInLegend: false,
-            //     animation: false
-            // });
+            series.push({
+                name: 'Q1',
+                type: 'polygon',
+                data: [[-80,1], [-80, 2.5], [0, 2.5], [0, 1]],
+                color: Highcharts.Color(COLORS[1]).setOpacity(0.1).get(),
+                enableMouseTracking: false,
+                showInLegend: false,
+                animation: false
+            });
+            series.push({
+                name: 'Q2',
+                type: 'polygon',
+                data: [[0, 1], [0, 2.5], [200, 2.5], [200, 1]],
+                color: Highcharts.Color(COLORS[2]).setOpacity(0.1).get(),
+                enableMouseTracking: false,
+                showInLegend: false,
+                animation: false
+            });
+            series.push({
+                name: 'Q3',
+                type: 'polygon',
+                data: [[0, 1], [0, 0], [200, 0], [200, 1]],
+                color: Highcharts.Color(COLORS[3]).setOpacity(0.1).get(),
+                enableMouseTracking: false,
+                showInLegend: false,
+                animation: false
+            });
+            series.push({
+                name: 'Q4',
+                type: 'polygon',
+                data: [[0, 1], [0, 0], [-80, 0], [-80, 1]],
+                color: Highcharts.Color(COLORS[4]).setOpacity(0.1).get(),
+                enableMouseTracking: false,
+                showInLegend: false,
+                animation: false
+            });
 
             // Then add the data on top
             _.each(INDUSTRIES, function(industry) {
@@ -254,11 +377,13 @@
                         d[Y_KEY],
                         d[SIZE_KEY]
                     ]],
+                    quadrant: d.Quadrant,
                     color: Highcharts.Color(d.color).setOpacity(0.6).get(),
                     marker: {
                         lineColor: Highcharts.Color(d.color).setOpacity(1).get(),
                         lineWidth: 2
-                    }
+                    },
+                    zIndex: 30
                 });
 
             });
@@ -272,7 +397,7 @@
         function selectLocation(e) {
             if (!e) {
                 selectedGeography = null;
-                graph(getSeries(regionData));
+                chart(getSeries(regionData));
                 return;
             }
 
@@ -288,17 +413,19 @@
             selectedGeography = county;
 
             if (selectedGeography === 'Bay Area') {
-                graph(getSeries(regionData));
+                chart(getSeries(regionData));
                 return;
             }
 
             var selectedCountyData = _.filter(countyData, {'County': county});
 
-            graph(getSeries(selectedCountyData, county));
+            var isNapa = (county === 'Napa County');
+
+            chart(getSeries(selectedCountyData, county), isNapa);
         }
 
         function setupECB() {
-            graph(getSeries(regionData, 'Regional'));
+            chart(getSeries(regionData, 'Regional'));
 
             // Set up select boxes for county / city search
             // Could potentially use a cascading combo box:

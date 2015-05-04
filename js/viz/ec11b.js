@@ -57,9 +57,8 @@ Promise, regionPromise, countyPromise, cityPromise: true
         function formatter() {
             if (this.value === 'Bay Area') {
                 return '<span style="font-weight:800;color:#000;">' + this.value + '</span>';
-            } else {
-                return this.value;
             }
+            return this.value;
         }
 
 
@@ -182,10 +181,13 @@ Promise, regionPromise, countyPromise, cityPromise: true
             categories.push(countyName + ' County');
             categories.push('Bay Area');
 
-            var title = 'The share of the population below 200% of the poverty level in Census Tract <strong class="economy">';
-            title += data.tract + '</strong> in 2013 was <strong class="economy">';
+
+            var title = '<strong class="economy">';
             title += (data[CARTO_FOCUS_KEY] * 100).toFixed(1); //.toLocaleString();
-            title += '%</strong>.';
+            title += '%</strong> of the population in Census Tract <strong class="economy">';
+            title += data.tract + '</strong>';
+            title += ' in 2013 was below 200% of the poverty level.';
+
 
             $('#ec-b-title').html(title);
 
@@ -245,7 +247,7 @@ Promise, regionPromise, countyPromise, cityPromise: true
                         var start = Math.round(breaks[i]*100)/100;
                         var end = Math.round(breaks[i + 1]*100)/100 - 1;
 
-                        var legendText = '<div><div class="col-lg-1" style="background:' + colors[i] + ';">&nbsp; </div><div class="col-lg-9">';
+                        var legendText = '<div class="legend-row"><div class="legend-color" style="background:' + colors[i] + ';">&nbsp; </div><div class="legend-text">';
                         legendText += start.toLocaleString();
 
                         if (Math.round(breaks[i + 1]*100)/100) {

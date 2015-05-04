@@ -67,7 +67,7 @@ regionPromise, countyPromise, cityPromise: true
 
         var MODE_1 = {
             title: 'Historical Trend for Home Prices',
-            yAxis: 'Median Home Price ($)',
+            yAxis: 'Median Home Price',
             format: "${value:,.0f}",
             pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
                 '<td style="padding:0"><b>${point.y:,.0f}</b></td></tr>',
@@ -81,13 +81,12 @@ regionPromise, countyPromise, cityPromise: true
                     data: _.pluck(data, MEDIAN_KEY),
                     dashStyle: DASH_FORMAT
                 }];
-                console.log("Got series", series, name);
                 return series;
             }
         };
         var MODE_2 = {
             title: 'Historical Trend for Percent Change in Home Prices',
-            yAxis: 'Change in Median House Price since 1990 (%)',
+            yAxis: 'Change in Median House Price since 1990',
             format: "{value:,.0f}%",
             pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
                 '<td style="padding:0"><b>{point.y:,.0f}%</b></td></tr>',
@@ -213,8 +212,19 @@ regionPromise, countyPromise, cityPromise: true
         }
 
 
+        function resetCombos(mode) {
+            var combo;
+            combo = $("#ec-a-county-select").data("kendoComboBox");
+            combo.text('Select County...');
+            combo = $("#ec-a-city-select").data("kendoComboBox");
+            combo.text('Select City...');
+        }
+
+
         function selectLocation(e) {
             selectedGeography = {};
+            resetCombos();
+
             var series = [];
             if (!e) {
                 return;
@@ -222,7 +232,6 @@ regionPromise, countyPromise, cityPromise: true
 
             // Has a county been selected?
             var location = this.dataItem(e.item.index());
-                console.log("location", location);
 
             if (location.city === 'Bay Area' || location.County === 'Bay Area') {
                 chart();

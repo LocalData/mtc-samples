@@ -6,18 +6,15 @@ regionPromise, countyPromise: true
     /*
     Freight
 
-    B
-    Area graph showing the tons moved through the three Bay Area airports
-    stacked on top of one another - should not sum to 100% like mode choice.
-    Years should be shown on the x-axis with volumes on the y-axis. No drop-down
-    menus, button bar required. Legend should be below with the names of the
-    three airports (San Francisco (SFO), Oakland (OAK), San Jose (SJC)).
-    Hovering over the line should show the data for all three airports in that
-    year (Year placed above "SFO Airport Tonnage: __ units")
+    A
+    Line graph showing the TEUs moved through the largest US ports. Years should
+    be shown on the x-axis with volumes on the y-axis. No button bar needed.
+    Legend should be shown below ("Port of Los Angeles: " for example); non-top
+    10 metro ports should be shown with a dashed instead of solid line. Hovering
+    over the line should show the data for all ports in that year.
 
-    Y-axis: Tons (in thousands)
-    Historical Trend for Freight Activity - Major Airports
-
+    Y-axis: Container Volume (in thousands of TEUs)
+    Metro Comparison for Freight Activity
 
     MISC
 
@@ -32,15 +29,22 @@ regionPromise, countyPromise: true
         var i;
         var portData;
 
-        var CHART_BASE_TITLE = 'Historical Trend for Airport Activity - Freight';
+        var CHART_ID = '#ec-c-chart';
+        var CHART_BASE_TITLE = 'Metro Comparison for Seaport Activity';
+        var Y_LABEL = 'Container Volume (in thousands of TEUs)';
 
-        var YEARNAMES = [2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013];
+        var FOCUS_KEY = 'TEUs';
+        var GEO_KEY = 'Port';
+
+        var BOTTOM_PORTS = ['Freeport', 'Galveston', 'Palm Beach', 'Philadelphia', 'Miami', 'Port Everglades'];
+
+        var MINYEAR = 1990;
+        var MAXYEAR = 2013;
+        var YEARNAMES = [];
+        for (i = MINYEAR; i <= MAXYEAR; i++) {
+            YEARNAMES.push(i);
+        }
         var DASH_FORMAT = 'ShortDash';
-        var CHART_ID = '#ec-b-chart';
-
-        var GEO_KEY = 'Airport';
-        var FOCUS_KEY = 'Tons';
-        var Y_AXIS = 'Tons';
 
         Highcharts.setOptions({
             lang: {
@@ -54,32 +58,27 @@ regionPromise, countyPromise: true
             if (this.value === 'Bay Area') {
                 return '<span style="font-weight:800;color:#000;">' + this.value + '</span>';
             }
-
             return this.value;
         }
 
+
         function graph(series) {
             var tooltip = {
-                // headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
-                // pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-                // '<td style="padding:0"><b>{point.y:,.0f}</b> tons</td></tr>',
-                // footerFormat: '</table>',
+                headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+                pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+                '<td style="padding:0"><b>{point.y:,.0f}</b></td></tr>',
+                footerFormat: '</table>',
                 formatter: function() {
-                    var points = this.points;
+                    // Show the largest points first
+                    var points = _.sortBy(this.points, 'y').reverse();
                     var s = '<table>';
-
-                    // Year header
-                    s += '<tr><td><span style="font-size:10px">' + points[0].key + '</span></td><td></td></tr>';
-
-                    // Show each TEU
                     _.each(points, function(p) {
                         s += '<tr><td><strong style="color:' + p.series.color + '">';
                         s += p.series.name + ':';
                         s += '</strong></td><td> <strong>';
-                        s += (p.y).toLocaleString();
-                        s += ' tons</strong></tr>';
+                        s += (p.y * 1000).toLocaleString();
+                        s += ' units</strong></tr>';
                     });
-
                     s += '</table>';
                     return s;
                 },
@@ -89,7 +88,7 @@ regionPromise, countyPromise: true
 
             var options = {
                 chart: {
-                    type: 'area'
+                    type: 'line'
                 },
                 title: {
                     text: CHART_BASE_TITLE
@@ -99,35 +98,30 @@ regionPromise, countyPromise: true
                     tickmarkPlacement: 'on',
                     title: {
                         text: 'Year'
+                    },
+                    labels: {
+                        step: 2
                     }
                 },
                 yAxis: {
                     min: 0,
                     title: {
-                        text: Y_AXIS
+                        text: Y_LABEL
                     },
                     // labels: {
                     //     format: mode.format
                     // },
-                    reversedStacks: true,
+                    reversedStacks: false,
                     stackLabels: {
                         enabled: false
                     }
                 },
                 legend: {
-                    enabled: true
+                    enabled: true,
+                    symbolWidth: 25
                 },
                 colors: altColors,
                 plotOptions: {
-                    area: {
-                        stacking: 'normal',
-                        lineColor: '#ffffff',
-                        lineWidth: 1,
-                        marker: {
-                            lineWidth: 1,
-                            lineColor: '#ffffff'
-                        }
-                    }
                 },
                 tooltip: tooltip,
                 series: series
@@ -136,14 +130,34 @@ regionPromise, countyPromise: true
             $(CHART_ID).highcharts(options);
         }
 
+
         function getSeries() {
             var series = [];
             var groups = _.groupBy(portData, GEO_KEY);
             _.each(groups, function(data, name) {
-                series.push({
+                var s = {
                     name: name,
-                    data: _.pluck(data, FOCUS_KEY)
-                });
+                    data: _.pluck(data, FOCUS_KEY),
+                    lineWidth: 1.5
+                };
+
+                // Hide smaller ports to start with
+                if (_.last(_.pluck(data, FOCUS_KEY)) < 1000) {
+                    s.visible = false;
+                }
+
+                // Make smaller ports dashed / less prominent
+                if (_.contains(BOTTOM_PORTS, name)) {
+                    s.dashStyle = DASH_FORMAT;
+                    s.lineWidth = 1;
+                }
+
+                // Make Oakland stand out
+                if (name === 'Oakland') {
+                    s.lineWidth = 3;
+                }
+
+                series.push(s);
             });
 
             return series;
@@ -169,7 +183,7 @@ regionPromise, countyPromise: true
                 return n;
             }
 
-            return Math.round(n/1000) * 1000;
+            return Math.round(n/1000);
         }
 
 
@@ -181,31 +195,26 @@ regionPromise, countyPromise: true
         function setupNumbers(d) {
             var i;
             for(i = 0; i < d.length; i++) {
-                 d[i][FOCUS_KEY] = roundThousands(d[i][FOCUS_KEY]);
-                 if(d[i].Airport === 'Oakland') {
-                    d[i].Airport += ' (OAK)';
-                 } else if (d[i].Airport === 'San Francisco') {
-                    d[i].Airport += ' (SFO)';
-                 } else {
-                    d[i].Airport += ' (SJC)';
-                 }
+                d[i][FOCUS_KEY] = roundThousands(d[i][FOCUS_KEY]);
             }
             return d;
         }
 
 
         // Get the data ready to visualize
-        function prepData(ports) {
-            portData = setupNumbers(ports);
+        function prepData(port) {
+            portData = setupNumbers(port);
 
             // Once we have the data, set up the visualizations
             setup();
         }
 
+
         var portPromise = $.ajax({
             dataType: "json",
-            url: "http://54.149.29.2/ec/17/freight"
+            url: "http://54.149.29.2/ec/18/metro"
         });
+
 
         $.when(portPromise).done(prepData);
     });

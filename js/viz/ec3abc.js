@@ -79,7 +79,7 @@
                 },
                 yAxis: {
                     min: 0,
-                    max: 15,
+                    max: 20,
                     title: {
                         text: 'Unemployment Rate'
                     },
@@ -217,7 +217,7 @@
                     categories: options.categories
                 },
                 title: {
-                    text: '' // options.categories[0]
+                    text: 'Unemployment' // options.categories[0]
                 },
                 tooltip: {
                     shared: true,
@@ -249,8 +249,8 @@
 
             var title = 'The unemployment rate of <strong class="economy">';
             title += cityName + '</strong> in 2013 was <strong class="economy">';
-            title += feature.properties.unemployment; //.toLocaleString();
-            title += '%.</strong>';
+            title += feature.properties.unemployment.toFixed(1); //.toLocaleString();
+            title += '%</strong>.';
 
             $('#ec-b-title').html(title);
 
@@ -306,7 +306,6 @@
                 features.push(feature);
             });
             geocities.features = features;
-
 
 
             // Display the city data based on breaks
@@ -365,7 +364,7 @@
                 //
 
                 for (i = 0; i < breaks.length; i++) {
-                    var s = '<div><div class="col-lg-1" style="background:' + colors[i] + ';">&nbsp; </div><div class="col-lg-8">';
+                    var s = '<div class="legend-row"><div class="legend-color" style="background:' + colors[i] + ';">&nbsp; </div><div class="legend-text">';
 
                     if (i === 0) {
                         s += breaks[i].toFixed(1) + '% - ' + breaks[i+1].toFixed(1) + '%';
@@ -396,13 +395,23 @@
 
         // Create graph EC-3, showing unemployment trend for US metro areas
         function setupEC3C() {
-            // Group the metro data as needed
+
+            // Group the metro data by name
             var dataByMetro = _.groupBy(metroData, 'Residence_Geo');
             var series = [];
             _.each(dataByMetro, function(d, metro) {
+                // We can't use the 'metro' key for public display because it
+                // includes "MSA" at the end.
+
+                var lineWidth = 1.5;
+                if (d[0]['Metro Name'] === 'Bay Area') {
+                    lineWidth = 4;
+                }
+
                 series.push({
                     name: d[0]['Metro Name'],
-                    data: _.pluck(d, 'Unemployment_Rate')
+                    data: _.pluck(d, 'Unemployment_Rate'),
+                    lineWidth: lineWidth
                 });
             });
             series = _.sortBy(series, 'name');

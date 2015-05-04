@@ -206,7 +206,6 @@ regionPromise, countyPromise: true
             function getYearForSlider(value) {
                 return YEARNAMES[value];
             }
-            var templateString = "# getYearForSlider(value) #";
 
             var slider = $("#ec-b-year-select").kendoSlider({
                 min: 0,

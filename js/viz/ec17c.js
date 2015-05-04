@@ -4,47 +4,38 @@ regionPromise, countyPromise: true
 */
 (function($) {
     /*
-    Freight
+    Airports - Boardings
 
-    A
-    Line graph showing the TEUs moved through the largest US ports. Years should
-    be shown on the x-axis with volumes on the y-axis. No button bar needed.
-    Legend should be shown below ("Port of Los Angeles: " for example); non-top
-    10 metro ports should be shown with a dashed instead of solid line. Hovering
-    over the line should show the data for all ports in that year.
+    C
+    Line graph showing the passenger boardings through the combined airports in
+    each metro area. Years should be shown on the x-axis with passengers shown
+    on the y-axis. No button bar needed. Legend should be shown below
+    ("Los Angeles: __ enplanements" for example). Hovering over the line should
+    show the data for all metros in that year.
 
-    Y-axis: Container Volume (in thousands of TEUs)
-    Metro Comparison for Freight Activity
+    Y-axis: Boardings (in millions)
+    Metro Comparison for Airport Activity - Passengers
 
     MISC
 
     TODO
 
     REQUESTS
-    - Legends are a bit confusing; maybe use straight TEUs
 
     */
 
     $(function(){
         var i;
-        var portData;
+        var metroData;
 
+        var CHART_BASE_TITLE = 'Metro Comparison for Airport Activity - Passengers';
+
+        var yearnames;
         var CHART_ID = '#ec-c-chart';
-        var CHART_BASE_TITLE = 'Metro Comparison for Freight Activity';
-        var Y_LABEL = 'Container Volume (in thousands of TEUs)';
 
-        var FOCUS_KEY = 'TEUs';
-        var GEO_KEY = 'Port';
-
-        var BOTTOM_PORTS = ['Freeport', 'Galveston', 'Palm Beach', 'Philadelphia', 'Miami', 'Port Everglades'];
-
-        var MINYEAR = 1990;
-        var MAXYEAR = 2013;
-        var YEARNAMES = [];
-        for (i = MINYEAR; i <= MAXYEAR; i++) {
-            YEARNAMES.push(i);
-        }
-        var DASH_FORMAT = 'ShortDash';
+        var FOCUS_KEY = 'Enplanements';
+        var GEO_KEY = 'Metro';
+        var Y_AXIS = 'Boardings';
 
         Highcharts.setOptions({
             lang: {
@@ -53,33 +44,25 @@ regionPromise, countyPromise: true
             }
         });
 
-        /* -- EC-8 A (Regional rent graph) -----------------------------------*/
-        function formatter() {
-            if (this.value === 'Bay Area') {
-                return '<span style="font-weight:800;color:#000;">' + this.value + '</span>';
-            } else {
-                return this.value;
-            }
-        }
 
-
-        function graph(series) {
+        function chart(series) {
             var tooltip = {
-                headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
-                pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-                '<td style="padding:0"><b>{point.y:,.0f}</b></td></tr>',
-                footerFormat: '</table>',
                 formatter: function() {
-                    // Show the largest points first
                     var points = _.sortBy(this.points, 'y').reverse();
                     var s = '<table>';
+
+                    // Year header
+                    s += '<tr><td><span style="font-size:10px">' + points[0].key + '</span></td><td></td></tr>';
+
+                    // Show each TEU
                     _.each(points, function(p) {
                         s += '<tr><td><strong style="color:' + p.series.color + '">';
                         s += p.series.name + ':';
                         s += '</strong></td><td> <strong>';
-                        s += (p.y * 1000).toLocaleString();
-                        s += ' TEUs</strong></tr>';
+                        s += (p.y / 1000000).toFixed(1);
+                        s += ' million boardings</strong></tr>';
                     });
+
                     s += '</table>';
                     return s;
                 },
@@ -95,31 +78,23 @@ regionPromise, countyPromise: true
                     text: CHART_BASE_TITLE
                 },
                 xAxis: {
-                    categories: YEARNAMES,
-                    tickmarkPlacement: 'on',
-                    title: {
-                        text: 'Year'
-                    },
-                    labels: {
-                        step: 2
-                    }
+                    categories: yearnames,
+                    tickmarkPlacement: 'on'
                 },
                 yAxis: {
-                    min: 0,
                     title: {
-                        text: Y_LABEL
+                        text: Y_AXIS
                     },
                     // labels: {
                     //     format: mode.format
                     // },
-                    reversedStacks: false,
+                    reversedStacks: true,
                     stackLabels: {
                         enabled: false
                     }
                 },
                 legend: {
-                    enabled: true,
-                    symbolWidth: 25
+                    enabled: true
                 },
                 colors: altColors,
                 plotOptions: {
@@ -131,35 +106,32 @@ regionPromise, countyPromise: true
             $(CHART_ID).highcharts(options);
         }
 
-
         function getSeries() {
             var series = [];
-            var groups = _.groupBy(portData, GEO_KEY);
-            _.each(groups, function(data, name) {
-                var s = {
+            var groups = _.groupBy(metroData, GEO_KEY);
+            var orderedCities = _.keys(groups).sort();
+
+            _.each(orderedCities, function(name) {
+                var data = groups[name];
+                var lineWidth = 1.5;
+                if (name === 'Bay Area') {
+                    lineWidth = 3.5;
+                }
+
+                series.push({
                     name: name,
-                    data: _.pluck(data, FOCUS_KEY)
-                };
-
-                // Hide smaller ports to start with
-                if (_.last(_.pluck(data, FOCUS_KEY)) < 1000) {
-                    s.visible = false;
-                }
-
-                if (_.contains(BOTTOM_PORTS, name)) {
-                    s.dashStyle = DASH_FORMAT;
-                    s.lineWidth = 1;
-                }
-
-                series.push(s);
+                    data: _.pluck(data, FOCUS_KEY),
+                    lineWidth: lineWidth
+                });
             });
 
+            console.log("Got series", series, groups);
             return series;
         }
 
 
         function setup() {
-            graph(getSeries());
+            chart(getSeries());
         }
 
 
@@ -172,12 +144,12 @@ regionPromise, countyPromise: true
         }
 
 
-        function roundThousands(n) {
+        function roundMillion(n) {
             if (n === null) {
                 return n;
             }
 
-            return Math.round(n/1000);
+            return Math.round(n/100000) * 100000;
         }
 
 
@@ -187,29 +159,33 @@ regionPromise, countyPromise: true
 
 
         function setupNumbers(d) {
-            var i;
-            for(i = 0; i < d.length; i++) {
-                d[i][FOCUS_KEY] = roundThousands(d[i][FOCUS_KEY]);
-            }
+            // var i;
+            // for(i = 0; i < d.length; i++) {
+            //     // d[i][FOCUS_KEY] = roundMillion(d[i][FOCUS_KEY]);
+            // }
             return d;
         }
 
 
+        function getYears(data) {
+            return _.chain(data).pluck('Year').uniq().value().sort();
+        }
+
+
         // Get the data ready to visualize
-        function prepData(port) {
-            portData = setupNumbers(port);
+        function prepData(data) {
+            metroData = setupNumbers(data);
+            yearnames = getYears(metroData);
 
             // Once we have the data, set up the visualizations
             setup();
         }
 
-
-        var portPromise = $.ajax({
+        var metroPromise = $.ajax({
             dataType: "json",
-            url: "http://54.149.29.2/ec/18/metro"
+            url: "http://54.149.29.2/ec/17/metro"
         });
 
-
-        $.when(portPromise).done(prepData);
+        $.when(metroPromise).done(prepData);
     });
 })(jQuery);
