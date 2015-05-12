@@ -219,6 +219,9 @@ Promise, regionPromise, countyPromise, cityPromise: true
             // TODO get breaks automatically from Carto
             cartodb.createVis('map', 'https://mtc.cartodb.com/api/v2/viz/3a75b60e-e128-11e4-be60-0e853d047bba/viz.json')
               .done(function(vis, layers) {
+                // Change the logo z to fix overlaps
+                $('.cartodb-logo').css('z-index', 999);
+
                 // layer 0 is the base layer, layer 1 is cartodb layer
                 layers[1].setInteraction(true);
 

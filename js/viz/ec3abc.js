@@ -57,6 +57,10 @@
     var METROYEARNAMES = YEARNAMES;
     var CITYBLANKS = [null, null, null, null, null, null, null, null, null, null];
 
+    // Use econ purple as the first color
+    altColors[4] = altColors[0];
+    altColors[0] = econColors[1];
+
     var cityData, countyData, regionData, metroData;
     var selectedGeography;
 

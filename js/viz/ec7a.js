@@ -47,6 +47,11 @@ regionPromise, countyPromise, cityPromise: true
         var MEDIAN_IA_KEY = 'MedPrice_IA';
         var PERCENT_KEY = 'PercentChngPriceIA';
 
+
+        // Use econ purple as the first color
+        altColors[4] = altColors[0];
+        altColors[0] = econColors[1];
+
         var DASH_FORMAT = 'ShortDash';
         var COLOR_PAIRS = [
             altColors[0],
@@ -65,9 +70,11 @@ regionPromise, countyPromise, cityPromise: true
         }
 
 
+
         var MODE_1 = {
             title: 'Historical Trend for Home Prices',
             yAxis: 'Median Home Price',
+            yMin: 0,
             format: "${value:,.0f}",
             pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
                 '<td style="padding:0"><b>${point.y:,.0f}</b></td></tr>',
@@ -86,7 +93,7 @@ regionPromise, countyPromise, cityPromise: true
         };
         var MODE_2 = {
             title: 'Historical Trend for Percent Change in Home Prices',
-            yAxis: 'Change in Median House Price since 1990',
+            yAxis: '% Change in Median House Price since 1990',
             format: "{value:,.0f}%",
             pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
                 '<td style="padding:0"><b>{point.y:,.0f}%</b></td></tr>',
@@ -114,9 +121,8 @@ regionPromise, countyPromise, cityPromise: true
         function formatter() {
             if (this.value === 'Bay Area') {
                 return '<span style="font-weight:800;color:#000;">' + this.value + '</span>';
-            } else {
-                return this.value;
             }
+            return this.value;
         }
 
 
@@ -206,6 +212,10 @@ regionPromise, countyPromise, cityPromise: true
                 tooltip: tooltip,
                 series: series
             };
+
+            if (_.has(mode, 'yMin')) {
+                options.yAxis.min = mode.yMin;
+            }
 
 
             $(CHART_ID).highcharts(options);

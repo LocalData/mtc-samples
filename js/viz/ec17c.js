@@ -35,7 +35,7 @@ regionPromise, countyPromise: true
 
         var FOCUS_KEY = 'Enplanements';
         var GEO_KEY = 'Metro';
-        var Y_AXIS = 'Boardings';
+        var Y_AXIS = 'Annual Boardings';
 
         Highcharts.setOptions({
             lang: {

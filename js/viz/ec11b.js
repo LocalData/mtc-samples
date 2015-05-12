@@ -4,7 +4,7 @@ Promise, regionPromise, countyPromise, cityPromise: true
 */
 (function($) {
     /*
-    Labor force participation
+    Poverty
 
     Chloropleth map showing cities color-coded by 200% poverty rate in 2013.
     When city is clicked in the map, a bar graph appears in the info panel
@@ -65,7 +65,8 @@ Promise, regionPromise, countyPromise, cityPromise: true
         function graph(series, options) {
             $(CHART_ID).highcharts({
                 chart: {
-                    defaultSeriesType: 'bar'
+                    defaultSeriesType: 'bar',
+                    marginLeft: 100
                 },
                 series: series,
                 exporting: {
@@ -205,6 +206,9 @@ Promise, regionPromise, countyPromise, cityPromise: true
             // TODO get breaks automatically from Carto
             cartodb.createVis('map', 'https://mtc.cartodb.com/api/v2/viz/eb20fbf4-e2f8-11e4-a121-0e0c41326911/viz.json')
               .done(function(vis, layers) {
+                // Change the logo z to fix overlaps
+                $('.cartodb-logo').css('z-index', 999);
+
                 // layer 0 is the base layer, layer 1 is cartodb layer
                 layers[1].setInteraction(true);
 

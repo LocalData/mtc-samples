@@ -29,6 +29,10 @@ regionPromise, countyPromise: true
         var i;
         var ec13Data, ec14Data;
 
+        // Use econ purple as the first color
+        altColors[4] = altColors[0];
+        altColors[0] = econColors[1];
+
         var CHART_BASE_TITLE = 'Historical Trend for Economic Activity - Bay Area';
 
         var YEARNAMES = [2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013];
@@ -65,9 +69,8 @@ regionPromise, countyPromise: true
         function formatter() {
             if (this.value === 'Bay Area') {
                 return '<span style="font-weight:800;color:#000;">' + this.value + '</span>';
-            } else {
-                return this.value;
             }
+            return this.value;
         }
 
         function graph(id, series) {

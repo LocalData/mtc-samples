@@ -74,6 +74,11 @@
     var i;
 
     var DASH = 'ShortDash';
+
+
+    // Use econ purple as the first color
+    altColors[4] = altColors[0];
+    altColors[0] = econColors[1];
     var COLOR_PAIRS = [
         altColors[0],
         altColors[0],
@@ -152,7 +157,7 @@
                     }
                 },
                 legend: {
-                    reversed: true,
+                    reversed: false,
                     symbolWidth: 35
                 },
                 tooltip: tooltip,
@@ -519,6 +524,9 @@
 
             cartodb.createVis('map', 'http://mtc.cartodb.com/api/v2/viz/3c4a4858-dd38-11e4-a2a8-0e0c41326911/viz.json')
               .done(function(vis, layers) {
+                // Change the logo z to fix overlaps
+                $('.cartodb-logo').css('z-index', 999);
+
                 // layer 0 is the base layer, layer 1 is cartodb layer
                 layers[1].setInteraction(true);
 

@@ -64,6 +64,7 @@
     var regionData, countyData;
     var selectedGeography = 'Bay Area';
 
+
     $(function(){
         Highcharts.setOptions({
             lang: {
@@ -101,14 +102,15 @@
         }
 
 
-        function addLabels(chart, isNapa) {
+        function addLabels(chart) {
+            if (chart.currentTarget) {
+                chart = chart.currentTarget;
+            }
             var text, textBBox, x, y;
-
-            console.log("Add labels for chart?", chart);
 
             // Add labels for all the quadrants
             text = chart.renderer.text(
-                '<strong>Declining</strong> industries<br><strong>strong</strong> concentration',
+                '<strong>Declining</strong> industries<br><strong>Strong</strong> concentration',
                 chart.plotLeft + 5,
                 chart.plotTop + 15
             )
@@ -122,7 +124,7 @@
 
             // Quadrant 2
             text = chart.renderer.text(
-                '<strong>Growing</strong> industries<br><strong>strong</strong> concentration'
+                '<strong>Growing</strong> industries<br><strong>Strong</strong> concentration'
             )
             .css({
                 color: COLORS[2]
@@ -131,7 +133,6 @@
             textBBox = text.getBBox();
             x = chart.xAxis[0].toPixels(200) - (textBBox.width + 5);
             y = chart.plotTop  + 15;
-            console.log(x, y);
             text.attr({
                 x: x,
                 y: y,
@@ -141,7 +142,7 @@
 
             // Quadrant 3
             text = chart.renderer.text(
-                '<strong>Growing</strong> industries<br><strong>weak</strong> concentration'
+                '<strong>Growing</strong> industries<br><strong>Weak</strong> concentration'
             )
             .css({
                 color: COLORS[3]
@@ -150,7 +151,6 @@
             textBBox = text.getBBox();
             x = chart.xAxis[0].toPixels(200) - (textBBox.width + 5);
             y = chart.yAxis[0].toPixels(0) - (textBBox.height - 5);
-            console.log(x, y);
             text.attr({
                 x: x,
                 y: y,
@@ -160,7 +160,7 @@
 
             // Quadrant 4
             text = chart.renderer.text(
-                '<strong>Declining</strong> industries<br><strong>weak</strong> concentration',
+                '<strong>Declining</strong> industries<br><strong>Weak</strong> concentration',
                 chart.plotLeft + 15,
                 chart.plotTop + 15
             )
@@ -171,7 +171,6 @@
             textBBox = text.getBBox();
             x = chart.plotLeft + 5;
             y = chart.yAxis[0].toPixels(0) - (textBBox.height - 5);
-            console.log(x, y);
             text.attr({
                 x: x,
                 y: y,
@@ -179,15 +178,30 @@
             });
 
 
-
-            // Add the napa label
+            // Add a custon Napa label
             // LQ 12
             // Jobs 5000
             // PercntChng_1990 0.47
-            if (isNapa) {
+            if (selectedGeography === 'Napa County') {
                 text = chart.renderer.text('<strong style="color:#b7d25c">Farming</strong><br>% Change in Employment: 47.1%<br>Location Quotient: 12<br>Jobs: 5,000').add();
                 textBBox = text.getBBox();
                 x = chart.xAxis[0].toPixels(47);
+                y = chart.plotTop + 15;
+                text.attr({
+                    x: x,
+                    y: y,
+                    zIndex: 5
+                });
+            }
+
+            // Add a custom Sonoma label
+            // LQ 5.75
+            // Jobs 6300
+            // PercntChng_1990 0.125
+            if (selectedGeography === 'Sonoma County') {
+                text = chart.renderer.text('<strong style="color:#b7d25c">Farming</strong><br>% Change in Employment: 12.5%<br>Location Quotient: 5.8<br>Jobs: 6,300').add();
+                textBBox = text.getBBox();
+                x = chart.xAxis[0].toPixels(13);
                 y = chart.plotTop + 15;
                 console.log(x, y);
                 text.attr({
@@ -195,23 +209,14 @@
                     y: y,
                     zIndex: 5
                 });
-
-                // Future: arrow
-                // chart.renderer.path(['M', 250, 110, 'L', 250, 185, 'L', 245, 180, 'M', 250, 185, 'L', 255, 180])
-                //     .attr({
-                //         'stroke-width': 2,
-                //         stroke: COLORS[2]
-                //     })
-                //     .add();
             }
         }
 
 
-        function chart(series, isNapa) {
+        function chart(series) {
             var tooltip = {
                 useHTML: true,
                 formatter: function() {
-                    console.log("Tooltip!");
                     var s = '<strong style="colorDisabled:' + this.series.color + ';">' + this.series.name + ':</strong>';
                     s += '<table><tr><td><strong>% Change in Employment</strong></td>';
                     s += '<td>' + this.point.x.toFixed(1) + '%</td></tr>';
@@ -229,8 +234,6 @@
                 }
             };
 
-            console.log("Charting bubbles", series);
-
             series = _.sortBy(series, function(s) {
                 if (s.quadrant === 1) {
                     return 5;
@@ -241,10 +244,11 @@
             var options = {
                 chart: {
                     type: 'bubble',
-                    zoomType: 'xy',
+                    //zoomType: 'xy',
                     height: 500,
                     ignoreHiddenSeries: false,
                     events: {
+                        redraw: addLabels
                         // load: quadrants
                     }
                 },
@@ -304,6 +308,16 @@
                 series: series
             };
 
+            console.log(window.innerWidth);
+            if (window.innerWidth < 650) {
+                console.log("Using smaller window settings");
+                delete options.legend.layout;
+                delete options.legend.align;
+                delete options.legend.verticalAlign;
+                delete options.legend.x;
+                delete options.legend.y;
+            }
+
             if (selectedGeography) {
                 options.title.text += ' - ' + selectedGeography;
             }
@@ -316,7 +330,7 @@
 
             $(CHART_ID).highcharts(options, function(chart) {
                 // After loading, show labels if this is Napa
-                addLabels(chart, isNapa);
+                addLabels(chart);
             });
         }
 
@@ -419,9 +433,7 @@
 
             var selectedCountyData = _.filter(countyData, {'County': county});
 
-            var isNapa = (county === 'Napa County');
-
-            chart(getSeries(selectedCountyData, county), isNapa);
+            chart(getSeries(selectedCountyData, county));
         }
 
         function setupECB() {

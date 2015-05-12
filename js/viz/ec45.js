@@ -108,6 +108,11 @@
     var ecCToggle = 'Median Income'; // Default mode of interactive C
     var selectedGeography = 'Bay Area';
 
+    // Use econ purple as the first color
+    altColors[4] = altColors[0];
+    altColors[0] = econColors[1];
+
+
     $(function(){
 
         // Set explicit decimal separators
@@ -164,7 +169,7 @@
                     }
                 },
                 legend: {
-                    reversed: true,
+                    reversed: false,
                     symbolWidth: 35
                 },
                 tooltip: tooltip,
@@ -472,10 +477,10 @@
             }
 
             // Get the data we'll need to graph
-            var countyName = feature.properties.County;
+            var countyName = feature.properties.County + ' County';
             var county2013 = _.find(countyData, {
                 'Year': FOCUS_YEAR,
-                Residence_Geo: countyName + ' County'
+                Residence_Geo: countyName
             });
             var city2013 = _.find(cityData, {
                 'Year': FOCUS_YEAR,

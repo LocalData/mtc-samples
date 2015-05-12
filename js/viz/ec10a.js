@@ -42,6 +42,7 @@ regionPromise, countyPromise, cityPromise: true
         var HOUSEHOLD_KEY = 'Household_Type';
         var YAXIS_LABEL = 'Share of Population';
         var XAXIS_LABEL = '';
+
         var colors = _.clone(altColors, true);
 
         // Get the colors in a more natural order

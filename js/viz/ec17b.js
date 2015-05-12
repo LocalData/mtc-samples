@@ -40,7 +40,26 @@ regionPromise, countyPromise: true
 
         var GEO_KEY = 'Airport';
         var FOCUS_KEY = 'Tons';
-        var Y_AXIS = 'Tons';
+        var Y_AXIS = 'Annual Tonnage';
+
+        var LABELS = {
+            'Oakland': {
+                label: 'Oakland (OAK)',
+                color: altColors[1]
+            },
+            'San Francisco': {
+                label: 'San Francisco (SFO)',
+                color: econColors[0]
+            },
+            'San Jose': {
+                label: 'San Jose (SJC)',
+                color: altColors[2]
+            },
+            'Santa Rosa': {
+                label: 'Santa Rosa (STS)',
+                color: altColors[3]
+            }
+        };
 
         Highcharts.setOptions({
             lang: {
@@ -109,13 +128,14 @@ regionPromise, countyPromise: true
                     // labels: {
                     //     format: mode.format
                     // },
-                    reversedStacks: true,
+                    // reversedStacks: false,
                     stackLabels: {
                         enabled: false
                     }
                 },
                 legend: {
-                    enabled: true
+                    enabled: true,
+                    reversed: true
                 },
                 colors: altColors,
                 plotOptions: {
@@ -142,11 +162,12 @@ regionPromise, countyPromise: true
             _.each(groups, function(data, name) {
                 series.push({
                     name: name,
-                    data: _.pluck(data, FOCUS_KEY)
+                    data: _.pluck(data, FOCUS_KEY),
+                    color: data[0].color
                 });
             });
 
-            return series;
+            return series.reverse();
         }
 
 
@@ -182,13 +203,17 @@ regionPromise, countyPromise: true
             var i;
             for(i = 0; i < d.length; i++) {
                  d[i][FOCUS_KEY] = roundThousands(d[i][FOCUS_KEY]);
-                 if(d[i].Airport === 'Oakland') {
-                    d[i].Airport += ' (OAK)';
-                 } else if (d[i].Airport === 'San Francisco') {
-                    d[i].Airport += ' (SFO)';
-                 } else {
-                    d[i].Airport += ' (SJC)';
-                 }
+
+                 d[i].color = LABELS[d[i].Airport].color;
+                 d[i].Airport = LABELS[d[i].Airport].label;
+
+                 // if(d[i].Airport === 'Oakland') {
+                 //    d[i].Airport += ' (OAK)';
+                 // } else if (d[i].Airport === 'San Francisco') {
+                 //    d[i].Airport += ' (SFO)';
+                 // } else {
+                 //    d[i].Airport += ' (SJC)';
+                 // }
             }
             return d;
         }

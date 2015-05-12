@@ -41,6 +41,10 @@ regionPromise, countyPromise, cityPromise, _
         var POINT_MODE = 'points';
         var TRACT_MODE = 'tracts';
 
+        var TRACT_MIN_ZOOM = 11;
+        var TRACT_MAX_ZOOM = 11;
+        var POINT_ZOOM = 12;
+
         var map;
         var maxYear;
         var minYear;
@@ -54,17 +58,38 @@ regionPromise, countyPromise, cityPromise, _
         var tractLayer;
         var pointLayer;
 
-
         var point_styles = {
             radius: 5,
             fillColor: "#ff7800",
             color: "#000",
-            weight: 1,
+            weight: 0,
             opacity: 1,
-            fillOpacity: 0.8
+            fillOpacity: 0.65
         };
 
         var COLORS = _.clone(econColors).reverse();
+
+        // Red-oranges
+        COLORS = [
+            '#fef0d9',
+            '#fdd49e',
+            '#fdbb84',
+            '#fc8d59',
+            '#ef6548',
+            '#d7301f'
+        ];
+
+        // Blue to red
+        COLORS = [
+            '#c4e5f2',
+            '#7bafc5',
+            //'#0c8ec5', // med blue
+            '#ebd183',
+            '#ebbd2f',
+            '#c14f4f',
+            '#c12929'
+        ];
+
         var MIN = 49000;
         var MAX = 5000000;
         var SCALE = chroma.scale([COLORS[0], COLORS[COLORS.length - 1]]);
@@ -123,7 +148,8 @@ regionPromise, countyPromise, cityPromise, _
         function graph(series, options) {
             $(CHART_ID).highcharts({
                 chart: {
-                    defaultSeriesType: 'bar'
+                    defaultSeriesType: 'bar',
+                    marginLeft: 80
                 },
                 series: series,
                 plotOptions: {
@@ -143,10 +169,10 @@ regionPromise, countyPromise, cityPromise, _
                     },
                     startOnTick: false,
                     endOnTick: false,
+                    max: 2500000,
                     labels: {
                         format: "${value:,.0f}"
-                    },
-                    max: 1500000
+                    }
                 },
                 xAxis: {
                     categories: options.categories
@@ -360,7 +386,7 @@ regionPromise, countyPromise, cityPromise, _
                 onEachFeature: setupInteraction,
                 style: style
             });
-            
+
             if (map.getZoom() < 11) {
               cityLayer.addTo(map);
             }
@@ -369,7 +395,7 @@ regionPromise, countyPromise, cityPromise, _
             // restricting themselves to a minZoom/maxZoom
             map.on('zoomend', function (event) {
               var zoom = event.target.getZoom();
-              if (zoom >= 11) {
+              if (zoom >= TRACT_MIN_ZOOM) {
                 map.removeLayer(cityLayer);
               } else {
                 cityLayer.addTo(map);
@@ -386,8 +412,8 @@ regionPromise, countyPromise, cityPromise, _
                 simplifyFactor: 0.2,
                 precision: 5,
                 fields: ['TRACT', 'OBJECTID', 'COUNTYFP'],
-                minZoom: 11,
-                maxZoom: 13,
+                minZoom: TRACT_MIN_ZOOM,
+                maxZoom: TRACT_MAX_ZOOM,
                 style: style
             }).addTo(map);
         }
@@ -396,10 +422,13 @@ regionPromise, countyPromise, cityPromise, _
         function setupPoints() {
             pointLayer = L.esri.featureLayer('http://gis.mtc.ca.gov/mtc/rest/services/VitalSigns/EC7/FeatureServer/0', {
                 cacheLayers: false,
+                radius: 25,
+                max: 2500000,
                 onEachFeature: setupInteraction,
                 fields: ['price_IA', 'GEOID10', 'CityName', 'county', 'OBJECTID'], //'OBJECTID'
                 pointToLayer: pointToLayer,
-                minZoom: 14,
+                intensity: 'price_IA',
+                minZoom: POINT_ZOOM,
                 where: 'year=' + activeYear
             }).addTo(map);
         }
@@ -479,7 +508,12 @@ regionPromise, countyPromise, cityPromise, _
                 max: maxYear,
                 tickPlacement: 'none',
                 change: sliderSelectYear,
-                value: activeYear
+                value: activeYear,
+                tooltip: {
+                    template: function(e) {
+                        return e.value; // to prevent formatting as a comma-sep number
+                    }
+                }
             }).data("kendoSlider");
 
 

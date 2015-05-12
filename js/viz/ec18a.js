@@ -30,7 +30,7 @@ regionPromise, countyPromise: true
 
         var CHART_ID = '#ec-a-chart';
         var CHART_BASE_TITLE = 'Historical Trend for Seaport Activity - Port of Oakland';
-        var Y_LABEL = 'Container Volume (in thousands of TEUs)';
+        var Y_LABEL = 'Container Volume (TEUs)';
         var FOCUS_KEY = 'TEU';
 
         var IMPORT_LABEL = 'Imports';
@@ -39,12 +39,10 @@ regionPromise, countyPromise: true
         var IMPORT = 'Import';
         var EXPORT = 'Export';
 
-        var MINYEAR = 1990;
-        var MAXYEAR = 2013;
-        var YEARNAMES = [];
-        for (i = MINYEAR; i <= MAXYEAR; i++) {
-            YEARNAMES.push(i);
-        }
+        var YEAR_KEY = 'Year';
+        var minYear;
+        var maxYear;
+        var yearNames = [];
         var DASH_FORMAT = 'ShortDash';
 
         Highcharts.setOptions({
@@ -58,9 +56,8 @@ regionPromise, countyPromise: true
         function formatter() {
             if (this.value === 'Bay Area') {
                 return '<span style="font-weight:800;color:#000;">' + this.value + '</span>';
-            } else {
-                return this.value;
             }
+            return this.value;
         }
 
 
@@ -83,7 +80,7 @@ regionPromise, countyPromise: true
                         s += '<tr><td><strong style="color:' + p.series.color + '">';
                         s += p.series.name + ':';
                         s += '</strong></td><td>';
-                        s += (p.y * 1000).toLocaleString();
+                        s += p.y.toLocaleString();
                         s += ' units</tr>';
                         sum += p.y;
                     });
@@ -91,7 +88,7 @@ regionPromise, countyPromise: true
                     // Show at total at the bottom
                     s += '<tr><td><strong>Total:';
                     s += '</strong></td><td> <strong>';
-                    s += (sum * 1000).toLocaleString();
+                    s += sum.toLocaleString();
                     s += ' units</strong></tr>';
 
                     s += '</table>';
@@ -111,13 +108,13 @@ regionPromise, countyPromise: true
                     text: CHART_BASE_TITLE
                 },
                 xAxis: {
-                    categories: YEARNAMES,
+                    categories: yearNames,
                     tickmarkPlacement: 'on',
                     title: {
                         text: 'Year'
                     },
                     labels: {
-                        step: 2
+                        step: 3
                     }
                 },
                 yAxis: {
@@ -125,9 +122,13 @@ regionPromise, countyPromise: true
                     title: {
                         text: Y_LABEL
                     },
-                    // labels: {
-                    //     format: mode.format
-                    // },
+                    labels: {
+                        formatter: function() {
+                            // For some reason, the default millions formatter
+                            // wasn't working, so we do it manually.
+                            return this.value / 1000000 + 'M';
+                        }
+                    },
                     reversedStacks: true,
                     stackLabels: {
                         enabled: false
@@ -222,7 +223,14 @@ regionPromise, countyPromise: true
 
         // Get the data ready to visualize
         function prepData(port) {
-            portData = setupNumbers(port);
+            portData = port;
+
+            var years = _.pluck(portData, YEAR_KEY);
+            maxYear = _.max(years);
+            minYear = _.min(years);
+            for (i = minYear; i <= maxYear; i++) {
+                yearNames.push(i);
+            }
 
             // Once we have the data, set up the visualizations
             setup();

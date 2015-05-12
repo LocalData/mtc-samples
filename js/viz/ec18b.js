@@ -31,7 +31,7 @@ regionPromise, countyPromise: true
 
         var CHART_ID = '#ec-c-chart';
         var CHART_BASE_TITLE = 'Metro Comparison for Seaport Activity';
-        var Y_LABEL = 'Container Volume (in thousands of TEUs)';
+        var Y_LABEL = 'Container Volume (TEUs)';
 
         var FOCUS_KEY = 'TEUs';
         var GEO_KEY = 'Port';
@@ -76,7 +76,7 @@ regionPromise, countyPromise: true
                         s += '<tr><td><strong style="color:' + p.series.color + '">';
                         s += p.series.name + ':';
                         s += '</strong></td><td> <strong>';
-                        s += (p.y * 1000).toLocaleString();
+                        s += p.y.toLocaleString();
                         s += ' units</strong></tr>';
                     });
                     s += '</table>';
@@ -100,7 +100,7 @@ regionPromise, countyPromise: true
                         text: 'Year'
                     },
                     labels: {
-                        step: 2
+                        step: 3
                     }
                 },
                 yAxis: {
@@ -142,7 +142,7 @@ regionPromise, countyPromise: true
                 };
 
                 // Hide smaller ports to start with
-                if (_.last(_.pluck(data, FOCUS_KEY)) < 1000) {
+                if (_.last(_.pluck(data, FOCUS_KEY)) < 1000000) {
                     s.visible = false;
                 }
 
@@ -203,7 +203,7 @@ regionPromise, countyPromise: true
 
         // Get the data ready to visualize
         function prepData(port) {
-            portData = setupNumbers(port);
+            portData = port;
 
             // Once we have the data, set up the visualizations
             setup();

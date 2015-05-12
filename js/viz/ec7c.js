@@ -53,7 +53,7 @@ regionPromise, countyPromise, cityPromise: true
 
         var MODE_1 = {
             title: 'Metro Comparison for Home Prices',
-            yAxis: 'Median Home Price ($)',
+            yAxis: 'Inflation-Adjusted Median Home Price',
             key: 'MedPrice_IA',
             format: "${value:,.0f}",
             pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
@@ -61,7 +61,7 @@ regionPromise, countyPromise, cityPromise: true
         };
         var MODE_2 = {
             title: 'Metro Comparison for Percent Change in Home Prices',
-            yAxis: 'Change in Median House Price since 1997 (%)',
+            yAxis: '% Change in Median Home Price<br> since 1997 (inflation-adjusted)',
             key: PERCENT_KEY,
             format: "{value:,.0f}%",
             pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
@@ -90,9 +90,15 @@ regionPromise, countyPromise, cityPromise: true
             var series = [];
             var dataByMetro = _.groupBy(metroData, METRO_NAME_KEY);
             _.each(dataByMetro, function(data, name) {
+                var lineWidth = 1.5;
+                if (name === 'Bay Area') {
+                    lineWidth = 3.5;
+                }
+
                 series.push({
                     name:  name,
-                    data: _.pluck(data, mode.key)
+                    data: _.pluck(data, mode.key),
+                    lineWidth: lineWidth
                 });
             });
 
@@ -133,7 +139,8 @@ regionPromise, countyPromise, cityPromise: true
                 },
                 yAxis: {
                     title: {
-                        text: mode.yAxis
+                        text: mode.yAxis,
+                        margin: 25
                     },
                     labels: {
                         format: mode.format
@@ -149,6 +156,7 @@ regionPromise, countyPromise, cityPromise: true
                 },
                 plotOptions: {
                 },
+                colors: altColors,
                 tooltip: tooltip,
                 series: series
             };

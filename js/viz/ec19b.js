@@ -25,7 +25,7 @@ regionPromise, countyPromise, cityPromise: true
         var i;
         var regionData;
 
-        var CHART_BASE_TITLE = 'Regional Breakdown of 2013 Freight Value by Port';
+        var CHART_BASE_TITLE = 'Regional Breakdown of 2013 Freight Value by Port (International)';
         var CHART_ID = '#ec-b-chart';
         var YAXIS_LABEL = 'Freight Value (in millions of dollars)'; //'Share of Income Spent on Housing';
         var XAXIS_LABEL = '';
@@ -47,9 +47,8 @@ regionPromise, countyPromise, cityPromise: true
         function formatter() {
             if (this.value === 'Bay Area') {
                 return '<span style="font-weight:800;color:#000;">' + this.value + '</span>';
-            } else {
-                return this.value;
             }
+            return this.value;
         }
 
 

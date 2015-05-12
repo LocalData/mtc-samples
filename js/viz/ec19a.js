@@ -31,7 +31,7 @@ regionPromise, countyPromise, cityPromise: true
         var i;
         var regionData;
 
-        var CHART_BASE_TITLE = 'Historical Trend for Freight Value';
+        var CHART_BASE_TITLE = 'Historical Trend for Freight Value - Imports and Exports (International)';
         var CHART_ID = '#ec-a-chart';
         var YAXIS_LABEL = 'Freight Value (in billions of dollars)';
         var XAXIS_LABEL = '';

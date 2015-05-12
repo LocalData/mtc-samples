@@ -48,6 +48,10 @@ regionPromise, countyPromise, cityPromise: true
         }
 
         var DASH = 'ShortDash';
+
+        // Use econ purple as the first color
+        altColors[4] = altColors[0];
+        altColors[0] = econColors[1];
         var COLOR_PAIRS = [
             altColors[0],
             altColors[0],

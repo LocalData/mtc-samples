@@ -40,13 +40,25 @@ regionPromise, countyPromise: true
         var YEAR_KEY = 'Year';
         var GEO_KEY = 'Airport';
         var FOCUS_KEY = 'Enplanements';
-        var Y_AXIS = 'Boardings';
+        var Y_AXIS = 'Annual Boardings';
 
         var LABELS = {
-            'Oakland': 'Oakland (OAK)',
-            'San Francisco': 'San Francisco (SFO)',
-            'San Jose': 'San Jose (SJC)',
-            'Santa Rosa': 'Santa Rosa (STS)'
+            'Oakland': {
+                label: 'Oakland (OAK)',
+                color: altColors[1]
+            },
+            'San Francisco': {
+                label: 'San Francisco (SFO)',
+                color: econColors[0]
+            },
+            'San Jose': {
+                label: 'San Jose (SJC)',
+                color: altColors[2]
+            },
+            'Santa Rosa': {
+                label: 'Santa Rosa (STS)',
+                color: altColors[3]
+            }
         };
 
         var groups;
@@ -124,7 +136,8 @@ regionPromise, countyPromise: true
                     }
                 },
                 legend: {
-                    enabled: true
+                    enabled: true,
+                    reversed: true
                 },
                 colors: altColors,
                 plotOptions: {
@@ -158,6 +171,7 @@ regionPromise, countyPromise: true
 
                 series.push({
                     name: name,
+                    color: data[0].color,
                     zIndex: zIndex,
                     data: _.pluck(data, FOCUS_KEY)
                 });
@@ -204,7 +218,8 @@ regionPromise, countyPromise: true
             for(i = 0; i < d.length; i++) {
                  d[i][FOCUS_KEY] = roundThousands(d[i][FOCUS_KEY]);
 
-                 d[i].Airport = LABELS[d[i].Airport];
+                 d[i].color = LABELS[d[i].Airport].color;
+                 d[i].Airport = LABELS[d[i].Airport].label;
             }
             return d;
         }
