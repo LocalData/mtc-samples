@@ -286,19 +286,19 @@ regionPromise, countyPromise, cityPromise: true
         // Request all the data
         var cityPromise = $.ajax({
             dataType: "json",
-            url: "http://54.149.29.2/ec/11/city"
+            url: "http://vitalsigns-production.elasticbeanstalk.com/ec/11/city"
         });
         var countyPromise = $.ajax({
             dataType: "json",
-            url: "http://54.149.29.2/ec/11/county"
+            url: "http://vitalsigns-production.elasticbeanstalk.com/ec/11/county"
         });
         var regionPromise = $.ajax({
             dataType: "json",
-            url: "http://54.149.29.2/ec/11/region"
+            url: "http://vitalsigns-production.elasticbeanstalk.com/ec/11/region"
         });
         var metroPromise = $.ajax({
             dataType: "json",
-            url: "http://54.149.29.2/ec/11/metro"
+            url: "http://vitalsigns-production.elasticbeanstalk.com/ec/11/metro"
         });
 
 

@@ -9,19 +9,19 @@ var cityPromise, countyPromise, regionPromise, metroPromise;
     // Request all the data
     cityPromise = $.ajax({
         dataType: "json",
-        url: "http://54.149.29.2/ec/11/city"
+        url: "http://vitalsigns-production.elasticbeanstalk.com/ec/11/city"
     });
     countyPromise = $.ajax({
         dataType: "json",
-        url: "http://54.149.29.2/ec/11/county"
+        url: "http://vitalsigns-production.elasticbeanstalk.com/ec/11/county"
     });
     regionPromise = $.ajax({
         dataType: "json",
-        url: "http://54.149.29.2/ec/11/region"
+        url: "http://vitalsigns-production.elasticbeanstalk.com/ec/11/region"
     });
     metroPromise = $.ajax({
         dataType: "json",
-        url: "http://54.149.29.2/ec/11/metro"
+        url: "http://vitalsigns-production.elasticbeanstalk.com/ec/11/metro"
     });
 
 })(jQuery);

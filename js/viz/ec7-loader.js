@@ -9,15 +9,15 @@ var cityPromise, countyPromise, regionPromise;
     // Request all the data
     cityPromise = $.ajax({
         dataType: "json",
-        url: "http://54.149.29.2/ec/7/city"
+        url: "http://vitalsigns-production.elasticbeanstalk.com/ec/7/city"
     });
     countyPromise = $.ajax({
         dataType: "json",
-        url: "http://54.149.29.2/ec/7/county"
+        url: "http://vitalsigns-production.elasticbeanstalk.com/ec/7/county"
     });
     regionPromise = $.ajax({
         dataType: "json",
-        url: "http://54.149.29.2/ec/7/region"
+        url: "http://vitalsigns-production.elasticbeanstalk.com/ec/7/region"
     });
 
 })(jQuery);

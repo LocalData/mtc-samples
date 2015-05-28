@@ -499,11 +499,11 @@
         // Request all the data
         var regionPromise = $.ajax({
             dataType: "json",
-            url: "http://54.149.29.2/ec/1/LQ/region"
+            url: "http://vitalsigns-production.elasticbeanstalk.com/ec/1/LQ/region"
         });
         var countyPromise = $.ajax({
             dataType: "json",
-            url: "http://54.149.29.2/ec/1/LQ/county"
+            url: "http://vitalsigns-production.elasticbeanstalk.com/ec/1/LQ/county"
         });
 
 

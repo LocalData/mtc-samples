@@ -13,7 +13,7 @@ regionPromise, countyPromise, cityPromise: true
     2013 at the bottom. Hovering over a bar for a year should show all three
     series' data.
 
-    http://54.149.29.2/ec/18/region2    "
+    http://vitalsigns-production.elasticbeanstalk.com/ec/18/region2    "
     X-axis: Freight Value (in millions of dollars)
     Y-axis: Year"
 
@@ -197,7 +197,7 @@ regionPromise, countyPromise, cityPromise: true
 
         var regionPromise = $.ajax({
             dataType: "json",
-            url: "http://54.149.29.2/ec/18/region2"
+            url: "http://vitalsigns-production.elasticbeanstalk.com/ec/18/region2"
         });
         $.when(regionPromise).done(prepData);
     });

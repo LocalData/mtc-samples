@@ -191,7 +191,7 @@ regionPromise, countyPromise, cityPromise: true
 
         var countyPromise = $.ajax({
             dataType: "json",
-            url: "http://54.149.29.2/ec/10/countyInc"
+            url: "http://vitalsigns-production.elasticbeanstalk.com/ec/10/countyInc"
         });
         $.when(countyPromise).done(prepData);
     });

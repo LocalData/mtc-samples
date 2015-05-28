@@ -445,7 +445,7 @@ regionPromise, countyPromise, cityPromise, _
         function getTractYearData() {
             var tractPromise = $.ajax({
                 dataType: "json",
-                url: "http://54.149.29.2/ec/7/tract/" + activeYear
+                url: "http://vitalsigns-production.elasticbeanstalk.com/ec/7/tract/" + activeYear
             });
 
             tractPromise.done(function(tractDataForYear) {
@@ -591,7 +591,7 @@ regionPromise, countyPromise, cityPromise, _
             // _.each(years, function(year) {
             //     var tractPromise = $.ajax({
             //         dataType: "json",
-            //         url: "http://54.149.29.2/ec/7/tract/" + year
+            //         url: "http://vitalsigns-production.elasticbeanstalk.com/ec/7/tract/" + year
             //     });
             //     tractPromise.done(function(tractDataForYear) {
             //         tractDataForYear = prepTracts(tractDataForYear);
@@ -609,7 +609,7 @@ regionPromise, countyPromise, cityPromise, _
 
         var tractPromise = $.ajax({
             dataType: "json",
-            url: "http://54.149.29.2/ec/7/tract/" + activeYear
+            url: "http://vitalsigns-production.elasticbeanstalk.com/ec/7/tract/" + activeYear
         });
 
         $.when(regionPromise, countyPromise, cityPromise, tractPromise).done(prepData);

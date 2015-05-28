@@ -204,7 +204,7 @@ regionPromise, countyPromise, cityPromise: true
 
         var regionPromise = $.ajax({
             dataType: "json",
-            url: "http://54.149.29.2/ec/19/ports"
+            url: "http://vitalsigns-production.elasticbeanstalk.com/ec/19/ports"
         });
         $.when(regionPromise).done(prepData);
     });

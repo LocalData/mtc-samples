@@ -33,6 +33,45 @@
     </div>
     <div id="en-a-chart"></div>
 
+    <hr>
+
+    <h3 id="map_title">Fatalities</h3>
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="row">
+
+          <div class="col-lg-8 col-md-8">
+            <div class="map" id="map">&nbsp;</div>
+          </div>
+
+          <div class="col-lg-4 col-md-4 map_chart_">
+            <div class="initial_map" style="font-size:16px; height: auto;">
+              Explore Sensors
+            </div>
+            <div id="en-b-year-select"></div>
+            <div id="en-b-title" class="map_info">
+              <div class="initial_map" style="font-size:16px; height:auto;">
+              Zoom in to see more details, including individual home sales.
+              Click on a shape on the map for more information.
+              </div>
+            </div>
+
+            <div class="btn-group btn-group-justified" style="margin-top:15px; display:none;" id="en-b-buttons">
+                <a class="btn btn-primary btn-fix active" id="en-b-annual">Annual Average Fine Particulate Concentrations</a><a class="btn btn-primary btn-fix" id="en-b-top">98th Percentile Daily Fine Particulate Concentrations</a>
+            </div>
+
+            <div id="en-b-chart" style="float:left;width:100%;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <hr>
+
+    <div class="btn-group btn-group-justified" style="margin-top:15px">
+        <a class="btn btn-primary btn-fix active" id="en-c-fatalities">Fatalities</a><a class="btn btn-primary btn-fix" id="en-c-per-capita">Fatalities per Capita</a>
+    </div>
+    <div id="en-c-chart"></div>
 
     <!-- libraries -->
     <script src="http://code.jquery.com/jquery.js"></script>
@@ -51,5 +90,6 @@
     <script src="http://dev-mtc-vital-signs.pantheon.io/sites/all/themes/vitalsigns/js/science.v1.min.js"></script>
 
     <script src="js/viz/en4a.js"></script>
+    <script src="js/viz/en4c.js"></script>
   </body>
 </html>

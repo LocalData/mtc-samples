@@ -1,9 +1,9 @@
 /*globals jQuery, L, geocities, allGray, econColors, altColors, science: true */
 (function($) {
     /*
-    http://54.149.29.2/ec/3/city
-    http://54.149.29.2/ec/3/county
-    http://54.149.29.2/ec/3/region
+    http://vitalsigns-production.elasticbeanstalk.com/ec/3/city
+    http://vitalsigns-production.elasticbeanstalk.com/ec/3/county
+    http://vitalsigns-production.elasticbeanstalk.com/ec/3/region
     http://www.vitalsigns.mtc.ca.gov/bridge-condition
     Line graph showing the regional unemployment trend by default.
     - Using  drop-down menus, user can select a county or a city to see its historical
@@ -36,7 +36,7 @@
     - User should be able to turn on or off metro areas in graph.
     - No dropdowns or button bars needed. (T11-12-C (without button bar),
     http://dev-mtc-vital-signs.pantheon.io/transit-ridership)
-    http://54.149.29.2/ec/3/metro
+    http://vitalsigns-production.elasticbeanstalk.com/ec/3/metro
 
 
     MISC
@@ -527,19 +527,19 @@
         // Request all the data
         var cityPromise = $.ajax({
             dataType: "json",
-            url: "http://54.149.29.2/ec/3/city"
+            url: "http://vitalsigns-production.elasticbeanstalk.com/ec/3/city"
         });
         var countyPromise = $.ajax({
             dataType: "json",
-            url: "http://54.149.29.2/ec/3/county"
+            url: "http://vitalsigns-production.elasticbeanstalk.com/ec/3/county"
         });
         var regionPromise = $.ajax({
             dataType: "json",
-            url: "http://54.149.29.2/ec/3/region"
+            url: "http://vitalsigns-production.elasticbeanstalk.com/ec/3/region"
         });
         var metroPromise = $.ajax({
             dataType: "json",
-            url: "http://54.149.29.2/ec/3/metro"
+            url: "http://vitalsigns-production.elasticbeanstalk.com/ec/3/metro"
         });
 
         $.when(cityPromise, countyPromise, regionPromise, metroPromise).done(prepData);

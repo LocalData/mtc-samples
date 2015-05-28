@@ -15,9 +15,9 @@
     User should be able to use button bar to switch from Median Rents to
     % Growth in Median Rent since 1970.
     LU1-A
-    http://54.149.29.2/ec/8/county
-    http://54.149.29.2/ec/8/city
-    http://54.149.29.2/ec/8/region
+    http://vitalsigns-production.elasticbeanstalk.com/ec/8/county
+    http://vitalsigns-production.elasticbeanstalk.com/ec/8/city
+    http://vitalsigns-production.elasticbeanstalk.com/ec/8/region
     Historical Trend for Rents - "Geography" OR
     Historical Trend for Percent Change in Rents - "Geography"
     http://dev-mtc-vital-signs.pantheon.io/sites/all/themes/vitalsigns/js/lu1a.js?nlss6p
@@ -31,10 +31,10 @@
     bar graph in side panel, a top 5 and bottom 5 list should show the highest
     rent and lowest rent cities in the region. No button bar or dropdown menus
     are needed.
-    http://54.149.29.2/ec/8/county
-    http://54.149.29.2/ec/8/city
-    http://54.149.29.2/ec/8/region
-    http://54.149.29.2/ec/8/tract
+    http://vitalsigns-production.elasticbeanstalk.com/ec/8/county
+    http://vitalsigns-production.elasticbeanstalk.com/ec/8/city
+    http://vitalsigns-production.elasticbeanstalk.com/ec/8/region
+    http://vitalsigns-production.elasticbeanstalk.com/ec/8/tract
     2013 Rents by Neighborhood
     - Get tract geodata
     - Load tract geodata on map
@@ -47,7 +47,7 @@
     turn on or off metro areas in graph. User should be able to hover over graph
     to see all metros' rents for the selected year. Button bar allows for switch
     between $ and % modes.
-    http://54.149.29.2/ec/8/metro
+    http://vitalsigns-production.elasticbeanstalk.com/ec/8/metro
     Metro Comparison for Rents OR Metro Comparison for Percent Change in Rents
     - Get button bar
     - ORganize data by two types
@@ -55,8 +55,8 @@
 
 
     MISC
-    http://54.149.29.2/counties
-    http://54.149.29.2/cities
+    http://vitalsigns-production.elasticbeanstalk.com/counties
+    http://vitalsigns-production.elasticbeanstalk.com/cities
 
     TODO
     - Load map
@@ -67,7 +67,7 @@
     Requests
     - The data for tracts is inconsistent.
         The featureserver data has full tracts specified in the format 06075031000
-        However, the data at http://54.149.29.2/ec/8/tract has the shorter
+        However, the data at http://vitalsigns-production.elasticbeanstalk.com/ec/8/tract has the shorter
         version (eg "31000"). It would be best if they are consistent
     */
 
@@ -741,19 +741,19 @@
         // Request all the data
         var cityPromise = $.ajax({
             dataType: "json",
-            url: "http://54.149.29.2/ec/8/city"
+            url: "http://vitalsigns-production.elasticbeanstalk.com/ec/8/city"
         });
         var countyPromise = $.ajax({
             dataType: "json",
-            url: "http://54.149.29.2/ec/8/county"
+            url: "http://vitalsigns-production.elasticbeanstalk.com/ec/8/county"
         });
         var regionPromise = $.ajax({
             dataType: "json",
-            url: "http://54.149.29.2/ec/8/region"
+            url: "http://vitalsigns-production.elasticbeanstalk.com/ec/8/region"
         });
         var metroPromise = $.ajax({
             dataType: "json",
-            url: "http://54.149.29.2/ec/8/metro"
+            url: "http://vitalsigns-production.elasticbeanstalk.com/ec/8/metro"
         });
 
         $.when(cityPromise, countyPromise, regionPromise, metroPromise).done(prepData);

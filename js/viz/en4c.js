@@ -15,9 +15,9 @@ regionPromise, countyPromise: true
     Hovering over data should show data for bar selected (example: Philadelphia:
     YYY fatalities OR Philadelphia: XX.X per 100,000 residents).
 
-    "http://54.149.29.2/en/4/metro
-    http://54.149.29.2/en/5/metro
-    http://54.149.29.2/en/6/metro"
+    "http://vitalsigns-production.elasticbeanstalk.com/en/4/metro
+    http://vitalsigns-production.elasticbeanstalk.com/en/5/metro
+    http://vitalsigns-production.elasticbeanstalk.com/en/6/metro"
 
     X-axis: Fatalities OR
     X-axis: Fatalities per 100,000 Residents
@@ -35,23 +35,15 @@ regionPromise, countyPromise: true
 
     $(function(){
         var i;
-        var data;
 
         var CHART_ID = '#en-c-chart';
-        var CHART_BASE_TITLE = ' Metro Comparison for Particulate Matter Concentrations';
-        var Y_LABEL = 'Fine Particulate Concentration (microgams/m3)';
-        var AVG_LABEL = 'Annual Average Fine Particulates';
-        var TOP_LABEL = '98th Percentile Day Fine Particulates';
-        var AVG_KEY = 'PM2#5_AnnualAvg_ugm3_Actual';
-        var TOP_KEY = 'PM2#5_daily98percentile_ugm3_Actual';
+        var CHART_BASE_TITLE = 'Metro Comparison for Fatalities from Crashes';
 
-        var GEOGRAPHY_KEY = 'Geography';
+        var TOTAL_KEY = 'Total Killed';
+        var RATE_KEY = 'Rate Killed Per 100k Pop';
+        var PER_MILE_KEY = 'Rate of Fatalities per 100m VMT';
 
-        var YEAR_KEY = 'Year';
-        var minYear;
-        var maxYear;
-        var yearNames = [];
-        var DASH_FORMAT = 'ShortDash';
+        var GEOGRAPHY_KEY = 'Place';
 
         Highcharts.setOptions({
             lang: {
@@ -60,38 +52,37 @@ regionPromise, countyPromise: true
             }
         });
 
-        var MODE_ANNUAL = {
-            title: AVG_LABEL,
-            key: AVG_KEY,
-            yAxis: 'Fine Particulate Concentration (micrograms/m3)',
-            format: "{value:,.1f}",
+        var MODE_FATALITIES = {
+            key: TOTAL_KEY,
+            yAxis: 'Fatalities',
+            yMin: 0,
+            format: "{value:,.0f}",
             pointFormat: '<tr><td style="color:{series.color};padding:0">{point.category}: </td>' +
-                '<td style="padding:0"><b>{point.y:,.1f} &mu;g/m3</b></td></tr>',
-            getSeries: function() {
+                '<td style="padding:0"><b>{point.y:,.0f} fatalities</b></td></tr>',
+            getSeries: function(data, name) {
                 var series = [{
-                    name: 'Particulate Matter Concentrations',
-                    data: _.pluck(data, AVG_KEY)
+                    name: 'Fatalities',
+                    data: _.pluck(data, TOTAL_KEY)
                 }];
                 return series;
             }
         };
-        var MODE_TOP = {
-            title: TOP_LABEL,
-            key: TOP_KEY,
-            yAxis: 'Fine Particulate Concentration (micrograms/m3)',
+        var MODE_PER_CAPITA = {
+            key: RATE_KEY,
+            yAxis: 'Fatalities per Capita',
             format: "{value:,.1f}",
             pointFormat: '<tr><td style="color:{series.color};padding:0">{point.category}: </td>' +
-                '<td style="padding:0"><b>{point.y:,.1f} &mu;g/m3</b></td></tr>',
-            getSeries: function() {
+                '<td style="padding:0"><b>{point.y:,.1f} per 100,000 residents</b></td></tr>',
+            getSeries: function(data, name) {
                 var series = [{
-                    name: 'Particulate Matter Concentrations',
-                    data: _.pluck(data, TOP_KEY)
+                    name: 'Fatalities per Capita',
+                    data: _.pluck(data, RATE_KEY)
                 }];
                 return series;
             }
         };
 
-        var activeMode = MODE_ANNUAL;
+        var activeMode = MODE_FATALITIES;
 
 
         function formatter() {
@@ -111,14 +102,14 @@ regionPromise, countyPromise: true
                 useHTML: true
             };
 
-            data = _.sortBy(data, activeMode.key).reverse();
+            var data = _.sortBy(activeMode.data, activeMode.key).reverse();
 
             $(CHART_ID).highcharts({
                 chart: {
                     type: 'bar'
                 },
                 title: {
-                    text: activeMode.title
+                    text: CHART_BASE_TITLE
                 },
                 xAxis: {
                     categories: _.uniq(_.pluck(data, GEOGRAPHY_KEY)),
@@ -142,7 +133,7 @@ regionPromise, countyPromise: true
                 plotOptions: {
                 },
                 tooltip: tooltip,
-                series: activeMode.getSeries()
+                series: activeMode.getSeries(data)
             });
         }
 
@@ -150,25 +141,24 @@ regionPromise, countyPromise: true
         function setup() {
             chart();
 
-            $('#en-c-annual').click(function(){
+            $('#en-c-fatalities').click(function(){
                 $(this).addClass("active");
                 $(this).siblings('a').removeClass('active');
 
-                activeMode = MODE_ANNUAL;
+                activeMode = MODE_FATALITIES;
                 chart();
 
                 $(this).display();
             });
-            $('#en-c-top').click(function(){
+            $('#en-c-per-capita').click(function(){
                 $(this).addClass("active");
                 $(this).siblings('a').removeClass('active');
 
-                activeMode = MODE_TOP;
+                activeMode = MODE_PER_CAPITA;
                 chart();
 
                 $(this).display();
             });
-
         }
 
 
@@ -196,27 +186,24 @@ regionPromise, countyPromise: true
 
 
         // Get the data ready to visualize
-        function prepData(rawData) {
-            data = rawData;
-
-            var years = _.pluck(data, YEAR_KEY);
-            maxYear = _.max(years);
-            minYear = _.min(years);
-            for (i = minYear; i <= maxYear; i++) {
-                yearNames.push(i);
-            }
+        function prepData(totals, rates, perMile) {
+            MODE_FATALITIES.data = totals[0];
+            MODE_PER_CAPITA.data = rates[0];
 
             // Once we have the data, set up the visualizations
             setup();
         }
 
-
-        var dataPromise = $.ajax({
+        // Request all the data
+        var totalsPromise = $.ajax({
             dataType: "json",
-            url: "http://54.149.29.2/en/1/metro"
+            url: "http://vitalsigns-production.elasticbeanstalk.com/en/4/metro"
+        });
+        var ratePromise = $.ajax({
+            dataType: "json",
+            url: "http://vitalsigns-production.elasticbeanstalk.com/en/5/metro"
         });
 
-
-        $.when(dataPromise).done(prepData);
+        $.when(totalsPromise, ratePromise).done(prepData);
     });
 })(jQuery);

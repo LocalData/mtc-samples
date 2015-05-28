@@ -166,7 +166,7 @@ regionPromise, countyPromise: true
 
         var metroPromise = $.ajax({
             dataType: "json",
-            url: "http://54.149.29.2/ec/6/metro"
+            url: "http://vitalsigns-production.elasticbeanstalk.com/ec/6/metro"
         });
         $.when(metroPromise).done(prepData);
     });

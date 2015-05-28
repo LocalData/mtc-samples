@@ -10,7 +10,7 @@
         //REQUEST COUNTY LIST DATA FROM SERVER
         $.ajax({
             dataType: "json",
-            url: "http://54.149.29.2/counties",
+            url: "http://vitalsigns-production.elasticbeanstalk.com/counties",
             //data: data,
             async: false,
             success: successt16aCountyList
@@ -25,7 +25,7 @@
         //REQUEST COUNTY DATA FROM SERVER
         $.ajax({
             dataType: "json",
-            url: "http://54.149.29.2/t16/city",
+            url: "http://vitalsigns-production.elasticbeanstalk.com/t16/city",
             //data: data,
             async: false,
             success: successt16aCityData
@@ -40,7 +40,7 @@
         //REQUEST COUNTY DATA FROM SERVER
         $.ajax({
             dataType: "json",
-            url: "http://54.149.29.2/t16/county",
+            url: "http://vitalsigns-production.elasticbeanstalk.com/t16/county",
             //data: data,
             async: false,
             success: successt16aCountyData
@@ -54,7 +54,7 @@
         //REQUEST REGION DATA FROM SERVER
         $.ajax({
             dataType: "json",
-            url: "http://54.149.29.2/t16/region",
+            url: "http://vitalsigns-production.elasticbeanstalk.com/t16/region",
             //data: data,
             async: false,
             success: successt16aRegionData

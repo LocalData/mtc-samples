@@ -699,23 +699,23 @@
         // Request all the data
         var regionPromise = $.ajax({
             dataType: "json",
-            url: "http://54.149.29.2/ec/1/region"
+            url: "http://vitalsigns-production.elasticbeanstalk.com/ec/1/region"
         });
         var region2Promise = $.ajax({
             dataType: "json",
-            url: "http://54.149.29.2/ec/2/region"
+            url: "http://vitalsigns-production.elasticbeanstalk.com/ec/2/region"
         });
         var countyPromise = $.ajax({
             dataType: "json",
-            url: "http://54.149.29.2/ec/1/county"
+            url: "http://vitalsigns-production.elasticbeanstalk.com/ec/1/county"
         });
         var county2Promise = $.ajax({
             dataType: "json",
-            url: "http://54.149.29.2/ec/2/county"
+            url: "http://vitalsigns-production.elasticbeanstalk.com/ec/2/county"
         });
         var metroPromise = $.ajax({
             dataType: "json",
-            url: "http://54.149.29.2/ec/1/metro"
+            url: "http://vitalsigns-production.elasticbeanstalk.com/ec/1/metro"
         });
 
         // Technically it could be faster to group these into separate listeners

@@ -249,7 +249,7 @@ regionPromise, countyPromise: true
 
         var portPromise = $.ajax({
             dataType: "json",
-            url: "http://54.149.29.2/ec/17/passengers"
+            url: "http://vitalsigns-production.elasticbeanstalk.com/ec/17/passengers"
         });
 
         $.when(portPromise).done(prepData);

@@ -241,12 +241,12 @@ regionPromise, countyPromise, cityPromise, _
 
         var locationsPromise = $.ajax({
             dataType: 'json',
-            url: 'http://54.149.29.2/en/2/sensorlocation'
+            url: 'http://vitalsigns-production.elasticbeanstalk.com/en/2/sensorlocation'
         });
 
         var sensorPromise = $.ajax({
             dataType: 'json',
-            url: 'http://54.149.29.2/en/2/sensors'
+            url: 'http://vitalsigns-production.elasticbeanstalk.com/en/2/sensors'
         });
 
         $.when(locationsPromise, sensorPromise).done(prepData);

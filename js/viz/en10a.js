@@ -15,7 +15,7 @@ regionPromise, countyPromise: true
     beginning of records in 1969 (e.g. "Annual Change = +XX acres
     Change since 1969 = +XXX acres")
 
-    http://54.149.29.2/en/10/region
+    http://vitalsigns-production.elasticbeanstalk.com/en/10/region
     Y-axis: Bay Acreage Change
 
     Line with label: "Cumulative Change since 1969"; Bar swatch: "Annual Change"
@@ -211,7 +211,7 @@ regionPromise, countyPromise: true
 
         var promise = $.ajax({
             dataType: "json",
-            url: "http://54.149.29.2/en/10/region"
+            url: "http://vitalsigns-production.elasticbeanstalk.com/en/10/region"
         });
 
 

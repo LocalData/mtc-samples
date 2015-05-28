@@ -34,27 +34,19 @@ regionPromise, countyPromise, cityPromise: true
 
     $(function(){
         var i;
-        var cityData, countyData, regionData;
+        var regionData, localData;
 
-        var CHART_BASE_TITLE = 'Historical Trend for Home Prices';
-        var CHART_ID = '#ec-a-chart';
-        var CITY_KEY = 'City';
-        var COUNTY_KEY = 'County';
+        var CHART_BASE_TITLE = 'Historical Trend for Fatalities from Crashes';
+        var CHART_ID = '#en-a-chart';
+
+        var GEO_KEY = 'Place';
+        var CITY_KEY = '';
+        var COUNTY_KEY = 'Place';
         var YEAR_KEY = 'Year';
 
-        var MEDIAN_KEY = 'MedPrice';
-        var MEDIAN_IA_KEY = 'MedPrice_IA';
-        var PERCENT_KEY = 'PercentChngPriceIA';
-
-        var DASH_FORMAT = 'ShortDash';
-        var COLOR_PAIRS = [
-            altColors[0],
-            altColors[0],
-            altColors[1],
-            altColors[1],
-            altColors[2],
-            altColors[2]
-        ];
+        var TOTAL_KEY = 'Total Killed';
+        var RATE_KEY = 'Rate Killed Per 100k Pop';
+        var PER_MILE_KEY = 'Rate of Fatalities per 100m VMT';
 
         var minYear, maxYear;
         var yearNames = [];
@@ -65,16 +57,11 @@ regionPromise, countyPromise, cityPromise: true
             yMin: 0,
             format: "{value:,.0f}",
             pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-                '<td style="padding:0"><b>${point.y:,.0f}</b></td></tr>',
-            colors: COLOR_PAIRS,
+                '<td style="padding:0"><b>{point.y:,.0f}</b></td></tr>',
             getSeries: function(data, name) {
                 var series = [{
-                    name: 'Inflation-Adjusted Home Price - ' + name,
-                    data: _.pluck(data, MEDIAN_IA_KEY)
-                }, {
-                    name: 'Non-Inflation-Adjusted Home Price - ' + name,
-                    data: _.pluck(data, MEDIAN_KEY),
-                    dashStyle: DASH_FORMAT
+                    name: 'Fatalities - ' + name,
+                    data: _.pluck(data, TOTAL_KEY)
                 }];
                 return series;
             }
@@ -82,14 +69,13 @@ regionPromise, countyPromise, cityPromise: true
         var MODE_PER_CAPITA = {
             title: 'Historical Trend for Fatalities from Crashes',
             yAxis: 'Fatalities per Capita',
-            format: "{value:,.0f}",
+            format: "{value:,.1f}",
             pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-                '<td style="padding:0"><b>{point.y:,.0f}%</b></td></tr>',
-            colors: altColors,
+                '<td style="padding:0"><b>{point.y:,.1f}</b></td></tr>',
             getSeries: function(data, name) {
                 var series = [{
-                    name: '% Change in Home Prices (inflation-adjusted) - ' + name,
-                    data: _.pluck(data, PERCENT_KEY)
+                    name: 'Fatalities per Capita - ' + name,
+                    data: _.pluck(data, RATE_KEY)
                 }];
                 return series;
             }
@@ -97,14 +83,13 @@ regionPromise, countyPromise, cityPromise: true
         var MODE_PER_MILE = {
             title: 'Historical Trend for Fatalities from Crashes',
             yAxis: 'Fatalities per Vehicle Mile Traveled',
-            format: "{value:,.0f}",
+            format: "{value:,.1f}",
             pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-                '<td style="padding:0"><b>{point.y:,.0f}%</b></td></tr>',
-            colors: altColors,
+                '<td style="padding:0"><b>{point.y:,.1f}</b></td></tr>',
             getSeries: function(data, name) {
                 var series = [{
-                    name: '% Change in Home Prices (inflation-adjusted) - ' + name,
-                    data: _.pluck(data, PERCENT_KEY)
+                    name: 'Fatalities per Vehicle Mile Traveled - ' + name,
+                    data: _.pluck(data, PER_MILE_KEY)
                 }];
                 return series;
             }
@@ -141,12 +126,12 @@ regionPromise, countyPromise, cityPromise: true
             var series = getSeries(regionData, 'Bay Area');
 
             if (selectedGeography.county) {
-                var selectedCountyData = _.filter(countyData, {'County': selectedGeography.county});
+                var selectedCountyData = _.filter(localData, {'Place': selectedGeography.county});
                 series = series.concat(getSeries(selectedCountyData, selectedGeography.county));
             }
 
             if (selectedGeography.city) {
-                var selectedCityData = _.filter(cityData, {'City': selectedGeography.city});
+                var selectedCityData = _.filter(localData, {'Place': selectedGeography.city});
                 series = series.concat(getSeries(selectedCityData, selectedGeography.city));
             }
 
@@ -188,7 +173,7 @@ regionPromise, countyPromise, cityPromise: true
                     categories: yearNames,
                     tickmarkPlacement: 'on',
                     labels: {
-                        step: 2,
+                        // step: 2,
                         maxStaggerLines: 1,
                         staggerLines: 1
                     },
@@ -212,7 +197,7 @@ regionPromise, countyPromise, cityPromise: true
                     enabled: true,
                     symbolWidth: 30
                 },
-                colors: mode.colors,
+                colors: altColors,
                 plotOptions: {
                 },
                 tooltip: tooltip,
@@ -234,10 +219,10 @@ regionPromise, countyPromise, cityPromise: true
 
         function resetCombos(mode) {
             var combo;
-            combo = $("#ec-a-county-select").data("kendoComboBox");
+            combo = $("#en-a-county-select").data("kendoComboBox");
             combo.text('Select County...');
-            combo = $("#ec-a-city-select").data("kendoComboBox");
-            combo.text('Select City...');
+            // combo = $("#en-a-city-select").data("kendoComboBox");
+            // combo.text('Select City...');
         }
 
 
@@ -301,23 +286,23 @@ regionPromise, countyPromise, cityPromise: true
                 $(this).display();
             });
 
-            $("#ec-a-city-select").kendoComboBox({
-                text: "Select City...",
-                dataTextField: CITY_KEY,
-                dataValueField: CITY_KEY,
-                dataSource: [{ 'City': 'Bay Area' }].concat(_.uniq(cityData, CITY_KEY)),
-                select: selectLocation
-            });
-            $("#ec-a-county-select").kendoComboBox({
+            // $("#ec-a-city-select").kendoComboBox({
+            //     text: "Select City...",
+            //     dataTextField: CITY_KEY,
+            //     dataValueField: CITY_KEY,
+            //     dataSource: [{ 'City': 'Bay Area' }].concat(_.uniq(localData, GEO_KEY)),
+            //     select: selectLocation
+            // });
+            $("#en-a-county-select").kendoComboBox({
                 text: "Select County...",
                 dataTextField: COUNTY_KEY,
                 dataValueField: COUNTY_KEY,
-                dataSource: [{ 'County': 'Bay Area' }].concat(_.uniq(countyData, COUNTY_KEY)),
+                dataSource: [{ 'Place': 'Bay Area' }].concat(_.uniq(localData, GEO_KEY)),
                 select: selectLocation
             });
 
-            var ecACitySelect = $("#ec-a-city-select").data("kendoComboBox");
-            var ecACountySelect = $("#ec-a-county-select").data("kendoComboBox");
+            var ecACitySelect = $("#en-a-city-select").data("kendoComboBox");
+            var ecACountySelect = $("#en-a-county-select").data("kendoComboBox");
         }
 
 
@@ -330,69 +315,107 @@ regionPromise, countyPromise, cityPromise: true
         }
 
 
-        function roundBillion(n) {
-            if (n === null) {
-                return n;
-            }
-
-            return Math.round(n/1000000000);
-        }
-
-
         function percent(n) {
             return n * 100;
         }
 
 
-        function setupNumbers(d) {
-            var i;
-            for(i = 0; i < d.length; i++) {
-                 d[i][PERCENT_KEY] = percent(d[i][PERCENT_KEY]);
-            }
-            return d;
-        }
+        // function setupNumbers(d) {
+        //     var i;
+        //     for(i = 0; i < d.length; i++) {
+        //     }
+        //     return d;
+        // }
 
 
         // Get the data ready to visualize
-        function prepData(city, county, region) {
-            cityData = setupNumbers(_.clone(city[0], true));
-            countyData = setupNumbers(_.clone(county[0], true));
-            regionData = setupNumbers(_.clone(region[0], true));
+        function prepData(
+            regionTotals,
+            localTotals,
+            regionRate,
+            localRate,
+            regionPerMile,
+            localPerMile
+        ) {
 
+            regionTotals = regionTotals[0];
+            localTotals = localTotals[0];
+            regionRate = regionRate[0];
+            localRate = localRate[0];
+            regionPerMile = regionPerMile[0];
+            localPerMile = localPerMile[0];
+
+            // Get the years available
             yearNames = [];
-            var years = _.pluck(regionData, YEAR_KEY);
+            var years = _.pluck(regionTotals, YEAR_KEY);
             var maxYear = _.max(years);
             var minYear = _.min(years);
             for (i = minYear; i <= maxYear; i++) {
                 yearNames.push(i);
             }
 
+            // Combine all the regional data
+            regionData = _.merge(regionTotals, regionRate, regionPerMile);
+
+            // Combine all the city data
+            localData = [];
+            _.each(localTotals, function(l) {
+                var perMile = _.find(localPerMile, {
+                    Year: l.Year,
+                    Place: l.Place
+                });
+                var rate = _.find(localRate, {
+                    Year: l.Year,
+                    Place: l.Place
+                });
+
+                l[RATE_KEY] = rate[RATE_KEY] || null;
+                l[PER_MILE_KEY] = perMile[PER_MILE_KEY] || null;
+                localData.push(l);
+            });
+
             // Once we have the data, set up the visualizations
             setup();
         }
 
-        // http://54.149.29.2/en/4/region
-        // http://54.149.29.2/en/4/local
-        // http://54.149.29.2/en/5/region
-        // http://54.149.29.2/en/5/local
-        // http://54.149.29.2/en/6/region
-        // http://54.149.29.2/en/6/local
 
         // Request all the data
-        // cityPromise = $.ajax({
-        //     dataType: "json",
-        //     url: "http://54.149.29.2/ec/7/city"
-        // });
-        // countyPromise = $.ajax({
-        //     dataType: "json",
-        //     url: "http://54.149.29.2/ec/7/county"
-        // });
-        // regionPromise = $.ajax({
-        //     dataType: "json",
-        //     url: "http://54.149.29.2/ec/7/region"
-        // });
+        var regionTotalsPromise = $.ajax({
+            dataType: "json",
+            url: "http://vitalsigns-production.elasticbeanstalk.com/en/4/region"
+        });
+        var localTotalsPromise = $.ajax({
+            dataType: "json",
+            url: "http://vitalsigns-production.elasticbeanstalk.com/en/4/local"
+        });
+
+        var regionRatePromise = $.ajax({
+            dataType: "json",
+            url: "http://vitalsigns-production.elasticbeanstalk.com/en/5/region"
+        });
+        var localRatePromise = $.ajax({
+            dataType: "json",
+            url: "http://vitalsigns-production.elasticbeanstalk.com/en/5/local"
+        });
+
+        var regionPerMilePromise = $.ajax({
+            dataType: "json",
+            url: "http://vitalsigns-production.elasticbeanstalk.com/en/6/region"
+        });
+        var localPerMilePromise = $.ajax({
+            dataType: "json",
+            url: "http://vitalsigns-production.elasticbeanstalk.com/en/6/local"
+        });
 
 
-        $.when(cityPromise, countyPromise, regionPromise).done(prepData);
+        $.when(
+            regionTotalsPromise,
+            localTotalsPromise,
+            regionRatePromise,
+            localRatePromise,
+            regionPerMilePromise,
+            localPerMilePromise
+        ).done(prepData);
+
     });
 })(jQuery);

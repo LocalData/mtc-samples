@@ -153,7 +153,7 @@
         // Request all the data
         var metroPromise = $.ajax({
             dataType: "json",
-            url: "http://54.149.29.2/ec/1/metro"
+            url: "http://vitalsigns-production.elasticbeanstalk.com/ec/1/metro"
         });
 
         $.when(metroPromise).done(prepData);

@@ -1,9 +1,9 @@
 /*globals jQuery, L, geocities, cartodb, econColors, altColors, Highcharts, science: true */
 (function($) {
     /*
-    http://54.149.29.2/ec/3/city
-    http://54.149.29.2/ec/3/county
-    http://54.149.29.2/ec/3/region
+    http://vitalsigns-production.elasticbeanstalk.com/ec/3/city
+    http://vitalsigns-production.elasticbeanstalk.com/ec/3/county
+    http://vitalsigns-production.elasticbeanstalk.com/ec/3/region
 
     A
     Line graph showing the incomes of residents and workers for a selected
@@ -14,11 +14,11 @@
     year, Y-axis should be income. User should be able to use button bar to
     switch from Median Incomes to % Growth in Median Income since 1970 (no
     worker data for that mode).
-    "http:// 54.149.29.2/ec/4/city
-    http:// 54.149.29.2/ec/4/county
-    http:// 54.149.29.2/ec/4/region
-    http:// 54.149.29.2/ec/5/county
-    http:// 54.149.29.2/ec/5/region"
+    "http:// vitalsigns-production.elasticbeanstalk.com/ec/4/city
+    http:// vitalsigns-production.elasticbeanstalk.com/ec/4/county
+    http:// vitalsigns-production.elasticbeanstalk.com/ec/4/region
+    http:// vitalsigns-production.elasticbeanstalk.com/ec/5/county
+    http:// vitalsigns-production.elasticbeanstalk.com/ec/5/region"
     Y-axis: Median Income ($) OR Change in Median Income since 1970 (%)
     Historical Trend for Median Income - "Geography"
     LU1-A
@@ -32,9 +32,9 @@
     graph in side panel, a top 5 and bottom 5 list should show the highest
     income and lowest household income cities in the region. No button bar or
     dropdown menus are needed.
-    "http:// 54.149.29.2/ec/4/city
-    http:// 54.149.29.2/ec/4/county
-    http:// 54.149.29.2/ec/4/tract"
+    "http:// vitalsigns-production.elasticbeanstalk.com/ec/4/city
+    http:// vitalsigns-production.elasticbeanstalk.com/ec/4/county
+    http:// vitalsigns-production.elasticbeanstalk.com/ec/4/tract"
     2013 Median Household Income by Neighborhood
 
     C
@@ -43,15 +43,15 @@
     growth. User should be able to turn on or off metro areas in graph. User
     should be able to hover over graph to see all metros' incomes for the
     selected year. Button bar allows for switch between $ and % modes.
-    http:// 54.149.29.2/ec/4/metro
-    http:// 54.149.29.2/ec/5/metro
+    http:// vitalsigns-production.elasticbeanstalk.com/ec/4/metro
+    http:// vitalsigns-production.elasticbeanstalk.com/ec/5/metro
     Metro Comparison for Median Household Income
     LU1-C
 
 
     MISC
-    http://54.149.29.2/counties
-    http://54.149.29.2/cities
+    http://vitalsigns-production.elasticbeanstalk.com/counties
+    http://vitalsigns-production.elasticbeanstalk.com/cities
 
     TODO
     - Move C to separate file
@@ -61,7 +61,7 @@
 
     REQUESTS / QUESTIONS
     - Should title of B be "income by tract"?
-    - http://54.149.29.2/ec/4/region: Residence_Geo1 should be Residence_Geo,
+    - http://vitalsigns-production.elasticbeanstalk.com/ec/4/region: Residence_Geo1 should be Residence_Geo,
     - Residence_Geo should be Year
     - St Helena doesn't have income data after 2009 -- too small?
 
@@ -841,14 +841,14 @@
 
         // Fetch all the data in one go.
         var sources = [
-            'http://54.149.29.2/ec/4/city',
-            'http://54.149.29.2/ec/4/county',
-            'http://54.149.29.2/ec/4/region',
-            'http://54.149.29.2/ec/5/county',
-            'http://54.149.29.2/ec/5/region',
-            'http://54.149.29.2/ec/4/tract',
-            'http://54.149.29.2/ec/4/metro',
-            'http://54.149.29.2/ec/5/metro'
+            'http://vitalsigns-production.elasticbeanstalk.com/ec/4/city',
+            'http://vitalsigns-production.elasticbeanstalk.com/ec/4/county',
+            'http://vitalsigns-production.elasticbeanstalk.com/ec/4/region',
+            'http://vitalsigns-production.elasticbeanstalk.com/ec/5/county',
+            'http://vitalsigns-production.elasticbeanstalk.com/ec/5/region',
+            'http://vitalsigns-production.elasticbeanstalk.com/ec/4/tract',
+            'http://vitalsigns-production.elasticbeanstalk.com/ec/4/metro',
+            'http://vitalsigns-production.elasticbeanstalk.com/ec/5/metro'
         ];
         var requestArray = [];
         var i;

@@ -205,11 +205,11 @@ regionPromise, countyPromise: true
 
         var ec13Promise = $.ajax({
             dataType: "json",
-            url: "http://54.149.29.2/ec/13/region"
+            url: "http://vitalsigns-production.elasticbeanstalk.com/ec/13/region"
         });
         var ec14Promise = $.ajax({
             dataType: "json",
-            url: "http://54.149.29.2/ec/14/region"
+            url: "http://vitalsigns-production.elasticbeanstalk.com/ec/14/region"
         });
 
         $.when(ec13Promise, ec14Promise).done(prepData);
