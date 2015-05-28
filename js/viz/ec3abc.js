@@ -110,6 +110,11 @@
                 selectedGeography = 'Bay Area';
             }
 
+            // Don't explicitly set step size on smaller screens
+            if (window.innerWidth < 650) {
+                delete options.xAxis.labels.step;
+            }
+
             options.title.text += ' - ' + selectedGeography;
 
             $(id).highcharts(options);

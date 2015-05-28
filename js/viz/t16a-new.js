@@ -283,6 +283,25 @@ regionPromise, countyPromise, cityPromise: true
             return d;
         }
 
+        // Request all the data
+        var cityPromise = $.ajax({
+            dataType: "json",
+            url: "http://54.149.29.2/ec/11/city"
+        });
+        var countyPromise = $.ajax({
+            dataType: "json",
+            url: "http://54.149.29.2/ec/11/county"
+        });
+        var regionPromise = $.ajax({
+            dataType: "json",
+            url: "http://54.149.29.2/ec/11/region"
+        });
+        var metroPromise = $.ajax({
+            dataType: "json",
+            url: "http://54.149.29.2/ec/11/metro"
+        });
+
+
 
         // Get the data ready to visualize
         function prepData(region, county, city) {

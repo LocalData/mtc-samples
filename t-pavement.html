@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>EN10: Bay Fill</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="css/app.css" rel="stylesheet" media="screen">
+
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
+
+    <link href="http://cdn.kendostatic.com/2014.1.528/styles/kendo.common.min.css" rel="stylesheet" />
+    <link href="http://cdn.kendostatic.com/2014.1.528/styles/kendo.default.min.css" rel="stylesheet" />
+    <link href="http://cdn.kendostatic.com/2014.1.528/styles/kendo.dataviz.min.css" rel="stylesheet" />
+    <link href="http://cdn.kendostatic.com/2014.1.528/styles/kendo.dataviz.default.min.css" rel="stylesheet" />
+
+<!--     <link type="text/css" rel="stylesheet" href="https://api.tiles.mapbox.com/mapbox.js/v2.1.4/mapbox.css" media="all" />
+ -->
+    <link rel="stylesheet" href="http://libs.cartocdn.com/cartodb.js/v3/3.13/themes/css/cartodb.css" />
+
+    <style type="text/css">
+      #map {
+        height: 300px;
+        width: 700px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="T16-A"><div><input id="t16aCityCombo" style="width: 200px;" /></div><div id="T16-A-chart" style="width:100%;height:85%">&nbsp;</div></div>
+
+    <script src='https://api.tiles.mapbox.com/mapbox.js/v2.1.4/mapbox.js'></script>
+        <div class="container">
+            <!-- Three columns of text below the carousel -->
+            <div class="row">
+                <div class="col-lg-3 col-md-3 col-sm-3 text-left infoDiv">
+                    <div id="cityDiv">
+                        <div id="regionTextDiv">
+                        </div>
+                        <br>
+
+                        <div id="cityInfoDiv">
+                            <div id="citypciInfoDiv" style="display:none;">
+                                <label for="City_Name" class="col-sm-3 control-label information">City:</label>
+                                <div id="City_Name" class="information"></div>
+                                <label for="City_Value" class="col-sm-3 control-label information" id="pciCityLabel">PCI:</label>
+                                <div id="City_Value" class="information"></div>
+                            </div>
+                   </div>
+
+                    </div>
+                    <!--                End City Div-->
+
+                    <div id="infoDiv">
+                        <h4>Segment Details</h4>
+                        <label for="PCI_value" class="col-sm-3 control-label information" id="pciLabel">PCI</label>
+                        <div id="PCI_value" class="information"></div>
+                        <br>
+                        <label for="Street_value" class="col-sm-3 control-label information">Street:</label>
+                        <div id="Street_value" class="information"></div>
+                        <br>
+
+                        <label for="From_value" class="col-sm-3 control-label information">From:</label>
+                        <div id="From_value" class="informaiton"></div>
+                        <br>
+
+                        <label for="To_value" class="col-sm-3 control-label information">To:</label>
+                        <div id="To_value" class="information"></div>
+                        <br>
+
+                    </div>
+
+                    <div class="row">
+                     <div class="col-lg-12">
+                        <h4>Legend</h4>
+                        <h5>Condition (PCI range)</h5>
+                        <div class='my-legend'>
+                          <div class='legend-title'></div>
+                            <div class='legend-scale'>
+                                <ul class='legend-labels'>
+                                    <li><span style='background:#A70C03; padding:5px'></span>Poor/Failed (0-49)</li>
+                                    <li><span style='background:#F01B0F;padding:5px'></span>At Risk (50-59)</li>
+                                    <!--    <li><span style='background:#FFFF00;padding:5px'></span>Average</li>-->
+                                    <li><span style='background:#00FF00;padding:5px'></span>Good/Fair (60-79)</li>
+                                    <li><span style='background:#398615;padding:5px'></span>Excellent/Very Good (80-100)</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-lg-9 col-md-9 col-sm-9 text-center">
+                    <div id="map">
+                    <div id="controls" style="position:absolute;top:10px;right:20px;z-index:1000;width:100px;"></div>
+                </div>
+            </div>
+            <!-- /.row -->
+
+    <!-- libraries -->
+    <script src="http://code.jquery.com/jquery.js"></script>
+    <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+    <script type="text/javascript" src="https://api.tiles.mapbox.com/mapbox.js/v2.1.4/mapbox.js"></script>
+
+    <script src="http://cdn.kendostatic.com/2014.1.528/js/kendo.all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.5.0/lodash.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bluebird/2.9.13/bluebird.min.js"></script>
+    <script src="http://code.highcharts.com/highcharts.js"></script>
+
+    <script src="js/esri-leaflet.js"></script>
+
+
+    <!-- From MTC server -->
+    <!-- <script src="http://dev-mtc-vital-signs.pantheon.io/sites/all/themes/vitalsigns/js/geocities.js"></script>-->
+    <script src="http://dev-mtc-vital-signs.pantheon.io/sites/all/themes/vitalsigns/js/colors.js"></script>
+    <script src="http://dev-mtc-vital-signs.pantheon.io/sites/all/themes/vitalsigns/js/science.v1.min.js"></script>
+
+    <script src="js/viz/t16a.js"></script>
+    <!--<script src="js/viz/t16b.js"></script>-->
+  </body>
+</html>

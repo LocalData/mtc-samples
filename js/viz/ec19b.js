@@ -132,6 +132,15 @@ regionPromise, countyPromise, cityPromise: true
                 series: series
             };
 
+            // Show the label below the chart on smaller screens
+            if (window.innerWidth < 650) {
+                console.log("Using smaller window settings");
+                delete options.legend.layout;
+                delete options.legend.align;
+                delete options.legend.verticalAlign;
+                delete options.legend.x;
+                delete options.legend.y;
+            }
 
             $(CHART_ID).highcharts(options);
         }

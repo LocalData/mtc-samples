@@ -127,6 +127,11 @@ regionPromise, countyPromise: true
                 series: series
             };
 
+            // Don't explicitly set step size on smaller screens
+            if (window.innerWidth < 650) {
+                delete options.xAxis.labels.step;
+            }
+
             $(CHART_ID).highcharts(options);
         }
 

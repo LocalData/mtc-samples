@@ -248,7 +248,8 @@
                     height: 500,
                     ignoreHiddenSeries: false,
                     events: {
-                        redraw: addLabels
+                        // TODO! Don't re-add existing labels.
+                        // redraw: addLabels
                         // load: quadrants
                     }
                 },
@@ -308,7 +309,7 @@
                 series: series
             };
 
-            console.log(window.innerWidth);
+            // Show the label below the chart on smaller screens
             if (window.innerWidth < 650) {
                 console.log("Using smaller window settings");
                 delete options.legend.layout;

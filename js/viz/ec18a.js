@@ -52,7 +52,7 @@ regionPromise, countyPromise: true
             }
         });
 
-        /* -- EC-8 A (Regional rent graph) -----------------------------------*/
+
         function formatter() {
             if (this.value === 'Bay Area') {
                 return '<span style="font-weight:800;color:#000;">' + this.value + '</span>';
@@ -152,6 +152,11 @@ regionPromise, countyPromise: true
                 tooltip: tooltip,
                 series: series
             };
+
+            // Don't explicitly set step size on smaller screens
+            if (window.innerWidth < 650) {
+                delete options.xAxis.labels.step;
+            }
 
             $(CHART_ID).highcharts(options);
         }

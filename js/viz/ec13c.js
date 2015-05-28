@@ -6,7 +6,7 @@ regionPromise, countyPromise: true
     /*
     Economic output
 
-    B
+    C
     Line graph showing both total GRP and per-capita GRP for 10 metros -
     per-capita GRP shown by default, but user can select measure from button bar.
     Button bar also lets user see the % change in GRP, similar to T11-12-C.
