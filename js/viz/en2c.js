@@ -1,5 +1,5 @@
 /*globals
-jQuery, L, cartodb, geocities, econColors, allBlue, altColors, Highcharts, science,
+jQuery, L, cartodb, geocities, econColors, allGreen, altColors, Highcharts, science,
 regionPromise, countyPromise: true
 */
 (function($) {
@@ -33,7 +33,7 @@ regionPromise, countyPromise: true
         var data;
 
         var CHART_ID = '#en-c-chart';
-        var CHART_BASE_TITLE = ' Metro Comparison for Ozone Concentrations';
+        var CHART_BASE_TITLE = 'Metro Comparison for Ozone Concentrations';
         var Y_LABEL = 'Ozone Concentration (ppb)';
 
         var AVG_LABEL = '';
@@ -95,7 +95,7 @@ regionPromise, countyPromise: true
                     type: 'bar'
                 },
                 title: {
-                    text: activeMode.title
+                    text: CHART_BASE_TITLE
                 },
                 xAxis: {
                     categories: _.uniq(_.pluck(data, GEOGRAPHY_KEY)),
@@ -115,7 +115,7 @@ regionPromise, countyPromise: true
                 legend: {
                     enabled: false
                 },
-                colors: altColors,
+                colors: allGreen,
                 plotOptions: {
                 },
                 tooltip: tooltip,

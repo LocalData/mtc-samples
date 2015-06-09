@@ -38,7 +38,7 @@ regionPromise, countyPromise: true
         var AVG_3YR_LABEL = '3-Year Average';
         var AVG_3YR_KEY = 'Ozone_Max4_Daily_8HR_ppb_Annual_3YR';
 
-        var AVG_LABEL = 'Annual';
+        var AVG_LABEL = 'Annual Average';
         var AVG_KEY = 'Ozone_Max4_Daily_8HR_ppb_Annual_1YR';
 
         var TOP_LABEL = 'Worst Location';
@@ -115,11 +115,17 @@ regionPromise, countyPromise: true
             var series = [{
                 name: TOP_LABEL,
                 data: _.pluck(data, TOP_KEY),
-                lineWidth: 1
+                lineWidth: 1.5,
+                marker: {
+                    radius: 3
+                }
             }, {
                 name: AVG_LABEL,
                 data: _.pluck(data, AVG_KEY),
-                lineWidth: 1
+                lineWidth: 1.5,
+                marker: {
+                    radius: 3
+                }
             }, {
                 name: AVG_3YR_LABEL,
                 data: _.pluck(data, AVG_3YR_KEY),

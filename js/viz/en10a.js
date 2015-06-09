@@ -65,14 +65,21 @@ regionPromise, countyPromise: true
         function graph(series) {
             var tooltip = {
                 headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
-                pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-                '<td style="padding:0"><b>{point.y:,.0f} acres</b></td></tr>',
+                pointFormatter: function() {
+                    var val = parseFloat(this.y.toFixed(0)).toLocaleString();
+                    if (this.y > 0) {
+                        val = '+' + val;
+                    }
+
+                    var s = '<tr><td style="color:' + this.series.color + ';padding:0">';
+                    s += this.series.name + ': </td>';
+                    s += '<td style="padding:0"><b>' + val + ' acres</b></td></tr>';
+                    return s;
+                },
                 footerFormat: '</table>',
                 shared: true,
                 useHTML: true
             };
-
-            console.log("Chart with", series);
 
             var options = {
                 chart: {
@@ -96,13 +103,7 @@ regionPromise, countyPromise: true
                     },
                     startOnTick: false,
                     endOnTick: false,
-                    min: -1000,
-                    formatter: function() {
-                        if (this.value > 0) {
-                            return '+' + this.value;
-                        }
-                        return this.value;
-                    }
+                    min: -1000
                 }
                 //, {
                 //    title: {

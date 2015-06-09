@@ -27,6 +27,7 @@ regionPromise, countyPromise: true
     $(function(){
         var i;
         var portData;
+        var DASH_FORMAT = 'ShortDash';
 
         var CHART_ID = '#ec-a-chart';
         var CHART_BASE_TITLE = 'Historical Trend for Seaport Activity - Port of Oakland';
@@ -43,7 +44,6 @@ regionPromise, countyPromise: true
         var minYear;
         var maxYear;
         var yearNames = [];
-        var DASH_FORMAT = 'ShortDash';
 
         Highcharts.setOptions({
             lang: {

@@ -1,5 +1,5 @@
 /*globals
-jQuery, L, cartodb, geocities, econColors, allBlue, altColors, Highcharts, science,
+jQuery, L, cartodb, geocities, econColors, allGreen, altColors, Highcharts, science,
 regionPromise, countyPromise: true
 */
 (function($) {
@@ -129,7 +129,7 @@ regionPromise, countyPromise: true
                 legend: {
                     enabled: false
                 },
-                colors: altColors,
+                colors: allGreen,
                 plotOptions: {
                 },
                 tooltip: tooltip,

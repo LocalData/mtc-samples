@@ -48,15 +48,16 @@ regionPromise, countyPromise, cityPromise, _
         var maxYear, minYear;
         var yearNames = [];
 
-        var locations, sensorData, selectedGeography;
+        var locations, sensorData;
+        var selectedGeography = [];
 
         var point_styles = {
-            radius: 5,
+            radius: 6,
             fillColor: "#ff7800",
-            color: "#000",
-            weight: 0,
+            color: "#fff",
+            weight: 1.5,
             opacity: 1,
-            fillOpacity: 0.65
+            fillOpacity: 1
         };
 
         function fillInYears(data, key) {
@@ -82,35 +83,42 @@ regionPromise, countyPromise, cityPromise, _
             return filledData;
         }
 
+        function getSeries(key, label) {
+            var series = [];
+
+            _.each(selectedGeography, function(geo) {
+                var data = _.filter(sensorData, {
+                    Sensor: geo[GEO_KEY]
+                });
+
+                series.push({
+                    name: geo[GEO_KEY],
+                    data: _.pluck(fillInYears(data, key), key),
+                    color: geo.color,
+                    animation: false
+                });
+            });
+
+            return series;
+        }
+
         var MODE_ANNUAL = {
             title: AVG_LABEL,
+            label: AVG_LABEL,
+            key: AVG_KEY,
             yAxis: 'Fine Particulate Concentration (microgams/m3)',
             format: "{value:,.1f}",
             pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-                '<td style="padding:0"><b>{point.y:,.1f} (&mu;g/m3)</b></td></tr>',
-            getSeries: function(data, name) {
-                var series = [{
-                    name: AVG_LABEL + ' - ' + selectedGeography[GEO_KEY],
-                    data: _.pluck(fillInYears(data, AVG_KEY), AVG_KEY),
-                    color: selectedGeography.color
-                }];
-                return series;
-            }
+                '<td style="padding:0"><b>{point.y:,.1f} &mu;g/m3</b></td></tr>'
         };
         var MODE_TOP = {
             title: TOP_LABEL,
+            label: TOP_LABEL,
+            key: TOP_KEY,
             yAxis: 'Fine Particulate Concentration (microgams/m3)',
             format: "{value:,.1f}",
             pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-                '<td style="padding:0"><b>{point.y:,.1f} (&mu;g/m3)</b></td></tr>',
-            getSeries: function(data, name) {
-                var series = [{
-                    name: TOP_LABEL + ' - ' + selectedGeography[GEO_KEY],
-                    data: _.pluck(fillInYears(data, TOP_KEY), TOP_KEY),
-                    color: selectedGeography.color
-                }];
-                return series;
-            }
+                '<td style="padding:0"><b>{point.y:,.1f} &mu;g/m3</b></td></tr>'
         };
 
         var activeMode = MODE_ANNUAL;
@@ -139,7 +147,7 @@ regionPromise, countyPromise, cityPromise, _
             });
 
             var tooltip = {
-                headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+                headerFormat: '<span style="font-size:10px">{point.key} ' + activeMode.label + '</span><table>',
                 pointFormat: activeMode.pointFormat,
                 footerFormat: '</table>',
                 shared: true,
@@ -161,6 +169,9 @@ regionPromise, countyPromise, cityPromise, _
                     title: {
                         text: activeMode.yAxis
                     },
+                    min: 0,
+                    max: activeMode.max,
+                    endOnTick: false,
                     reversedStacks: true,
                     stackLabels: {
                         enabled: false
@@ -173,13 +184,17 @@ regionPromise, countyPromise, cityPromise, _
                 plotOptions: {
                 },
                 tooltip: tooltip,
-                series: activeMode.getSeries(selectedGeographyData, selectedGeography)
+                series: getSeries(activeMode.key, activeMode.label)
             });
         }
 
 
         function interaction(event, feature) {
-            selectedGeography = feature.properties;
+            if (_.find(selectedGeography, feature.properties)) {
+                _.remove(selectedGeography, feature.properties);
+            } else {
+                selectedGeography.push(feature.properties);
+            }
 
             // Show the button bar and chart
             $('#en-b-buttons').show();
@@ -195,7 +210,6 @@ regionPromise, countyPromise, cityPromise, _
 
 
         function pointToLayer(feature, latlng) {
-            point_styles.color = feature.properties.color;
             point_styles.fillColor = feature.properties.color;
 
             return L.circleMarker(latlng, point_styles);
@@ -284,6 +298,11 @@ regionPromise, countyPromise, cityPromise, _
             for (i = minYear; i <= maxYear; i++) {
                 yearNames.push(i);
             }
+
+            // Get the max values for the two data modes
+            MODE_TOP.max = _.max(sensorData, MODE_TOP.key)[MODE_TOP.key];
+            MODE_ANNUAL.max = _.max(sensorData, MODE_ANNUAL.key)[MODE_ANNUAL.key];
+            console.log("Got maxes", MODE_TOP.max, MODE_ANNUAL.max);
 
             // Once we have the data, set up the visualizations
             setup();

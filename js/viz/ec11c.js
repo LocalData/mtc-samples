@@ -26,7 +26,7 @@ regionPromise, countyPromise, cityPromise, metroPromise: true
 
    $(function(){
         var CHART_ID = '#ec-c-chart';
-        var CHART_BASE_TITLE = 'Metro Comparison for Poverty Rate';
+        var CHART_BASE_TITLE = 'Metro Comparison for 2013 Poverty Rate';
         var DASH_FORMAT = 'ShortDash';
         var FOCUS_FIELD = 'PovPCT200';
 

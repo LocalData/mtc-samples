@@ -1,5 +1,5 @@
 /*globals
-jQuery, L, cartodb, geocities, econColors, altColors, Highcharts, science,
+jQuery, L, cartodb, geocities, econColors, altColors, allGreen, Highcharts, science,
 regionPromise, countyPromise: true
 */
 (function($) {

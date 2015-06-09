@@ -7,22 +7,22 @@ regionPromise, countyPromise, cityPromise: true
     Fatalaties from Crashes
 
     A
-    Line graph showing historical fatality trends for the region, counties, or
-    cities (only EN4 and EN5 available for cities). Button bar allows user to
+    Line graph showing historical serious injury trends for the region, counties,
+    or cities (only EN7 and EN8 available for cities). Button bar allows user to
     choose the metric they are interested in; total fatalities provided by
     default with region upon load. Drop down menus allow the user to select a
-    city or county of interest. When in EN5 or EN6 mode, selection of county or
+    city or county of interest. When in EN8 or EN9 mode, selection of county or
     city should show parent geographies for reference (e.g. Bay Area, Alameda
-    County, Berkeley). X-axis should be year and Y-axis should be fatalities
-    (total, per-capita, or per-VMT). Hovering over the graph should show the
-    relevant data for lines plotted for the year in question with geography
-    names.
+    County, Berkeley). X-axis should be year and Y-axis should be serious
+    injuries (total, per-capita, or per-VMT). Hovering over the graph should
+    show the relevant data for lines plotted for the year in question with
+    geography names.
 
-    Y-axis: Fatalities OR Fatalities per Capita OR
-    Fatalities per Vehicle Mile Traveled
+    Y-axis: Serious Injuries OR
+    Serious Injuries per Capita OR
+    Serious Injuries per Vehicle Mile Traveled
 
-    Historical Trend for Fatalities from Crashes
-
+    Historical Trend for Injuries from Crashes
 
     MISC
 
@@ -36,7 +36,7 @@ regionPromise, countyPromise, cityPromise: true
         var i;
         var regionData, localData;
 
-        var CHART_BASE_TITLE = 'Historical Trend for Fatalities from Crashes';
+        var CHART_BASE_TITLE = 'Historical Trend for Injuries from Crashes';
         var CHART_ID = '#en-a-chart';
 
         var DASH_FORMAT = 'ShortDash';
@@ -46,48 +46,48 @@ regionPromise, countyPromise, cityPromise: true
         var COUNTY_KEY = 'Place';
         var YEAR_KEY = 'Year';
 
-        var TOTAL_KEY = 'Total Killed';
-        var RATE_KEY = 'Rate Killed Per 100k Pop';
-        var PER_MILE_KEY = 'Rate of Fatalities per 100m VMT';
+        var TOTAL_KEY = 'Severe Injury';
+        var RATE_KEY = 'Rate of SevInj Per 100k Pop';
+        var PER_MILE_KEY = 'Rate of SevInj Per 100m VMT';
 
         var minYear, maxYear;
         var yearNames = [];
 
-        var MODE_FATALITIES = {
-            yAxis: 'Fatalities',
+        var MODE_INJURIES = {
+            yAxis: 'Injuries',
             yMin: 0,
             format: "{value:,.0f}",
             pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
                 '<td style="padding:0"><b>{point.y:,.0f}</b></td></tr>',
             getSeries: function(data, name) {
                 var series = [{
-                    name: 'Fatalities - ' + name,
+                    name: name,
                     data: _.pluck(data, TOTAL_KEY)
                 }];
                 return series;
             }
         };
         var MODE_PER_CAPITA = {
-            yAxis: 'Fatalities per Capita',
+            yAxis: 'Injuries per 100,000 Residents',
             format: "{value:,.0f}",
             pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
                 '<td style="padding:0"><b>{point.y:,.1f}</b></td></tr>',
             getSeries: function(data, name) {
                 var series = [{
-                    name: 'Fatalities per 100,000 Residents - ' + name,
+                    name: name,
                     data: _.pluck(data, RATE_KEY)
                 }];
                 return series;
             }
         };
         var MODE_PER_MILE = {
-            yAxis: 'Fatalities per Vehicle Mile Traveled',
+            yAxis: 'Injuries per 100,000 Vehicle Miles Traveled',
             format: "{value:,.1f}",
             pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
                 '<td style="padding:0"><b>{point.y:,.1f}</b></td></tr>',
             getSeries: function(data, name) {
                 var series = [{
-                    name: 'Fatalities per 100,000 Vehicle Miles Traveled - ' + name,
+                    name: name,
                     data: _.pluck(data, PER_MILE_KEY)
                 }];
                 return series;
@@ -96,7 +96,7 @@ regionPromise, countyPromise, cityPromise: true
 
 
         var selectedGeography = {};
-        var mode = MODE_FATALITIES;
+        var mode = MODE_INJURIES;
 
         Highcharts.setOptions({
             lang: {
@@ -146,7 +146,7 @@ regionPromise, countyPromise, cityPromise: true
             var series = getAllSeries();
 
             var tooltip = {
-                headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+                headerFormat: '<span style="font-size:10px">{point.key} ' + mode.yAxis + '</span><table>',
                 pointFormat: mode.pointFormat,
                 footerFormat: '</table>',
                 shared: true,
@@ -266,7 +266,7 @@ regionPromise, countyPromise, cityPromise: true
                 $(this).addClass("active");
                 $(this).siblings('a').removeClass('active');
 
-                mode = MODE_FATALITIES;
+                mode = MODE_INJURIES;
                 chart();
 
                 $(this).display();
@@ -386,29 +386,29 @@ regionPromise, countyPromise, cityPromise: true
         // Request all the data
         var regionTotalsPromise = $.ajax({
             dataType: "json",
-            url: "http://vitalsigns-production.elasticbeanstalk.com/en/4/region"
+            url: "http://vitalsigns-production.elasticbeanstalk.com/en/7/region"
         });
         var localTotalsPromise = $.ajax({
             dataType: "json",
-            url: "http://vitalsigns-production.elasticbeanstalk.com/en/4/local"
+            url: "http://vitalsigns-production.elasticbeanstalk.com/en/7/local"
         });
 
         var regionRatePromise = $.ajax({
             dataType: "json",
-            url: "http://vitalsigns-production.elasticbeanstalk.com/en/5/region"
+            url: "http://vitalsigns-production.elasticbeanstalk.com/en/8/region"
         });
         var localRatePromise = $.ajax({
             dataType: "json",
-            url: "http://vitalsigns-production.elasticbeanstalk.com/en/5/local"
+            url: "http://vitalsigns-production.elasticbeanstalk.com/en/8/local"
         });
 
         var regionPerMilePromise = $.ajax({
             dataType: "json",
-            url: "http://vitalsigns-production.elasticbeanstalk.com/en/6/region"
+            url: "http://vitalsigns-production.elasticbeanstalk.com/en/9/region"
         });
         var localPerMilePromise = $.ajax({
             dataType: "json",
-            url: "http://vitalsigns-production.elasticbeanstalk.com/en/6/local"
+            url: "http://vitalsigns-production.elasticbeanstalk.com/en/9/local"
         });
 
 

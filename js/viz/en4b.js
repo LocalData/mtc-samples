@@ -209,7 +209,7 @@ Promise, regionPromise, countyPromise, cityPromise: true
 
             // Breaks now set in CartoDB
             // TODO get breaks automatically from Carto
-            cartodb.createVis('map', 'https://mtc.cartodb.com/viz/b82f42ca-0560-11e5-89ba-0e018d66dc29/public_map')
+            cartodb.createVis('map', 'https://mtc.cartodb.com/api/v2/viz/b82f42ca-0560-11e5-89ba-0e018d66dc29/viz.json')
               .done(function(vis, layers) {
                 // Change the logo's z-index to fix overlaps
                 $('.cartodb-logo').css('z-index', 999);

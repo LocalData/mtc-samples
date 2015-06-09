@@ -29,7 +29,7 @@ regionPromise, countyPromise, cityPromise: true
         var i;
         var cityData, countyData, regionData;
 
-        var CHART_BASE_TITLE = '2013 Housing Affordability by Income Level - Cost-Burdened Household Shares';
+        var CHART_BASE_TITLE = 'Metro Comparison for 2013 Housing Affordability';
         var CHART_ID = '#ec-c-chart';
         var COUNTY_KEY = 'Geography';
         var YAXIS_LABEL = 'Cost-Burdened Share of Households'; //'Share of Income Spent on Housing';

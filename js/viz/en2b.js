@@ -33,9 +33,11 @@ regionPromise, countyPromise, cityPromise, _
         //var CHART_BASE_TITLE = 'Historical Trend for Labor Force Participation by Age Group';
         var CHART_ID = '#en-b-chart';
 
+        var MAP_TITLE = 'Ozone Concentrations';
         var GEO_KEY = 'Sensor_Location';
         var YEAR_KEY = 'Year';
-        var Y_LABEL, MAP_TITLE = 'Ozone Concentrations';
+        var Y_LABEL = '8-Hour Maximum Ozone Concentrations (ppb)';
+        var X_LABEL = 'Ozone Concentrations';
         var FOCUS_KEY = 'Ozone_Max4_Daily_8HR_ppb_Annual_1YR';
 
         var i;
@@ -43,15 +45,16 @@ regionPromise, countyPromise, cityPromise, _
         var maxYear, minYear;
         var yearNames = [];
 
-        var locations, sensorData, selectedGeography;
+        var locations, sensorData;
+        var selectedGeography = [];
 
         var point_styles = {
-            radius: 5,
+            radius: 6,
             fillColor: "#ff7800",
-            color: "#000",
-            weight: 0,
+            color: "#fff",
+            weight: 1.5,
             opacity: 1,
-            fillOpacity: 0.65
+            fillOpacity: 1
         };
 
         function fillInYears(data, key) {
@@ -94,24 +97,33 @@ regionPromise, countyPromise, cityPromise, _
         }
 
 
-        function getSeries(data, name) {
-            var series = [{
-                name: 'Particulate Matter Concentrations - ' + name,
-                data: _.pluck(fillInYears(data, FOCUS_KEY), FOCUS_KEY)
-            }];
+        function getSeries() {
+            var series = [];
+            _.each(selectedGeography, function(geo) {
+                var data = _.filter(sensorData, {
+                    Sensor: geo[GEO_KEY]
+                });
+
+                console.log("Sensor data", data, "from geo", geo);
+
+                series.push({
+                    name: geo[GEO_KEY],
+                    data: _.pluck(fillInYears(data, FOCUS_KEY), FOCUS_KEY),
+                    color: geo.color,
+                    animation: false
+                });
+            });
+
+            console.log("Generated series", series);
             return series;
         }
 
 
         function chart() {
-            var selectedGeographyData = _.filter(sensorData, {
-                Sensor: selectedGeography
-            });
-
             var tooltip = {
-                headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+                headerFormat: '<span style="font-size:10px">{point.key} Ozone Concentrations</span><table>',
                 pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-                '<td style="padding:0"><b>{point.y:,.1f} (&mu;g/m3)</b></td></tr>',
+                '<td style="padding:0"><b>{point.y:,.1f} ppb</b></td></tr>',
                 footerFormat: '</table>',
                 shared: true,
                 useHTML: true
@@ -126,12 +138,17 @@ regionPromise, countyPromise, cityPromise, _
                 },
                 xAxis: {
                     categories: yearNames,
-                    tickmarkPlacement: 'on'
+                    tickmarkPlacement: 'on',
+                    title: {
+                        text: X_LABEL
+                    }
                 },
                 yAxis: {
                     title: {
                         text: Y_LABEL
                     },
+                    max: 150,
+                    min: 0,
                     reversedStacks: true,
                     stackLabels: {
                         enabled: false
@@ -144,13 +161,17 @@ regionPromise, countyPromise, cityPromise, _
                 plotOptions: {
                 },
                 tooltip: tooltip,
-                series: getSeries(selectedGeographyData, selectedGeography)
+                series: getSeries()
             });
         }
 
 
         function interaction(event, feature) {
-            selectedGeography = feature.properties.Sensor_Location;
+            if (_.find(selectedGeography, feature.properties)) {
+                _.remove(selectedGeography, feature.properties);
+            } else {
+                selectedGeography.push(feature.properties);
+            }
             chart();
         }
 
@@ -163,7 +184,6 @@ regionPromise, countyPromise, cityPromise, _
 
 
         function pointToLayer(feature, latlng) {
-            point_styles.color = feature.properties.color;
             point_styles.fillColor = feature.properties.color;
 
             return L.circleMarker(latlng, point_styles);

@@ -1,5 +1,5 @@
 /*globals
-jQuery, L, cartodb, geocities, econColors, allBlue, altColors, Highcharts, science,
+jQuery, L, cartodb, geocities, econColors, allGreen, altColors, Highcharts, science,
 regionPromise, countyPromise: true
 */
 (function($) {
@@ -21,11 +21,14 @@ regionPromise, countyPromise: true
 
     Line color for each series: Annual Average Fine Particulates,
     98th Percentile Day Fine Particulates
+    3-year average (Ozone_Max4_Daily_8HR_ppb_Annual_3YR,)
 
 
     MISC
 
     TODO
+    - Add 3-year aveage
+    - Check legend titles
 
     REQUESTS
 
@@ -38,9 +41,11 @@ regionPromise, countyPromise: true
         var CHART_ID = '#en-a-chart';
         var CHART_BASE_TITLE = ' Historical Trend for Particulate Matter Concentrations - Bay Area';
         var Y_LABEL = 'Fine Particulate Concentration (microgams/m3)';
+
         var AVG_LABEL = 'Annual Average Fine Particulates';
-        var TOP_LABEL = '98th Percentile Day Fine Particulates';
         var AVG_KEY = 'PM2#5_AnnualAvg_ugm3_1YR';
+
+        var TOP_LABEL = '98th Percentile Day Fine Particulates';
         var TOP_KEY = 'PM2#5_daily98percentile_ugm3_1YR';
 
         var YEAR_KEY = 'Year';
@@ -48,6 +53,7 @@ regionPromise, countyPromise: true
         var maxYear;
         var yearNames = [];
         var DASH_FORMAT = 'ShortDash';
+        var LONG_DASH = 'LongDash';
 
         Highcharts.setOptions({
             lang: {
@@ -97,9 +103,10 @@ regionPromise, countyPromise: true
                     }
                 },
                 legend: {
-                    enabled: true
+                    enabled: true,
+                    symbolWidth: 30
                 },
-                colors: altColors,
+                colors: allGreen,
                 plotOptions: {
                 },
                 tooltip: tooltip,
@@ -116,7 +123,8 @@ regionPromise, countyPromise: true
                 data: _.pluck(data, AVG_KEY)
             }, {
                 name: TOP_LABEL,
-                data: _.pluck(data, TOP_KEY)
+                data: _.pluck(data, TOP_KEY),
+                dashStyle: DASH_FORMAT
             }];
             return series;
         }

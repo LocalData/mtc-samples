@@ -1,5 +1,5 @@
 /*globals
-jQuery, L, cartodb, geocities, econColors, allBlue, altColors, Highcharts, science,
+jQuery, L, cartodb, geocities, econColors, allGreen, altColors, Highcharts, science,
 regionPromise, countyPromise: true
 */
 (function($) {
@@ -35,7 +35,7 @@ regionPromise, countyPromise: true
         var data;
 
         var CHART_ID = '#en-c-chart';
-        var CHART_BASE_TITLE = ' Metro Comparison for Particulate Matter Concentrations';
+        var CHART_BASE_TITLE = 'Metro Comparison for Particulate Matter Concentrations';
         var Y_LABEL = 'Fine Particulate Concentration (microgams/m3)';
         var AVG_LABEL = 'Annual Average Fine Particulates';
         var TOP_LABEL = '98th Percentile Day Fine Particulates';
@@ -58,7 +58,7 @@ regionPromise, countyPromise: true
         });
 
         var MODE_ANNUAL = {
-            title: AVG_LABEL,
+            title: CHART_BASE_TITLE,
             key: AVG_KEY,
             yAxis: 'Fine Particulate Concentration (micrograms/m3)',
             format: "{value:,.1f}",
@@ -73,7 +73,7 @@ regionPromise, countyPromise: true
             }
         };
         var MODE_TOP = {
-            title: TOP_LABEL,
+            title: CHART_BASE_TITLE,
             key: TOP_KEY,
             yAxis: 'Fine Particulate Concentration (micrograms/m3)',
             format: "{value:,.1f}",
@@ -135,7 +135,7 @@ regionPromise, countyPromise: true
                 legend: {
                     enabled: false
                 },
-                colors: altColors,
+                colors: allGreen,
                 plotOptions: {
                 },
                 tooltip: tooltip,
