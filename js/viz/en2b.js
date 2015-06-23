@@ -129,7 +129,7 @@ regionPromise, countyPromise, cityPromise, _
                 useHTML: true
             };
 
-            $(CHART_ID).highcharts({
+            var options = {
                 chart: {
                     type: 'line'
                 },
@@ -141,6 +141,9 @@ regionPromise, countyPromise, cityPromise, _
                     tickmarkPlacement: 'on',
                     title: {
                         text: X_LABEL
+                    },
+                    labels: {
+                        step: 5
                     }
                 },
                 yAxis: {
@@ -162,7 +165,14 @@ regionPromise, countyPromise, cityPromise, _
                 },
                 tooltip: tooltip,
                 series: getSeries()
-            });
+            };
+
+            // Don't explicitly set step size on smaller screens
+            if (window.innerWidth < 650) {
+                delete options.xAxis.labels.step;
+            }
+
+            $(CHART_ID).highcharts(options);
         }
 
 

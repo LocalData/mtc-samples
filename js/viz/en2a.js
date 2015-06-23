@@ -85,7 +85,10 @@ regionPromise, countyPromise: true
                 },
                 xAxis: {
                     categories: yearNames,
-                    tickmarkPlacement: 'on'
+                    tickmarkPlacement: 'on',
+                    labels: {
+                        step: 5
+                    }
                 },
                 yAxis: {
                     min: 0,
@@ -106,6 +109,11 @@ regionPromise, countyPromise: true
                 tooltip: tooltip,
                 series: series
             };
+
+            // Don't explicitly set step size on smaller screens
+            if (window.innerWidth < 650) {
+                delete options.xAxis.labels.step;
+            }
 
             $(CHART_ID).highcharts(options);
         }

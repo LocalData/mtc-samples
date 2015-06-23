@@ -29,6 +29,7 @@ regionPromise, countyPromise: true
         var i;
         var portData;
 
+        // TODO Change chart ID
         var CHART_ID = '#ec-c-chart';
         var CHART_BASE_TITLE = 'Metro Comparison for Seaport Activity';
         var Y_LABEL = 'Container Volume (TEUs)';
