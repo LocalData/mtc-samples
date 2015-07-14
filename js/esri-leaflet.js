@@ -2739,7 +2739,6 @@ EsriLeaflet.Layers.FeatureGrid = L.Class.extend({
     },
 
     onRemove: function(map){
-      console.log("I'm removing myself");
       return EsriLeaflet.Layers.FeatureGrid.prototype.onRemove.call(this, map);
     },
 

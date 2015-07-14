@@ -3,6 +3,7 @@
   <head>
     <title>EN1: Particulate</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
 
     <link href="css/app.css" rel="stylesheet" media="screen">
 
@@ -26,6 +27,9 @@
   </head>
   <body>
 
+    <div class="btn-group btn-group-justified" style="margin-top:15px">
+        <a class="btn btn-primary btn-fix k-button active" id="en-a-annual">Annual Average Fine Particulate Concentrations</a><a class="btn btn-primary k-button btn-fix" id="en-a-top">98th Percentile Daily Fine Particulate Concentrations</a>
+    </div>
     <div id="en-a-chart"></div>
 
     <hr>
@@ -35,23 +39,17 @@
       <div class="col-lg-12">
         <div class="row">
 
-          <div class="col-lg-4 col-md-4">
-            <div class="map" id="map">&nbsp;</div>
+          <div class="col-lg-6 col-md-6">
+            <div class="map" id="map" style="height:450px; min-height:450px;">&nbsp;</div>
           </div>
 
-          <div class="col-lg-8 col-md-8 map_chart_">
+          <div class="col-lg-6 col-md-6 map_chart_">
             <div class="initial_map" style="font-size:16px; height: auto;">
-              Explore Sensors
-            </div>
-            <div id="en-b-year-select"></div>
-            <div id="en-b-title" class="map_info">
-              <div class="initial_map" style="font-size:16px; height:auto;">
-              Select a sensor on the map for more information.
-              </div>
+              Select sensors on the map to see detailed historical fine particulate matter concentrations.
             </div>
 
             <div class="btn-group btn-group-justified" style="margin-top:15px; display:none;" id="en-b-buttons">
-                <a class="btn btn-primary btn-fix active" id="en-b-annual">Annual Average Fine Particulate Concentrations</a><a class="btn btn-primary btn-fix" id="en-b-top">98th Percentile Daily Fine Particulate Concentrations</a>
+                <a class="btn btn-primary btn-fix k-button active" id="en-b-annual">Annual Average Fine Particulate Concentrations</a><a class="btn btn-primary k-button btn-fix" id="en-b-top">98th Percentile Daily Fine Particulate Concentrations</a>
             </div>
 
             <div id="en-b-chart" style="float:left;width:100%;"></div>
@@ -63,12 +61,13 @@
     <hr>
 
     <div class="btn-group btn-group-justified" style="margin-top:15px">
-        <a class="btn btn-primary btn-fix active" id="en-c-annual">Annual Average Fine Particulate Concentrations</a><a class="btn btn-primary btn-fix" id="en-c-top">98th Percentile Daily Fine Particulate Concentrations</a>
+        <a class="btn btn-primary btn-fix k-button active" id="en-c-annual">Annual Average Fine Particulate Concentrations</a><a class="btn btn-primary k-button btn-fix" id="en-c-top">98th Percentile Daily Fine Particulate Concentrations</a>
     </div>
     <div id="en-c-chart"></div>
 
 
     <!-- libraries -->
+
     <script src="http://code.jquery.com/jquery.js"></script>
     <!--<script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>-->
     <script type="text/javascript" src="https://api.tiles.mapbox.com/mapbox.js/v2.1.4/mapbox.js"></script>
@@ -77,7 +76,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.5.0/lodash.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bluebird/2.9.13/bluebird.min.js"></script>
     <script src="http://code.highcharts.com/highcharts.js"></script>
-
 
     <!-- From MTC server -->
     <!-- <script src="http://dev-mtc-vital-signs.pantheon.io/sites/all/themes/vitalsigns/js/geocities.js"></script>-->

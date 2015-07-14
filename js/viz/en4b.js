@@ -47,6 +47,7 @@ Promise, regionPromise, countyPromise, cityPromise: true
         var CARTO_CITY_POINT_QUERY = 'SELECT name FROM cities WHERE ST_Intersects( the_geom, ST_SetSRID(ST_POINT({{lat}}, {{lng}}) , 4326))';
 
         var i;
+        var map;
         var regionData, countyData, cityData;
         var selectedGeography = 'Bay Area';
         var sql = new cartodb.SQL({ user: 'mtc' });
@@ -207,71 +208,17 @@ Promise, regionPromise, countyPromise, cityPromise: true
             var joinedFeatures = [];
             var breaks = [0, 11, 18, 26, 39];
 
-            // Breaks now set in CartoDB
-            // TODO get breaks automatically from Carto
-            cartodb.createVis('map', 'https://mtc.cartodb.com/api/v2/viz/b82f42ca-0560-11e5-89ba-0e018d66dc29/viz.json')
-              .done(function(vis, layers) {
-                // Change the logo's z-index to fix overlaps
-                $('.cartodb-logo').css('z-index', 999);
 
-                // layer 0 is the base layer, layer 1 is cartodb layer
-                layers[1].setInteraction(true);
-
-                // Handle clicks
-                layers[1].on('featureClick', function(e, latlng, pos, data, layerNumber) {
-                    // Get data for the selected area
-                    var mapPromise = sql.execute("SELECT tract, county, geoid10, ec11_povpct200 FROM ec_tracts WHERE cartodb_id = {{id}}", { id: data.cartodb_id });
-
-                    // Get city data, if any
-                    var cityPromise = sql.execute(CARTO_CITY_POINT_QUERY, {
-                        lat: latlng[1],
-                        lng: latlng[0]
-                    });
-
-                    // TODO -- should use .then, but CartoDB promises don't
-                    // seem to play nice with that (or jquery)
-                    mapPromise.done(function(tractResult) {
-                        cityPromise.done(function(cityResult) {
-                            mapInteraction(tractResult, cityResult);
-                        });
-                    });
-                });
-
-                // you can get the native map to work with it
-                var map = vis.getNativeMap();
+            L.mapbox.accessToken = 'pk.eyJ1IjoicG9zdGNvZGUiLCJhIjoiWWdxRTB1TSJ9.phHjulna79QwlU-0FejOmw';
+            map = L.mapbox.map('map', 'postcode.kh28fdpk', {
+                infoControl: true,
+                attributionControl: false,
+                scrollWheelZoom: false,
+                center: [37.783367, -122.062378]
+            });
+            L.control.scale().addTo(map);
 
 
-                var legend = L.control({position: 'bottomright'});
-                legend.onAdd = function (map) {
-                    var div = L.DomUtil.create('div', 'info legend');
-                    $(div).append("<h5>" + MAP_TITLE + "</h5>");
-
-                    var colors = _.clone(econColors).reverse();
-
-                    // breaks.unshift(1);
-                    // loop through our density intervals and generate a label
-                    // with a colored square for each interval
-                    var i;
-                    for (i = 0; i < breaks.length; i++) {
-                        var start = Math.round(breaks[i]*100)/100;
-                        var end = Math.round(breaks[i + 1]*100)/100 - 1;
-
-                        var legendText = '<div class="legend-row"><div class="legend-color" style="background:' + colors[i] + ';">&nbsp; </div><div class="legend-text">';
-                        legendText += start.toLocaleString();
-
-                        if (Math.round(breaks[i + 1]*100)/100) {
-                            // If there is a next value, display it.
-                            legendText += '% &ndash; ' + end.toLocaleString() + '%</div></div>';
-                        } else {
-                            // Otherwise we're at the end of the legend.
-                            legendText +='%+ </div></div>';
-                        }
-                        $(div).append(legendText);
-                    }
-                    return div;
-                };
-                legend.addTo(map);
-              });
         }
 
 

@@ -21,9 +21,6 @@ regionPromise, countyPromise, cityPromise, _
     MISC
 
     TODO
-    - Don't show button bar before graph displays.
-    - Line color based on location selected
-    - Chart title based on location selected
 
     REQUESTS
 
@@ -40,6 +37,7 @@ regionPromise, countyPromise, cityPromise, _
         var X_LABEL = 'Ozone Concentrations';
         var FOCUS_KEY = 'Ozone_Max4_Daily_8HR_ppb_Annual_1YR';
 
+
         var i;
         var map;
         var maxYear, minYear;
@@ -48,10 +46,19 @@ regionPromise, countyPromise, cityPromise, _
         var locations, sensorData;
         var selectedGeography = [];
 
-        var point_styles = {
+        var pointStyle = {
             radius: 6,
             fillColor: "#ff7800",
             color: "#fff",
+            weight: 1.5,
+            opacity: 1,
+            fillOpacity: 1
+        };
+
+        var selectedStyle = {
+            radius: 6,
+            fillColor: "#ff7800",
+            color: altColors[0],
             weight: 1.5,
             opacity: 1,
             fillOpacity: 1
@@ -177,26 +184,35 @@ regionPromise, countyPromise, cityPromise, _
 
 
         function interaction(event, feature) {
+            console.log("Feature", event, feature);
             if (_.find(selectedGeography, feature.properties)) {
+                pointStyle.fillColor = feature.properties.color;
+                event.target.setStyle(pointStyle);
                 _.remove(selectedGeography, feature.properties);
             } else {
+                selectedStyle.fillColor = feature.properties.color;
+                event.target.setStyle(selectedStyle);
                 selectedGeography.push(feature.properties);
             }
             chart();
         }
 
-
+        var layerToStartSelected;
         function setupInteraction(feature, layer) {
+            // Listen for click events on all layers
             layer.on('click', function(event) {
                 interaction(event, feature);
             });
+
+            // We pick a layer to be selected from the start
+            layerToStartSelected = layer;
         }
 
 
         function pointToLayer(feature, latlng) {
-            point_styles.fillColor = feature.properties.color;
+            pointStyle.fillColor = feature.properties.color;
 
-            return L.circleMarker(latlng, point_styles);
+            return L.circleMarker(latlng, pointStyle);
         }
 
 
@@ -231,6 +247,13 @@ regionPromise, countyPromise, cityPromise, _
             });
 
             map.fitBounds(sensorLayer.getBounds());
+
+
+            // Start with one layer selected.
+            console.log("First data", layerToStartSelected);
+            interaction({
+                target: layerToStartSelected
+            }, layerToStartSelected.feature);
         }
 
 
@@ -263,7 +286,6 @@ regionPromise, countyPromise, cityPromise, _
             for (i = minYear; i <= maxYear; i++) {
                 yearNames.push(i);
             }
-
 
             // Once we have the data, set up the visualizations
             setup();

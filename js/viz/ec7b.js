@@ -543,11 +543,7 @@ regionPromise, countyPromise, cityPromise, _
                     }
 
                     $(div).append(s);
-
-                    // $(div).append('<div><div class="col-lg-1" style="background:' + colors[i] + ';">&nbsp; </div><div class="col-lg-8">' +
-                    //     Math.round(breaks[i]*100)/100 + (Math.round(breaks[i + 1]*100)/100 ? '&ndash;' + Math.round(breaks[i + 1]*100)/100 + '</div>' : '+'));
                 }
-
 
                 return div;
             };

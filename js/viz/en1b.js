@@ -1,5 +1,5 @@
 /*globals
-jQuery, L, geocities, altColors, econColors, Highcharts, turf, chroma,
+jQuery, L, geocities, altColors, econColors, allGray, Highcharts, turf, chroma,
 regionPromise, countyPromise, cityPromise, _
 */
 (function($) {
@@ -24,8 +24,6 @@ regionPromise, countyPromise, cityPromise, _
     MISC
 
     TODO
-    - Enable multiple point selections?
-
 
     REQUESTS
 
@@ -43,6 +41,8 @@ regionPromise, countyPromise, cityPromise, _
         var AVG_KEY = 'PM2#5_AnnualAvg_ugm3_1YR';
         var TOP_KEY = 'PM2#5_daily98percentile_ugm3_1YR';
 
+        var DESELECTED_COLOR = allGray[2];
+
         var i;
         var map;
         var maxYear, minYear;
@@ -51,10 +51,17 @@ regionPromise, countyPromise, cityPromise, _
         var locations, sensorData;
         var selectedGeography = [];
 
-        var point_styles = {
+        var pointStyle = {
             radius: 6,
-            fillColor: "#ff7800",
+            fillColor: DESELECTED_COLOR, // "#ff7800", - orange
             color: "#fff",
+            weight: 1.5,
+            opacity: 1,
+            fillOpacity: 1
+        };
+
+        var selectedStyle = {
+            radius: 6,
             weight: 1.5,
             opacity: 1,
             fillOpacity: 1
@@ -106,19 +113,19 @@ regionPromise, countyPromise, cityPromise, _
             title: AVG_LABEL,
             label: AVG_LABEL,
             key: AVG_KEY,
-            yAxis: 'Fine Particulate Concentration (microgams/m3)',
+            yAxis: 'Fine Particulate Concentration (&#181;g/m<sup>3</sup>)',
             format: "{value:,.1f}",
             pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-                '<td style="padding:0"><b>{point.y:,.1f} &mu;g/m3</b></td></tr>'
+                '<td style="padding:0"><b>{point.y:,.1f} &#181;g/m<sup>3</sup></b></td></tr>'
         };
         var MODE_TOP = {
             title: TOP_LABEL,
             label: TOP_LABEL,
             key: TOP_KEY,
-            yAxis: 'Fine Particulate Concentration (microgams/m3)',
+            yAxis: 'Fine Particulate Concentration (&#181;g/m<sup>3</sup>)',
             format: "{value:,.1f}",
             pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-                '<td style="padding:0"><b>{point.y:,.1f} &mu;g/m3</b></td></tr>'
+                '<td style="padding:0"><b>{point.y:,.1f} &#181;g/m<sup>3</sup></b></td></tr>'
         };
 
         var activeMode = MODE_ANNUAL;
@@ -154,7 +161,7 @@ regionPromise, countyPromise, cityPromise, _
                 useHTML: true
             };
 
-            $(CHART_ID).highcharts({
+            var options = {
                 chart: {
                     type: 'line'
                 },
@@ -163,11 +170,15 @@ regionPromise, countyPromise, cityPromise, _
                 },
                 xAxis: {
                     categories: yearNames,
-                    tickmarkPlacement: 'on'
+                    tickmarkPlacement: 'on',
+                    labels: {
+                        step: 2
+                    }
                 },
                 yAxis: {
                     title: {
-                        text: activeMode.yAxis
+                        text: activeMode.yAxis,
+                        useHTML: true
                     },
                     min: 0,
                     max: activeMode.max,
@@ -185,43 +196,67 @@ regionPromise, countyPromise, cityPromise, _
                 },
                 tooltip: tooltip,
                 series: getSeries(activeMode.key, activeMode.label)
-            });
+            };
+
+            $(CHART_ID).highcharts(options);
+
+            // Don't explicitly set step size on smaller screens
+            if (window.innerWidth < 650) {
+                delete options.xAxis.labels.step;
+            }
         }
 
 
         function interaction(event, feature) {
+            console.log("Feature", event, feature);
             if (_.find(selectedGeography, feature.properties)) {
+                pointStyle.fillColor = DESELECTED_COLOR; // feature.properties.color;
+                event.target.setStyle(pointStyle);
                 _.remove(selectedGeography, feature.properties);
             } else {
+                selectedStyle.fillColor = feature.properties.color;
+                event.target.setStyle(selectedStyle);
                 selectedGeography.push(feature.properties);
             }
 
-            // Show the button bar and chart
-            $('#en-b-buttons').show();
             chart();
         }
 
 
+        var layerToStartSelected;
         function setupInteraction(feature, layer) {
+            // Listen for click events on all layers
             layer.on('click', function(event) {
                 interaction(event, feature);
             });
+
+            // We pick a layer to be selected from the start
+            // Use Livermore because it has quite a bit of data.
+            // Sebastapol, San Jose - Knox, Oakland - Laney College
+            // console.log("Pick this layer?", feature);
+            if (feature.properties[GEO_KEY] === 'Livermore') {
+                layerToStartSelected = layer;
+            }
         }
 
 
         function pointToLayer(feature, latlng) {
-            point_styles.fillColor = feature.properties.color;
+            // pointStyle.fillColor = feature.properties.color;
 
-            return L.circleMarker(latlng, point_styles);
+            return L.circleMarker(latlng, pointStyle);
         }
 
 
         function setupMap() {
             // $('#map_title').html(MAP_TITLE + ' - ' + activeYear);
 
+            // Regular terrain map: postcode.mna0lfce
+            // Desaturated: postcode.4d9dd5cd
+
             L.mapbox.accessToken = 'pk.eyJ1IjoicG9zdGNvZGUiLCJhIjoiWWdxRTB1TSJ9.phHjulna79QwlU-0FejOmw';
-            map = L.mapbox.map('map', 'postcode.kh28fdpk', {
-                infoControl: true,
+            map = L.mapbox.map('map', 'postcode.mna0lfce', {
+                infoControl: false,
+                zoomControl: false,
                 attributionControl: false,
                 scrollWheelZoom: false,
                 center: [37.783367, -122.062378]
@@ -247,6 +282,12 @@ regionPromise, countyPromise, cityPromise, _
             });
 
             map.fitBounds(sensorLayer.getBounds());
+
+            // Start with one layer selected.
+            console.log("First data", layerToStartSelected);
+            interaction({
+                target: layerToStartSelected
+            }, layerToStartSelected.feature);
         }
 
 

@@ -36,9 +36,9 @@ regionPromise, countyPromise: true
 
         var CHART_ID = '#en-c-chart';
         var CHART_BASE_TITLE = 'Metro Comparison for Particulate Matter Concentrations';
-        var Y_LABEL = 'Fine Particulate Concentration (microgams/m3)';
+        var Y_LABEL = 'Fine Particulate Concentration (&#181;g/m<sup>3</sup>)';
         var AVG_LABEL = 'Annual Average Fine Particulates';
-        var TOP_LABEL = '98th Percentile Day Fine Particulates';
+        var TOP_LABEL = '98th Percentile Daily Fine Particulates';
         var AVG_KEY = 'PM2#5_AnnualAvg_ugm3_Actual';
         var TOP_KEY = 'PM2#5_daily98percentile_ugm3_Actual';
 
@@ -60,13 +60,13 @@ regionPromise, countyPromise: true
         var MODE_ANNUAL = {
             title: CHART_BASE_TITLE,
             key: AVG_KEY,
-            yAxis: 'Fine Particulate Concentration (micrograms/m3)',
+            yAxis: Y_LABEL,
             format: "{value:,.1f}",
             pointFormat: '<tr><td style="color:{series.color};padding:0">{point.category}: </td>' +
-                '<td style="padding:0"><b>{point.y:,.1f} &mu;g/m3</b></td></tr>',
+                '<td style="padding:0"><b>{point.y:,.1f} &#181;g/m<sup>3</sup></b></td></tr>',
             getSeries: function() {
                 var series = [{
-                    name: 'Particulate Matter Concentrations',
+                    name: 'Fine Particulate Concentrations',
                     data: _.pluck(data, AVG_KEY)
                 }];
                 return series;
@@ -75,13 +75,13 @@ regionPromise, countyPromise: true
         var MODE_TOP = {
             title: CHART_BASE_TITLE,
             key: TOP_KEY,
-            yAxis: 'Fine Particulate Concentration (micrograms/m3)',
+            yAxis: Y_LABEL,
             format: "{value:,.1f}",
             pointFormat: '<tr><td style="color:{series.color};padding:0">{point.category}: </td>' +
-                '<td style="padding:0"><b>{point.y:,.1f} &mu;g/m3</b></td></tr>',
+                '<td style="padding:0"><b>{point.y:,.1f} &#181;g/m<sup>3</sup></b></td></tr>',
             getSeries: function() {
                 var series = [{
-                    name: 'Particulate Matter Concentrations',
+                    name: 'Fine Particulate Concentrations',
                     data: _.pluck(data, TOP_KEY)
                 }];
                 return series;
@@ -126,7 +126,8 @@ regionPromise, countyPromise: true
                 },
                 yAxis: {
                     title: {
-                        text: activeMode.yAxis
+                        text: activeMode.yAxis,
+                        useHTML: true
                     },
                     stackLabels: {
                         enabled: false

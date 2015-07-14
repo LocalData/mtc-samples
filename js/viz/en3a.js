@@ -56,6 +56,10 @@ regionPromise, countyPromise, cityPromise: true
         var SHARE_KEY = 'Share_BA_GHG';
         var PER_CAPITA_KEY = 'GHG_Total_percapita_metrictons';
 
+        // Average per-capita GHG emissions:
+        var PER_CAPITA_AVERAGE = 3.2;
+
+
         allGreen[0] = allGreen[3]; // add a little more contrast
 
         var minYear, maxYear;
@@ -77,11 +81,11 @@ regionPromise, countyPromise, cityPromise: true
                     s += '<td style="padding:0"><b>' + p.y.toLocaleString() + ' metric tons</b></td></tr>';
                 });
 
-                // Then add total and share of regional emmissions
-                s += '<tr><td style="padding:0">Total: </td>';
+                // Then add total and share of regional emissions
+                s += '<tr><td style="padding:0">Total GHG Emissions: </td>';
                 s += '<td style="padding:0"><b>' + this.points[0].point[TOTAL_KEY].toLocaleString() + ' metric tons</b></td></tr>';
 
-                s += '<tr><td style="padding:0">Share of regional emmissions: </td>';
+                s += '<tr><td style="padding:0">Share of Regional GHG Emissions: </td>';
                 s += '<td style="padding:0"><b>' + this.points[0].point[SHARE_KEY].toFixed(1) + '%</b></td></tr>';
 
                 s += '</table>';
@@ -95,7 +99,6 @@ regionPromise, countyPromise, cityPromise: true
                 // Sort by total value
                 countyData = _.sortBy(countyData, TOTAL_KEY);
                 countyData.reverse();
-                console.log("What happened", countyData);
 
                 _.each(countyData, function(d) {
                     d.y = d[GAS_KEY];
@@ -107,19 +110,24 @@ regionPromise, countyPromise, cityPromise: true
                 });
 
                 var series = [{
-                    name: 'Gasoline',
+                    name: 'GHG Emissions from Gasoline',
                     data: gasData
                 }, {
-                    name: 'Diesel',
+                    name: 'GHG Emissions from Diesel',
                     data: dieselData
                 }];
-                console.log("Using series", series);
+
                 return series;
+            },
+            getCategories: function() {
+                countyData = _.sortBy(countyData, TOTAL_KEY);
+                countyData.reverse();
+                return _.pluck(countyData, GEO_KEY);
             },
             legend: true
         };
         var MODE_PER_CAPITA = {
-            total: '2012 Per-Capita Greenhouse Gas Emissions from Fuel Sales by County',
+            title: '2012 Per-Capita Greenhouse Gas Emissions from Fuel Sales by County',
             yAxis: 'Per-Capita Greenhouse Gas Emissions from County Fuel Sales (metric tons)',
             format: "{value:,.1f}",
             pointFormat: '<tr><td style="color:{series.color};padding:0">{point.category}: </td>' +
@@ -135,12 +143,63 @@ regionPromise, countyPromise, cityPromise: true
                 }];
                 return series;
             },
+            plotLines: [{
+                color: allGreen[3],
+                label: {
+                    text: 'Average Regional Per-Capita GHG Emissions: 3.2 metric tons',
+                    align: 'center',
+                    verticalAlign: 'top',
+                    rotation: 0,
+                    y: -5,
+                    style: {
+                        color: allGreen[3]
+                    }
+                },
+                value: PER_CAPITA_AVERAGE,
+                width: 1.5
+            }],
+            plotBands: [{ // Light air
+                from: 6.5,
+                to: 10,
+                color: 'rgba(86, 94, 52, 0.1)',
+                zIndex: 1,
+                label: {
+                    text: 'At or below regional average',
+                    align: 'right',
+                    useHTML: true,
+                    style: {
+                        color: '#606060',
+                        paddingRight: '20px'
+                    }
+                }
+            }, {
+                from: -1,
+                to: 6.5,
+                color: 'rgba(0, 0, 0, 0)',
+                zIndex: 1,
+                label: {
+                    text: 'Above average emissions',
+                    align: 'right',
+                    useHTML: true,
+                    style: {
+                        color: '#606060',
+                        paddingRight: '20px',
+                        paddingTop: '12px'
+                    }
+                }
+            }
+            ],
+            getCategories: function() {
+                countyData = _.sortBy(countyData, PER_CAPITA_KEY);
+                countyData.reverse();
+                return _.pluck(countyData, GEO_KEY);
+            },
             legend: false
         };
 
 
         var selectedGeography = {};
-        var mode = MODE_TOTALS;
+        var mode = MODE_PER_CAPITA;
 
         Highcharts.setOptions({
             lang: {
@@ -176,16 +235,12 @@ regionPromise, countyPromise, cityPromise: true
                     type: 'bar'
                 },
                 title: {
-                    text: mode.title
+                    text: mode.title,
+                    margin: 25
                 },
                 xAxis: {
-                    categories: _.pluck(countyData, GEO_KEY),
+                    categories: mode.getCategories(),
                     tickmarkPlacement: 'on',
-                    labels: {
-                        // step: 2,
-                        maxStaggerLines: 1,
-                        staggerLines: 1
-                    },
                     title: {
                         enabled: false,
                         text: 'County'
@@ -196,6 +251,7 @@ regionPromise, countyPromise, cityPromise: true
                         text: mode.yAxis
                     },
                     labels: {
+                        step: 3,
                         format: mode.format
                     },
                     reversedStacks: false,
@@ -221,10 +277,18 @@ regionPromise, countyPromise, cityPromise: true
                 options.yAxis.min = mode.yMin;
             }
 
+            if (_.has(mode, 'plotBands')) {
+                options.xAxis.plotBands = mode.plotBands;
+            }
+
+            if (_.has(mode, 'plotLines')) {
+                options.yAxis.plotLines = mode.plotLines;
+            }
+
             // Don't explicitly set step size on smaller screens
-            // if (window.innerWidth < 650) {
-            //     delete options.xAxis.labels;
-            // }
+            if (window.innerWidth < 650) {
+                delete options.yAxis.labels.step;
+            }
 
             $(CHART_ID).highcharts(options);
         }
@@ -268,7 +332,7 @@ regionPromise, countyPromise, cityPromise: true
                 return n;
             }
 
-            return Math.round(n/100) * 100;
+            return Math.round(n/1000) * 1000;
         }
 
 

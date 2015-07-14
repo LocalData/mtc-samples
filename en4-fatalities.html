@@ -13,9 +13,10 @@
     <link href="http://cdn.kendostatic.com/2014.1.528/styles/kendo.dataviz.min.css" rel="stylesheet" />
     <link href="http://cdn.kendostatic.com/2014.1.528/styles/kendo.dataviz.default.min.css" rel="stylesheet" />
 
-<!--     <link type="text/css" rel="stylesheet" href="https://api.tiles.mapbox.com/mapbox.js/v2.1.4/mapbox.css" media="all" />
- -->
+<link type="text/css" rel="stylesheet" href="https://api.tiles.mapbox.com/mapbox.js/v2.1.4/mapbox.css" media="all" />
+
     <link rel="stylesheet" href="http://libs.cartocdn.com/cartodb.js/v3/3.13/themes/css/cartodb.css" />
+    <script src="http://libs.cartocdn.com/cartodb.js/v3/3.13/cartodb.js"></script>
 
     <style type="text/css">
       #map {
@@ -25,15 +26,6 @@
     </style>
   </head>
   <body>
-
-    <div id="en-a-city-select"></div>
-    <div id="en-a-county-select"></div>
-    <div class="btn-group btn-group-justified" style="margin-top:15px">
-        <a class="btn btn-primary btn-fix active" id="fatalities">Fatalities</a><a class="btn btn-primary btn-fix" id="per-capita">Fatalities per Capita</a><a class="btn btn-primary btn-fix" id="per-mile">Fatalities per Vehicle Mile Traveled</a>
-    </div>
-    <div id="en-a-chart"></div>
-
-    <hr>
 
     <h3 id="map_title">Fatalities</h3>
     <div class="row">
@@ -57,7 +49,7 @@
             </div>
 
             <div class="btn-group btn-group-justified" style="margin-top:15px; display:none;" id="en-b-buttons">
-                <a class="btn btn-primary btn-fix active" id="en-b-annual">Annual Average Fine Particulate Concentrations</a><a class="btn btn-primary btn-fix" id="en-b-top">98th Percentile Daily Fine Particulate Concentrations</a>
+                <a class="btn btn-primary btn-fix k-button active" id="en-b-annual">Annual Average Fine Particulate Concentrations</a><a class="btn btn-primary btn-fix k-button" id="en-b-top">98th Percentile Daily Fine Particulate Concentrations</a>
             </div>
 
             <div id="en-b-chart" style="float:left;width:100%;"></div>
@@ -67,22 +59,31 @@
     </div>
 
     <hr>
+    <div id="en-a-city-select"></div>
+    <div id="en-a-county-select"></div>
+    <div class="btn-group btn-group-justified" style="margin-top:15px">
+        <a class="btn btn-primary btn-fix k-button active" id="fatalities">Fatalities</a><a class="btn btn-primary btn-fix k-button" id="per-capita">Fatalities per Capita</a><a class="btn btn-primary btn-fix k-button" id="per-mile">Fatalities per Vehicle Mile Traveled</a>
+    </div>
+    <div id="en-a-chart"></div>
+
+    <hr>
 
     <div class="btn-group btn-group-justified" style="margin-top:15px">
-        <a class="btn btn-primary btn-fix active" id="en-c-fatalities">Fatalities</a><a class="btn btn-primary btn-fix" id="en-c-per-capita">Fatalities per Capita</a>
+        <a class="btn btn-primary btn-fix k-button active" id="en-c-fatalities">Fatalities</a><a class="btn btn-primary k-button btn-fix" id="en-c-per-capita">Fatalities per Capita</a>
     </div>
     <div id="en-c-chart"></div>
 
     <!-- libraries -->
     <script src="http://code.jquery.com/jquery.js"></script>
     <!--<script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>-->
-    <!--<script type="text/javascript" src="https://api.tiles.mapbox.com/mapbox.js/v2.1.4/mapbox.js"></script>-->
+    <script type="text/javascript" src="https://api.tiles.mapbox.com/mapbox.js/v2.1.4/mapbox.js"></script>
 
     <script src="http://cdn.kendostatic.com/2014.1.528/js/kendo.all.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.5.0/lodash.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bluebird/2.9.13/bluebird.min.js"></script>
     <script src="http://code.highcharts.com/highcharts.js"></script>
 
+    <script src="js/esri-leaflet.js"></script>
 
     <!-- From MTC server -->
     <!-- <script src="http://dev-mtc-vital-signs.pantheon.io/sites/all/themes/vitalsigns/js/geocities.js"></script>-->
@@ -90,6 +91,7 @@
     <script src="http://dev-mtc-vital-signs.pantheon.io/sites/all/themes/vitalsigns/js/science.v1.min.js"></script>
 
     <script src="js/viz/en4a.js"></script>
+    <script src="js/viz/en4b.js"></script>
     <script src="js/viz/en4c.js"></script>
   </body>
 </html>

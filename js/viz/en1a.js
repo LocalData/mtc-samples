@@ -39,14 +39,11 @@ regionPromise, countyPromise: true
         var data;
 
         var CHART_ID = '#en-a-chart';
-        var CHART_BASE_TITLE = ' Historical Trend for Particulate Matter Concentrations - Bay Area';
-        var Y_LABEL = 'Fine Particulate Concentration (microgams/m3)';
+        var CHART_BASE_TITLE = 'Historical Trend for Particulate Matter Concentrations - Bay Area';
+        var Y_LABEL = 'Fine Particulate Concentration (&#181;g/m<sup>3</sup>)';
 
         var AVG_LABEL = 'Annual Average Fine Particulates';
-        var AVG_KEY = 'PM2#5_AnnualAvg_ugm3_1YR';
-
-        var TOP_LABEL = '98th Percentile Day Fine Particulates';
-        var TOP_KEY = 'PM2#5_daily98percentile_ugm3_1YR';
+        var TOP_LABEL = '98th Percentile Daily Fine Particulates';
 
         var YEAR_KEY = 'Year';
         var minYear;
@@ -54,6 +51,45 @@ regionPromise, countyPromise: true
         var yearNames = [];
         var DASH_FORMAT = 'ShortDash';
         var LONG_DASH = 'LongDash';
+
+        var MODE_ANNUAL = {
+            title: CHART_BASE_TITLE,
+            getSeries: function() {
+                var series = [{
+                    name: 'Annual Average',
+                    data: _.pluck(data, 'PM2#5_AnnualAvg_ugm3_1YR')
+                }, {
+                    name: '3-Year Average',
+                    data: _.pluck(data, 'PM2#5_AnnualAvg_ugm3_3YR')
+                }, {
+                    name: 'Worst Location',
+                    data: _.pluck(data, 'PM2#5_AnnualAvg_ugm3_WorstLocation_3YR')
+                }];
+
+                return series;
+            }
+        };
+
+        var MODE_TOP = {
+            title: CHART_BASE_TITLE,
+            getSeries: function() {
+                var series = [{
+                    name: 'Annual Average',
+                    data: _.pluck(data, 'PM2#5_daily98percentile_ugm3_1YR')
+                }, {
+                    name: '3-Year Average',
+                    data: _.pluck(data, 'PM2#5_daily98percentile_ugm3_3YR')
+                }, {
+                    name: 'Worst Location',
+                    data: _.pluck(data, 'PM2#5_daily98percentile_ugm3_WorstLocation_3YR')
+                }];
+
+                return series;
+            }
+        };
+
+        var activeMode = MODE_ANNUAL;
+
 
         Highcharts.setOptions({
             lang: {
@@ -71,11 +107,13 @@ regionPromise, countyPromise: true
         }
 
 
-        function graph(series) {
+        function chart() {
+            var series = activeMode.getSeries();
+
             var tooltip = {
                 headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
                 pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-                '<td style="padding:0"><b>{point.y:,.1f} &mu;g/m3</b></td></tr>',
+                '<td style="padding:0"><b>{point.y:,.1f} &#181;g/m<sup>3</sup></b></td></tr>',
                 footerFormat: '</table>',
                 shared: true,
                 useHTML: true
@@ -86,7 +124,7 @@ regionPromise, countyPromise: true
                     type: 'line'
                 },
                 title: {
-                    text: CHART_BASE_TITLE
+                    text: activeMode.title
                 },
                 xAxis: {
                     categories: yearNames,
@@ -95,7 +133,8 @@ regionPromise, countyPromise: true
                 yAxis: {
                     min: 0,
                     title: {
-                        text: Y_LABEL
+                        text: Y_LABEL,
+                        useHTML: true
                     },
                     reversedStacks: true,
                     stackLabels: {
@@ -106,7 +145,7 @@ regionPromise, countyPromise: true
                     enabled: true,
                     symbolWidth: 30
                 },
-                colors: allGreen,
+                colors: altColors,
                 plotOptions: {
                 },
                 tooltip: tooltip,
@@ -117,21 +156,29 @@ regionPromise, countyPromise: true
         }
 
 
-        function getSeries() {
-            var series = [{
-                name: AVG_LABEL,
-                data: _.pluck(data, AVG_KEY)
-            }, {
-                name: TOP_LABEL,
-                data: _.pluck(data, TOP_KEY),
-                dashStyle: DASH_FORMAT
-            }];
-            return series;
-        }
-
 
         function setup() {
-            graph(getSeries());
+            chart();
+
+            $('#en-a-annual').click(function(){
+                $(this).addClass("active");
+                $(this).siblings('a').removeClass('active');
+
+                activeMode = MODE_ANNUAL;
+                chart();
+
+                $(this).display();
+            });
+            $('#en-a-top').click(function(){
+                $(this).addClass("active");
+                $(this).siblings('a').removeClass('active');
+
+                activeMode = MODE_TOP;
+                chart();
+
+                $(this).display();
+            });
+
         }
 
 
