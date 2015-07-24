@@ -21,7 +21,7 @@ regionPromise, countyPromise, cityPromise, _
 
     $(function(){
         //var CHART_BASE_TITLE = 'Historical Trend for Labor Force Participation by Age Group';
-        var MAP_TITLE = 'Sea Level Rise';
+        var MAP_TITLE = '2012 Population Vulnerable to Sea Level Rise of ';
         var CENTER = [37.871593,-122.272747];
         var CHART_ID = '#en-b-chart';
         var Y_AXIS = '';
@@ -35,13 +35,13 @@ regionPromise, countyPromise, cityPromise, _
         var TRACT_MAX_ZOOM = 4;
         var ZONE_MIN_ZOOM = 5;
 
-        var ZONE_STYLE = '#slr_zones { polygon-fill: #EC7429; polygon-opacity: 0.3; line-width: 0; [rise=1], [rise=2] {polygon-opacity: 0.4} [zoom<11] { polygon-opacity: 0.7 } }';
-        var TRACT_STYLE = '#slr_tracts { polygon-fill: #FFFFB2; polygon-opacity: 0.8; line-color: #FFF; line-width: 0.5; line-opacity: 0.5; } ';
-        TRACT_STYLE  += '#slr_tracts [ popdens_10 <= 0.02088347] { polygon-fill: #843f1d; } #slr_tracts [ popdens_10 <= 0.00282527] { polygon-fill: #bd5d21; } #slr_tracts [ popdens_10 <= 0.00135319] { polygon-fill: #ec7429; } #slr_tracts [ popdens_10 <= 0.00069837] { polygon-fill: #e19063; } #slr_tracts [ popdens_10 <= 0.00016958] { polygon-fill: #ea9e77; }';
+        var ZONE_STYLE = '#slr_zones { polygon-fill: #EC7429; polygon-opacity: 0.3; line-width: 0; [rise=1], [rise=2] {polygon-opacity: 0.4} [zoom<11] { polygon-opacity: 0.4 } [zoom>12] { line-width:0.5; line-color: #e1671b; line-opacity: 0.6; } [zoom>15] { line-opacity: 0.9; } }';
+        // var TRACT_STYLE = '#slr_tracts { polygon-fill: #FFFFB2; polygon-opacity: 0.9; line-color: #FFF; line-width: 0.5; line-opacity: 0.5; } ';
+        // TRACT_STYLE  += '#slr_tracts [ popdens_10 <= 0.02088347] { polygon-fill: #843f1d; } #slr_tracts [ popdens_10 <= 0.00282527] { polygon-fill: #bd5d21; } #slr_tracts [ popdens_10 <= 0.00135319] { polygon-fill: #ec7429; } #slr_tracts [ popdens_10 <= 0.00069837] { polygon-fill: #e19063; } #slr_tracts [ popdens_10 <= 0.00016958] { polygon-fill: #ea9e77; }';
 
         // Green
-        // var TRACT_STYLE = '#slr_tracts { polygon-fill: #FFFFB2; polygon-opacity: 0.8; line-color: #FFF; line-width: 0.5; line-opacity: 0.5; } ';
-        // TRACT_STYLE  += '#slr_tracts [ popdens_10 <= 0.02088347] { polygon-fill: #35592a; } #slr_tracts [ popdens_10 <= 0.00282527] { polygon-fill: #4e8508; } #slr_tracts [ popdens_10 <= 0.00135319] { polygon-fill: #62a60a; } #slr_tracts [ popdens_10 <= 0.00069837] { polygon-fill: #87b171; } #slr_tracts [ popdens_10 <= 0.00016958] { polygon-fill: #9dbf88; }';
+        var TRACT_STYLE = '#slr_tracts { polygon-fill: #FFFFB2; polygon-opacity: 0.8; line-color: #FFF; line-width: 0.5; line-opacity: 0.5; } ';
+        TRACT_STYLE  += '#slr_tracts [ popdens_10 <= 0.02088347] { polygon-fill: #35592a; } #slr_tracts [ popdens_10 <= 0.00282527] { polygon-fill: #4e8508; } #slr_tracts [ popdens_10 <= 0.00135319] { polygon-fill: #62a60a; } #slr_tracts [ popdens_10 <= 0.00069837] { polygon-fill: #87b171; } #slr_tracts [ popdens_10 <= 0.00016958] { polygon-fill: #9dbf88; }';
 
         //var TRACT_STYLE = '#slr_tracts { polygon-fill: #0c8ec5; polygon-opacity: 0.8; line-width: 0;  }';
             // 4E8508 -- green
@@ -52,7 +52,16 @@ regionPromise, countyPromise, cityPromise, _
         var riseMap, tractMap;
         var riseLayer, tractLayer;
         var activeLayer = {};
-        var rise = 1;
+        var rise = 3;
+
+        function updateTitle(slr) {
+            var plural = ' Feet';
+            if (rise === 1) {
+                plural = ' Foot';
+            }
+
+            $('#map_title').html(MAP_TITLE + '<strong>' + rise + plural + '</strong>');
+        }
 
         var template = _.template($('#map-legend-template').html());
 
@@ -65,30 +74,15 @@ regionPromise, countyPromise, cityPromise, _
             fillOpacity: 0.65
         };
 
-        var COLORS = altColors;
+        var COLORS = allGreen;
 
-        // Red-oranges
-        COLORS = [
-            '#fef0d9',
-            '#fdd49e',
-            '#fdbb84',
-            '#fc8d59',
-            '#ef6548',
-            '#d7301f'
+        var BREAKS = [
+            1,
+            4,
+            7,
+            9,
+            10
         ];
-
-        // Blue to red
-        COLORS = [
-            '#c4e5f2',
-            '#7bafc5',
-            //'#0c8ec5', // med blue
-            '#ebd183',
-            '#ebbd2f',
-            '#c14f4f',
-            '#c12929'
-        ];
-
-        COLORS = allOrange;
 
 
         function prepTracts(d) {
@@ -117,6 +111,60 @@ regionPromise, countyPromise, cityPromise, _
                 return '<span style="font-weight:800;color:#000;">' + this.value + '</span>';
             }
             return this.value;
+        }
+
+
+        function makeMapFullScreen(event) {
+            event.preventDefault();
+            $('.make-map-fullscreen').hide();
+            $('.reduce-map-size').show();
+
+            var $container = $('#slr-map-container');
+            $container.toggleClass('fullscreen-map-container');
+
+
+            // Calculate thew new offset
+            var offset = $('#slr-map-container').offset();
+            var leftOffset = offset.left;
+
+
+            // Get any existing left offset
+            var left = $container.css('left');
+            left = _.trim(left, 'px');
+            left = parseInt(left, 10);
+            console.log('left', left);
+            if (left) {
+                console.log("We need add subtract", left);
+                leftOffset -= left;
+            }
+
+            // Set the new offiset
+            $container.css('left', '-' + leftOffset + 'px');
+
+            // Set the new width
+            var fullWidth = window.innerWidth - 30;
+            $container.width(fullWidth);
+
+            console.log("Resizing?", offset, leftOffset, fullWidth);
+
+            // Resize the map if the window resizes
+            window.addEventListener('resize', makeMapFullScreen);
+            riseMap._onResize();
+            tractMap._onResize();
+        }
+
+
+        function disableFullScreen(event) {
+            event.preventDefault();
+            $('.make-map-fullscreen').show();
+            $('.reduce-map-size').hide();
+
+            window.removeEventListener('resize', makeMapFullScreen);
+
+            var $container = $('#slr-map-container');
+            $container.removeClass('fullscreen-map-container');
+            $container.css('left', 'auto');
+            $container.css('width', '100%');
         }
 
 
@@ -155,7 +203,7 @@ regionPromise, countyPromise, cityPromise, _
                 rise = e.value;
 
                 // Update the map title
-                $('#map_title').html(MAP_TITLE + ' - ' + rise + 'ft rise');
+                updateTitle();
 
                 riseLayer.set({
                     sql: "SELECT * FROM slr_zones WHERE rise <=" + rise,
@@ -200,19 +248,21 @@ regionPromise, countyPromise, cityPromise, _
         }
 
         function setupMap() {
-            $('#map_title').html(MAP_TITLE + ' - ' + rise + 'ft rise');
+            updateTitle();
 
             riseMap = L.map('map-rise', {
                 center: CENTER,
                 zoom: 9,
                 minZoom: 8,
-                fullscreen: true
+                fullscreen: true,
+                scrollWheelZoom: false
             });
             tractMap = L.map('map-tracts', {
                 center: CENTER,
                 zoom: 9,
                 minZoom: 8,
-                fullscreen: true
+                fullscreen: true,
+                scrollWheelZoom: false
             });
 
             // Usual basemap: postcode.kh28fdpk
@@ -228,6 +278,10 @@ regionPromise, countyPromise, cityPromise, _
 
             tractMap.sync(riseMap);
             riseMap.sync(tractMap);
+
+            $('.make-map-fullscreen').click(makeMapFullScreen);
+            $('.reduce-map-size').click(disableFullScreen);
+
 
             // Add the layers to the two maps
             // Add the SLR map
@@ -260,16 +314,15 @@ regionPromise, countyPromise, cityPromise, _
 
             setupInteraction();
 
-
-
             // Add the legend
             // TODO once we have breaks set
-            var BREAKS = [1,4,7,9,10];
-            var legendControl = new L.control();
+            var legendControl = new L.control({
+                position: 'bottomright'
+            });
             legendControl.onAdd = function (map) {
                 var div = L.DomUtil.create('div', 'info legend');
                 $(div).addClass("col-lg-12");
-                $(div).append("<h5>Population Density<br> (legend to come)</h5>");
+                $(div).append("<h5>Population  Density of Affected Neighborhoods</h5>");
 
                 // loop through our density intervals and generate a label
                 // with a colored square for each interval

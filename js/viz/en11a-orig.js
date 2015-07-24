@@ -36,24 +36,29 @@ regionPromise, countyPromise, cityPromise: true
 
     $(function(){
         var i;
-        var countyData, regionData;
+        var cityData, countyData, regionData;
 
         var CHART_BASE_TITLE = 'Historical Trend for Home Prices';
         var CHART_ID = '#en-a-chart';
+        var CITY_KEY = 'City';
         var COUNTY_KEY = 'County';
         var YEAR_KEY = 'PopYear';
 
         var SEA_LEVELS = ['1ft', '2ft', '3ft', '4ft', '5ft', '6ft'].reverse();
 
-        var POPULATION_KEY = 'Pop12';
-        var PERCENT_KEY = 'Pop12_Share';
+        var POPULATION_KEY = 'MedPrice';
+        var PERCENT_KEY = 'PercentChngPriceIA';
         var POPULATION_KEY_REGION = 'Impacted';
         var PERCENT_KEY_REGION = 'Impacted_Share';
 
+        // Use econ purple as the first color
+        altColors[4] = altColors[0];
+        altColors[0] = econColors[1];
+
         var DASH_FORMAT = 'ShortDash';
 
-        var selectedGeography = {};
-        var years;
+        var minYear, maxYear;
+        var yearNames = [];
 
         var MODE_POPULATION = {
             title: 'Historical Trend for Vulnerability to Sea Level Rise',
@@ -61,74 +66,48 @@ regionPromise, countyPromise, cityPromise: true
             yMin: 0,
             format: "{value:,.0f}",
             pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-                '<td style="padding:0"><b>{point.y:,.0f} people</b></td></tr>',
+                '<td style="padding:0"><b>{point.y:,.0f}</b></td></tr>',
             colors: altColors,
-            getSeries: function(data, level) {
-                var series = {
-                    name: level,
-                    data: []
-                };
-
-                // Get regional data for all years
-                _.each(years, function(year) {
-                    var regionValue = _.find(regionData, {
-                        PopYear: year,
-                        Scenario: level
-                    })[POPULATION_KEY_REGION];
-                    series.data.push(regionValue);
-                });
-
-                // If a county is selected, get its value
-                if (selectedGeography.county) {
-                    console.log("Selected geo", selectedGeography.county, level);
-                    var countyValue = _.find(countyData, {
-                        County: selectedGeography.county,
-                        Scenario: level
-                    })[POPULATION_KEY];
-                    console.log("Got data", countyValue);
-                    series.data.push(countyValue);
+            getSeries: function(data, name, level) {
+                // The regional and local data use different keys.
+                var key = POPULATION_KEY;
+                if (name === 'Bay Area') {
+                    key = POPULATION_KEY_REGION;
                 }
 
+                data = _.filter(data, { Scenario: level });
+
+                var series = [{
+                    name: 'Population - ' + name + ' - ' + level,
+                    data: _.pluck(data, key),
+                    dashStyle: DASH_FORMAT
+                }];
                 return series;
             }
         };
         var MODE_SHARE = {
             title: 'Historical Trend for Vulnerability to Sea Level Rise',
             yAxis: 'Share of Population',
-            format: "{value:,.1f}%",
+            format: "{value:,.0f}%",
             pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-                '<td style="padding:0"><b>{point.y:,.1f}%</b></td></tr>',
+                '<td style="padding:0"><b>{point.y:,.0f}%</b></td></tr>',
             colors: altColors,
-            getSeries: function(data, level) {
-                var series = {
-                    name: level,
-                    data: []
-                };
-
-                // Get regional data
-                _.each(years, function(year) {
-                    var regionValue = _.find(regionData, {
-                        PopYear: year,
-                        Scenario: level
-                    })[PERCENT_KEY_REGION];
-                    series.data.push(regionValue);
-                });
-
-                // If a county is selected, get its value
-                if (selectedGeography.county) {
-                    console.log("Selected geo", selectedGeography.county);
-                    var countyValue = _.find(countyData, {
-                        County: selectedGeography.county,
-                        Scenario: level
-                    })[PERCENT_KEY];
-                    console.log("Got data", countyValue);
-                    series.data.push(countyValue);
+            getSeries: function(data, name) {
+                // The regional and local data use different keys.
+                var key = PERCENT_KEY;
+                if (name === 'Bay Area') {
+                    key = PERCENT_KEY_REGION;
                 }
 
+                var series = [{
+                    name: '%Share of Population - ' + name,
+                    data: _.pluck(data, key)
+                }];
                 return series;
             }
         };
 
+        var selectedGeography = {};
         var mode = MODE_POPULATION;
 
         Highcharts.setOptions({
@@ -147,16 +126,28 @@ regionPromise, countyPromise, cityPromise: true
         }
 
 
+        function getSeries(data, name) {
+            return mode.getSeries(data, name);
+        }
+
+
         function getAllSeries() {
             var series = [];
 
             _.each(SEA_LEVELS, function(level) {
-                series = series.concat(mode.getSeries(regionData, level));
+                series = series.concat(mode.getSeries(regionData, 'Bay Area', level));
+                // console.log("Wtf", mode.getSeries(regionData, 'Bay Area', level));
+                // console.log(series);
             });
 
             console.log("Got series", series);
 
-            return series.reverse();
+            if (selectedGeography.county) {
+                var selectedCountyData = _.filter(countyData, {'County': selectedGeography.county});
+                series = series.concat(getSeries(selectedCountyData, selectedGeography.county));
+            }
+
+            return series;
         }
 
         function chart() {
@@ -170,38 +161,35 @@ regionPromise, countyPromise, cityPromise: true
                 useHTML: true
             };
 
-            var categories = [];
-
-            _.each(years, function(year) {
-                categories.push('Bay Area - ' + year);
-            });
 
             var title = mode.title;
-            if (selectedGeography.county) {
-                categories.push(selectedGeography.county + ' - 2012');
-                // title += ' - ' + selectedGeography.county;
+            if (selectedGeography.city) {
+                title += ' - ' + selectedGeography.city;
+            } else if (selectedGeography.county) {
+                title += ' - ' + selectedGeography.county + ' County';
             }
 
-            // if (!selectedGeography.city && !selectedGeography.county) {
-            //     title += ' - Bay Area';
-            // }
+
+            if (!selectedGeography.city && !selectedGeography.county) {
+                title += ' - Bay Area';
+            }
 
             var options = {
                 chart: {
-                    type: 'column'
+                    type: 'area'
                 },
                 title: {
                     text: title
                 },
                 xAxis: {
-                    categories: categories,
+                    categories: yearNames,
                     tickmarkPlacement: 'on',
                     labels: {
                         maxStaggerLines: 1,
                         staggerLines: 1
                     },
                     title: {
-                        enabled: false
+                        text: 'Year'
                     }
                 },
                 yAxis: {
@@ -211,17 +199,14 @@ regionPromise, countyPromise, cityPromise: true
                     labels: {
                         format: mode.format
                     },
+                    reversedStacks: true,
                     stackLabels: {
                         enabled: false
                     }
                 },
                 legend: {
                     enabled: true,
-                    reversed: false,
-                    symbolWidth: 30,
-                    title: {
-                        text: 'Sea Level Rise'
-                    }
+                    symbolWidth: 30
                 },
                 colors: altColors,
                 plotOptions: {
@@ -245,8 +230,10 @@ regionPromise, countyPromise, cityPromise: true
 
         function resetCombos(mode) {
             var combo;
-            combo = $("#en-a-county-select").data("kendoComboBox");
+            combo = $("#ec-a-county-select").data("kendoComboBox");
             combo.text('Select County...');
+            combo = $("#ec-a-city-select").data("kendoComboBox");
+            combo.text('Select City...');
         }
 
 
@@ -268,6 +255,12 @@ regionPromise, countyPromise, cityPromise: true
             }
 
             selectedGeography.county = location[COUNTY_KEY];
+
+            // Get any city data
+            var city = location[CITY_KEY];
+            if (city) {
+                selectedGeography.city = city;
+            }
 
             chart();
         }
@@ -317,12 +310,12 @@ regionPromise, countyPromise, cityPromise: true
         }
 
 
-        function roundThousands(n) {
+        function roundBillion(n) {
             if (n === null) {
                 return n;
             }
 
-            return Math.round(n/1000) * 1000;
+            return Math.round(n/1000000000);
         }
 
 
@@ -335,10 +328,6 @@ regionPromise, countyPromise, cityPromise: true
             var i;
             for(i = 0; i < d.length; i++) {
                  d[i][PERCENT_KEY] = percent(d[i][PERCENT_KEY]);
-                 d[i][PERCENT_KEY_REGION] = percent(d[i][PERCENT_KEY_REGION]);
-
-                 d[i][POPULATION_KEY] = roundThousands(d[i][POPULATION_KEY]);
-                 d[i][POPULATION_KEY_REGION] = roundThousands(d[i][POPULATION_KEY_REGION]);
             }
             return d;
         }
@@ -358,7 +347,11 @@ regionPromise, countyPromise, cityPromise: true
             countyData = setupNumbers(_.clone(local[0], true));
             regionData = setupNumbers(_.clone(region[0], true));
 
-            years = _.uniq(_.pluck(regionData, YEAR_KEY));
+            yearNames = [];
+            var years = _.pluck(regionData, YEAR_KEY);
+            var maxYear = _.max(years);
+            var minYear = _.min(years);
+            yearNames = _.uniq(years);
 
             // Once we have the data, set up the visualizations
             setup();

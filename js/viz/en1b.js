@@ -31,17 +31,21 @@ regionPromise, countyPromise, cityPromise, _
 
     $(function(){
         //var CHART_BASE_TITLE = 'Historical Trend for Labor Force Participation by Age Group';
+
+        // Constants
         var CHART_ID = '#en-b-chart';
         var Y_AXIS = '';
-
         var GEO_KEY = 'Sensor_Location';
         var YEAR_KEY = 'Year';
+        var CHART_BASE_TITLE = 'Sensor Data for Fine Particulates';
         var AVG_LABEL = 'Annual Average Fine Particulates';
         var TOP_LABEL = '98th Percentile Day Fine Particulates';
         var AVG_KEY = 'PM2#5_AnnualAvg_ugm3_1YR';
         var TOP_KEY = 'PM2#5_daily98percentile_ugm3_1YR';
-
         var DESELECTED_COLOR = allGray[2];
+
+        // Replace the gray and other desaturated colors.
+        var colors = _.without(altColors, '#6B7078', '#65598A', '#2C2C2C');
 
         var i;
         var map;
@@ -110,26 +114,25 @@ regionPromise, countyPromise, cityPromise, _
         }
 
         var MODE_ANNUAL = {
-            title: AVG_LABEL,
+            title: CHART_BASE_TITLE,
             label: AVG_LABEL,
             key: AVG_KEY,
-            yAxis: 'Fine Particulate Concentration (&#181;g/m<sup>3</sup>)',
+            yAxis: 'Annual Average<br> Fine Particulate Concentration (&#181;g/m<sup>3</sup>)',
             format: "{value:,.1f}",
             pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
                 '<td style="padding:0"><b>{point.y:,.1f} &#181;g/m<sup>3</sup></b></td></tr>'
         };
         var MODE_TOP = {
-            title: TOP_LABEL,
+            title: CHART_BASE_TITLE,
             label: TOP_LABEL,
             key: TOP_KEY,
-            yAxis: 'Fine Particulate Concentration (&#181;g/m<sup>3</sup>)',
+            yAxis: 'Annual Average<br> Fine Particulate Concentration (&#181;g/m<sup>3</sup>)',
             format: "{value:,.1f}",
             pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
                 '<td style="padding:0"><b>{point.y:,.1f} &#181;g/m<sup>3</sup></b></td></tr>'
         };
 
         var activeMode = MODE_ANNUAL;
-
 
 
         Highcharts.setOptions({
@@ -178,7 +181,8 @@ regionPromise, countyPromise, cityPromise, _
                 yAxis: {
                     title: {
                         text: activeMode.yAxis,
-                        useHTML: true
+                        useHTML: true,
+                        margin: 25
                     },
                     min: 0,
                     max: activeMode.max,
@@ -191,8 +195,15 @@ regionPromise, countyPromise, cityPromise, _
                 legend: {
                     enabled: true
                 },
-                colors: altColors,
+                colors: colors,
                 plotOptions: {
+                    line: {
+                         events: {
+                            legendItemClick: function () {
+                                return false;
+                            }
+                        }
+                    }
                 },
                 tooltip: tooltip,
                 series: getSeries(activeMode.key, activeMode.label)
@@ -223,19 +234,18 @@ regionPromise, countyPromise, cityPromise, _
         }
 
 
-        var layerToStartSelected;
+        var layersToStartSelected = [];
         function setupInteraction(feature, layer) {
             // Listen for click events on all layers
             layer.on('click', function(event) {
                 interaction(event, feature);
             });
 
-            // We pick a layer to be selected from the start
-            // Use Livermore because it has quite a bit of data.
-            // Sebastapol, San Jose - Knox, Oakland - Laney College
-            // console.log("Pick this layer?", feature);
-            if (feature.properties[GEO_KEY] === 'Livermore') {
-                layerToStartSelected = layer;
+            // We pick a few layers to be selected from the start
+            if (feature.properties[GEO_KEY] === 'Point Reyes' ||
+                feature.properties[GEO_KEY] === 'Redwood City' ||
+                feature.properties[GEO_KEY] === 'Livermore') {
+                layersToStartSelected.push(layer);
             }
         }
 
@@ -252,13 +262,17 @@ regionPromise, countyPromise, cityPromise, _
 
             // Regular terrain map: postcode.mna0lfce
             // Desaturated: postcode.4d9dd5cd
+            // Default base map: postcode.kh28fdpk
 
             L.mapbox.accessToken = 'pk.eyJ1IjoicG9zdGNvZGUiLCJhIjoiWWdxRTB1TSJ9.phHjulna79QwlU-0FejOmw';
-            map = L.mapbox.map('map', 'postcode.mna0lfce', {
+            map = L.mapbox.map('map', 'postcode.kh28fdpk', {
                 infoControl: false,
                 zoomControl: false,
                 attributionControl: false,
                 scrollWheelZoom: false,
+                dragging: false,
+                touchZoom: false,
+                doubleClickZoom: false,
                 center: [37.783367, -122.062378]
             });
             L.control.scale().addTo(map);
@@ -283,11 +297,12 @@ regionPromise, countyPromise, cityPromise, _
 
             map.fitBounds(sensorLayer.getBounds());
 
-            // Start with one layer selected.
-            console.log("First data", layerToStartSelected);
-            interaction({
-                target: layerToStartSelected
-            }, layerToStartSelected.feature);
+            // Start with layers selected.
+            _.each(layersToStartSelected, function(layer) {
+                interaction({
+                    target: layer
+                }, layer.feature);
+            });
         }
 
 
@@ -323,7 +338,7 @@ regionPromise, countyPromise, cityPromise, _
         function setupColors(d) {
             var i;
             for(i = 0; i < d.length; i++) {
-                d[i].color = altColors[i];
+                d[i].color = colors[i];
             }
             return d;
         }
@@ -343,7 +358,6 @@ regionPromise, countyPromise, cityPromise, _
             // Get the max values for the two data modes
             MODE_TOP.max = _.max(sensorData, MODE_TOP.key)[MODE_TOP.key];
             MODE_ANNUAL.max = _.max(sensorData, MODE_ANNUAL.key)[MODE_ANNUAL.key];
-            console.log("Got maxes", MODE_TOP.max, MODE_ANNUAL.max);
 
             // Once we have the data, set up the visualizations
             setup();

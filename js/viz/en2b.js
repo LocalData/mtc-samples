@@ -1,5 +1,5 @@
 /*globals
-jQuery, L, geocities, altColors, econColors, Highcharts, turf, chroma,
+jQuery, L, geocities, altColors, allGray, econColors, Highcharts, turf, chroma,
 regionPromise, countyPromise, cityPromise, _
 */
 (function($) {
@@ -27,7 +27,7 @@ regionPromise, countyPromise, cityPromise, _
     */
 
     $(function(){
-        //var CHART_BASE_TITLE = 'Historical Trend for Labor Force Participation by Age Group';
+        var CHART_BASE_TITLE = 'Sensor Data for Ozone';
         var CHART_ID = '#en-b-chart';
 
         var MAP_TITLE = 'Ozone Concentrations';
@@ -36,7 +36,7 @@ regionPromise, countyPromise, cityPromise, _
         var Y_LABEL = '8-Hour Maximum Ozone Concentrations (ppb)';
         var X_LABEL = 'Ozone Concentrations';
         var FOCUS_KEY = 'Ozone_Max4_Daily_8HR_ppb_Annual_1YR';
-
+        var DESELECTED_COLOR = allGray[2];
 
         var i;
         var map;
@@ -46,9 +46,12 @@ regionPromise, countyPromise, cityPromise, _
         var locations, sensorData;
         var selectedGeography = [];
 
+        // Replace the gray.
+        var colors = _.without(altColors, '#6B7078');
+
         var pointStyle = {
             radius: 6,
-            fillColor: "#ff7800",
+            fillColor: DESELECTED_COLOR, // "#ff7800", - orange
             color: "#fff",
             weight: 1.5,
             opacity: 1,
@@ -57,8 +60,6 @@ regionPromise, countyPromise, cityPromise, _
 
         var selectedStyle = {
             radius: 6,
-            fillColor: "#ff7800",
-            color: altColors[0],
             weight: 1.5,
             opacity: 1,
             fillOpacity: 1
@@ -141,14 +142,11 @@ regionPromise, countyPromise, cityPromise, _
                     type: 'line'
                 },
                 title: {
-                    text: MAP_TITLE
+                    text: CHART_BASE_TITLE
                 },
                 xAxis: {
                     categories: yearNames,
                     tickmarkPlacement: 'on',
-                    title: {
-                        text: X_LABEL
-                    },
                     labels: {
                         step: 5
                     }
@@ -167,8 +165,15 @@ regionPromise, countyPromise, cityPromise, _
                 legend: {
                     enabled: true
                 },
-                colors: altColors,
+                colors: colors,
                 plotOptions: {
+                    line: {
+                         events: {
+                            legendItemClick: function () {
+                                return false;
+                            }
+                        }
+                    }
                 },
                 tooltip: tooltip,
                 series: getSeries()
@@ -184,9 +189,8 @@ regionPromise, countyPromise, cityPromise, _
 
 
         function interaction(event, feature) {
-            console.log("Feature", event, feature);
             if (_.find(selectedGeography, feature.properties)) {
-                pointStyle.fillColor = feature.properties.color;
+                pointStyle.fillColor = DESELECTED_COLOR; // feature.properties.color;
                 event.target.setStyle(pointStyle);
                 _.remove(selectedGeography, feature.properties);
             } else {
@@ -197,20 +201,25 @@ regionPromise, countyPromise, cityPromise, _
             chart();
         }
 
-        var layerToStartSelected;
+        var layersToStartSelected = [];
         function setupInteraction(feature, layer) {
             // Listen for click events on all layers
             layer.on('click', function(event) {
                 interaction(event, feature);
             });
 
-            // We pick a layer to be selected from the start
-            layerToStartSelected = layer;
+            // We pick a few top/bottom layers to get started
+            if (feature.properties[GEO_KEY] === 'Livermore' ||
+                feature.properties[GEO_KEY] === 'San Martin' ||
+                feature.properties[GEO_KEY] === 'Oakland' ||
+                feature.properties[GEO_KEY] === 'San Francisco') {
+                layersToStartSelected.push(layer);
+            }
         }
 
 
         function pointToLayer(feature, latlng) {
-            pointStyle.fillColor = feature.properties.color;
+            // pointStyle.fillColor = feature.properties.color;
 
             return L.circleMarker(latlng, pointStyle);
         }
@@ -219,11 +228,18 @@ regionPromise, countyPromise, cityPromise, _
         function setupMap() {
             // $('#map_title').html(MAP_TITLE + ' - ' + activeYear);
 
+            // Regular terrain map: postcode.mna0lfce
+            // Desaturated: postcode.4d9dd5cd
+            // Default base map: postcode.kh28fdpk
+
             L.mapbox.accessToken = 'pk.eyJ1IjoicG9zdGNvZGUiLCJhIjoiWWdxRTB1TSJ9.phHjulna79QwlU-0FejOmw';
             map = L.mapbox.map('map', 'postcode.kh28fdpk', {
                 infoControl: true,
                 attributionControl: false,
                 scrollWheelZoom: false,
+                dragging: false,
+                touchZoom: false,
+                doubleClickZoom: false,
                 center: [37.783367, -122.062378]
             });
             L.control.scale().addTo(map);
@@ -249,11 +265,12 @@ regionPromise, countyPromise, cityPromise, _
             map.fitBounds(sensorLayer.getBounds());
 
 
-            // Start with one layer selected.
-            console.log("First data", layerToStartSelected);
-            interaction({
-                target: layerToStartSelected
-            }, layerToStartSelected.feature);
+            // Start with layers selected.
+            _.each(layersToStartSelected, function(layer) {
+                interaction({
+                    target: layer
+                }, layer.feature);
+            });
         }
 
 
@@ -270,7 +287,7 @@ regionPromise, countyPromise, cityPromise, _
         function setupColors(d) {
             var i;
             for(i = 0; i < d.length; i++) {
-                d[i].color = altColors[i];
+                d[i].color = colors[i];
             }
             return d;
         }

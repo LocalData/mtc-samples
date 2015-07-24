@@ -31,26 +31,84 @@ Promise, regionPromise, countyPromise, cityPromise: true
 
     $(function(){
         //var CHART_BASE_TITLE = 'Historical Trend for Labor Force Participation by Age Group';
+        var MAP_TITLE = 'Fatalities from Crashes';
         var CHART_ID = '#en-b-chart';
-        var CHART_TITLE = 'Share of Population Below<br> 200% of Poverty Level';
-        var MAP_TITLE = 'Share of Population Below<br> 200% of Poverty Level';
+        var Y_AXIS = '';
 
-        var YEARNAMES = [1980, 1990, 2000, 2010, 2013];
-        var DASH_FORMAT = 'ShortDash';
-        var COUNTY_KEY = 'GeoName';
-        var COUNTY_KEY_2 = 'County';
+        // The raw data uses numbers to refer to months
+        var MONTHS = {
+            1: 'January',
+            2: 'February',
+            3: 'March',
+            4: 'April',
+            5: 'May',
+            6: 'June',
+            7: 'July',
+            8: 'August',
+            9: 'September',
+            10: 'October',
+            11: 'November',
+            12: 'December'
+        };
+
         var CITY_KEY = 'City';
-        var FOCUS_YEAR = 2013;
-        var FOCUS_KEY = 'PovPCT200';
+        var CITY_FEATURE_KEY = 'NAME';
+        var COUNTY_KEY = 'County';
+        var TRACT_KEY = 'Tract';
 
-        var CARTO_FOCUS_KEY = 'ec11_povpct200'; // carto lowercases fields
-        var CARTO_CITY_POINT_QUERY = 'SELECT name FROM cities WHERE ST_Intersects( the_geom, ST_SetSRID(ST_POINT({{lat}}, {{lng}}) , 4326))';
+        var MIN_YEAR = 2000;
+        var BIKE_KEY = 'BICCOL';
+        var BIKE_COLOR = altColors[0];
+
+        var PED_KEY = 'PEDCOL';
+        var PED_COLOR = altColors[1];
+
+        var CAR_KEY = 'MCCOL';
+        var TRUCK_KEY = 'TRUCKCOL';
+        var VEHICLE_COLOR = altColors[3];
+
+        var TRACT_MIN_ZOOM = 8;
+        var TRACT_MAX_ZOOM = 13;
+        var POINT_MIN_ZOOM = 13;
+
+        // Red-oranges
+        var COLORS = [
+            '#EA9E77',
+            '#E19063',
+            '#EC7429',
+            '#BD5D21',
+            '#843F1D'
+        ];
+
+        // Quintiles (rounded slightly)
+        var BREAKS = [
+            0,
+            0.00017679,
+            0.00022139,
+            0.00028969,
+            0.00043022
+        ];
+
+        var map;
+        var activeLayer = {};
+        var tractLayer, pointLayer;
+        var year = 2012;
+
+        var cartoCSSTemplate = _.template($('#template-carto').html());
+        var mapLegendTemplate = _.template($('#template-map-legend').html());
+
+        var point_styles = {
+            radius: 7,
+            fillColor: "#ff7800",
+            color: "#fff",
+            weight: 1,
+            opacity: 1,
+            fillOpacity: 0.65
+        };
 
         var i;
-        var map;
         var regionData, countyData, cityData;
         var selectedGeography = 'Bay Area';
-        var sql = new cartodb.SQL({ user: 'mtc' });
 
         Highcharts.setOptions({
             lang: {
@@ -68,191 +126,282 @@ Promise, regionPromise, countyPromise, cityPromise: true
         }
 
 
-        function graph(series, options) {
-            $(CHART_ID).highcharts({
-                chart: {
-                    defaultSeriesType: 'bar',
-                    marginLeft: 100
-                },
-                series: series,
-                exporting: {
-                    enabled: true
-                },
-                legend: {
-                    enabled: false
-                },
-                yAxis: {
-                    title: {
-                        text: CHART_TITLE
-                    },
-                    max: 100,
-                    startOnTick: false,
-                    endOnTick: false,
-                    labels: {
-                        format: "{value:,.0f}%"
-                    }
-                },
-                xAxis: {
-                    categories: options.categories
-                },
-                title: {
-                    text: series[0].name
-                },
-                tooltip: {
-                    shared: true,
-                    crosshairs: false,
-                    pointFormat: '<b>{point.y:,.1f}%</b>'
+        // Set up the tract legend
+        var tractLegendControl = new L.control({
+            position: 'bottomright'
+        });
+        tractLegendControl.onAdd = function (map) {
+            var div = L.DomUtil.create('div', 'info legend');
+            $(div).addClass("col-lg-12");
+            $(div).append("<h5>Fatalities from Crashes Per Capita<br></h5>");
 
-                    // pointFormatter: function() {
-                    //     if (this.y === 2001) {
-                    //         return '<b>&gt;$2,000</b>';
-                    //     }
-//
-                    //     return '<b>$' + this.y.toLocaleString() + '</b>';
-                    // }
-                },
-                colors: econColors
+            // loop through our density intervals and generate a label
+            // with a colored square for each interval
+            var i;
+            for (i = 0; i < BREAKS.length; i++) {
+                var s = '<div class="legend-row"><div class="legend-color" style="background:' + COLORS[i] + ';">&nbsp; </div><div class="legend-text">';
+
+                if (i === 0) {
+                    s += BREAKS[i].toLocaleString() + ' - ' + BREAKS[i+1].toLocaleString();
+                }
+
+                if (i !== BREAKS.length - 1 && i !== 0) {
+                    s += BREAKS[i].toLocaleString() + ' - ' + BREAKS[i+1].toLocaleString();
+                }
+
+                if (i === BREAKS.length - 1) {
+                    s += BREAKS[i].toLocaleString() + '+</div>';
+                }
+
+                $(div).append(s);
+            }
+
+            return div;
+        };
+
+
+        // Set up the point legend
+        var pointLegendControl = new L.control({
+            position: 'bottomright'
+        });
+        pointLegendControl.onAdd = function (map) {
+            var div = L.DomUtil.create('div', 'info legend');
+            $(div).addClass("col-lg-12");
+            // $(div).append("<h5>Mode of transportation<br></h5>");
+
+            var s = '<div class="legend-row"><div class="legend-color" style="background:' + PED_COLOR + ';">&nbsp; </div><div class="legend-text">Pedestrian</div>';
+            s += '<div class="legend-row"><div class="legend-color" style="background:' + BIKE_COLOR + ';">&nbsp; </div><div class="legend-text">Bicyclist</div>';
+            s += '<div class="legend-row"><div class="legend-color" style="background:' + VEHICLE_COLOR + ';">&nbsp; </div><div class="legend-text">Unclassified</div>';
+
+            $(div).append(s);
+            return div;
+        };
+
+
+        // Hide / show a specific legend based on zoom
+        function setupLegend() {
+            try {
+                tractLegendControl.removeFrom(map);
+            } catch(error) {
+                // noop
+            }
+
+            try {
+                pointLegendControl.removeFrom(map);
+            } catch(error) {
+                // noop
+            }
+
+            if (map.getZoom() >= POINT_MIN_ZOOM) {
+                pointLegendControl.addTo(map);
+            } else {
+                tractLegendControl.addTo(map);
+            }
+        }
+
+
+        function interaction(event, feature) {
+            var p = feature.properties;
+            console.log("Map clicked", p);
+
+            $('#en-b-title').html(mapLegendTemplate({
+                data: feature.properties,
+                months: MONTHS
+            }));
+
+            /*
+            TODO once we have tract data defined
+            // This is a point click
+            if (_.has(p, 'price_IA')) {
+                chartOptions.city = p.CityName;
+                chartOptions.county = p.county;
+                chartOptions.tract = p.GEOID10;
+                chartOptions.point = p.price_IA;
+            }
+
+            // If this is a tract click
+            // We'll get a COUNTYFP but not a county name
+            if (_.has(p, 'TRACT')) {
+                chartOptions.tract = p.TRACT;
+
+                // Get the county name from the Fip
+                var countyFP = parseInt(_.trimLeft(p.COUNTYFP, '0'), 10);
+                chartOptions.county = _.find(countyData, { Countyfip: countyFP }).County;
+            }
+            */
+        }
+
+
+        function setupInteraction(feature, layer) {
+            layer.on('click', function(event) {
+                interaction(event, feature);
             });
         }
 
 
-        function leaderboard(data) {
-            data = _.sortBy(data, FOCUS_KEY);
-            var bottom5 = data.slice(0,5);
-            var top5 = _.takeRight(data, 5).reverse();
+        function getStyle(feature) {
+            var color, u;
+            var properties = feature.properties;
 
-            var bottomText = "<div class='col-lg-6'><h4>Lowest Poverty Rates</h4>";
-            _.each(bottom5, function(city, i) {
-                bottomText += "<h6>" + (i+1) + '. ' + city[CITY_KEY] + ": " + city[FOCUS_KEY].toFixed(1) + "%</h6>";
-            });
-            bottomText += '</div>';
-            $("#en-b-bottom-cities").html(bottomText);
-
-            var topText = "<div class='col-lg-6'><h4>Higest Poverty Rates</h4><h6>";
-            _.each(top5, function(city, i) {
-                topText += "<h6>" + (i+1) + '. ' + city[CITY_KEY] + ": " + city[FOCUS_KEY].toFixed(1) + "%</h6>";
-            });
-            topText += '</div>';
-            $("#en-b-top-cities").html(topText);
-        }
-
-
-        function mapInteraction(data, city) {
-            data = data.rows[0];
-            if (!data) {
-                console.log("No data from carto", data);
-                return;
+            if (properties.PEDCOL) {
+                color = PED_COLOR;
             }
 
-            // Check if we have city data
-            city = city.rows[0];
-            if(city) {
-                city = city.name;
+            if (properties.BICCOL) {
+                color = BIKE_COLOR;
             }
 
-            // Get the county data
-            var countyName = data.county;
-            var county2013 = _.find(countyData, {
-                'Year': FOCUS_YEAR,
-                GeoName: countyName
-            });
+            if (!properties.PEDCOL && !properties.BICCOL) {
+                color = VEHICLE_COLOR;
+            }
 
-            // Get the region data
-            var region2013 = _.find(regionData, {
-                'Year': FOCUS_YEAR
-            });
+            var opacity = 0.9;
+            // This would show the radius based on # of injured + killed
+            // var radius = (properties.INJURED + properties.KILLED) * 2;  //10;
+            var radius = 4;
 
-            // Start setting up the series
-            var series = {
-                name: '',
-                data: []
+            return {
+              color: '#fff',
+              fillColor: color,
+              fillOpacity: opacity,
+              radius: radius
             };
-            var categories = [
-                'Tract ' + data.tract
-            ];
-
-            series.data.push(data[CARTO_FOCUS_KEY] * 100);
-
-            // Add the city data, if any.
-            if (city) {
-                var city2013 = _.find(cityData, {
-                    'Year': FOCUS_YEAR,
-                    'City': city
-                });
-                series.data.push(city2013[FOCUS_KEY]);
-                categories.push(city);
-            }
-
-            series.data.push(county2013[FOCUS_KEY]);
-            series.data.push(region2013[FOCUS_KEY]);
-            categories.push(countyName + ' County');
-            categories.push('Bay Area');
+        }
 
 
-            var title = '<strong class="economy">';
-            title += (data[CARTO_FOCUS_KEY] * 100).toFixed(1); //.toLocaleString();
-            title += '%</strong> of the population in Census Tract <strong class="economy">';
-            title += data.tract + '</strong>';
-            title += ' in 2013 was below 200% of the poverty level.';
+        function pointToLayer(feature, latlng) {
+            var style = getStyle(feature);
+
+            return L.circleMarker(latlng, style);
+        }
 
 
-            $('#en-b-title').html(title);
+        function tractsLoaded(layer) {
+            tractLayer = layer; //.getSubLayer(0);
 
-            graph([series], {
-                categories: categories
+            // Listen for zoom changes and remove the layer if we are
+            // zoomed far enough in.
+            map.on('zoomend', function (event) {
+                setupLegend();
+
+                var zoom = event.target.getZoom();
+                if (zoom >= TRACT_MAX_ZOOM) {
+                    map.removeLayer(tractLayer);
+                } else if (!map.hasLayer(tractLayer)) {
+                    tractLayer.addTo(map);
+                }
             });
+
+            function update(e) {
+                year = e.value;
+
+                // Update the map title
+                $('#map_title').html(year + ' ' + MAP_TITLE);
+
+                // Update the tract layer
+                tractLayer.getSubLayer(0).set({
+                    sql: "SELECT * FROM ec_tracts",
+                    cartocss: cartoCSSTemplate({ year: year })
+                });
+
+                // Update the point layer
+                pointLayer.setWhere('KILLED > 0 AND YEAR_=' + year);
+            }
+        }
+
+
+        function setupTracts() {
+            // Add the tract layer
+            var cdbTracts = cartodb.createLayer(map, {
+              user_name: 'mtc',
+              cartodb_logo: false,
+              type: 'cartodb',
+              sublayers: [{
+                sql: "SELECT * FROM ec_tracts",
+                cartocss: cartoCSSTemplate({ year: year })
+              }]
+            })
+            .addTo(map)
+            .done(tractsLoaded);
+        }
+
+
+        function setupPoints() {
+            pointLayer = L.esri.featureLayer('http://gis.mtc.ca.gov/mtc/rest/services/VitalSigns/EN4_9_Safety/FeatureServer/0', {
+                cacheLayers: false,
+                radius: 25,
+                max: 2500000,
+                onEachFeature: setupInteraction,
+                fields: [
+                    'OBJECTID',
+                    'CITY',
+                    'COUNTY',
+                    'STATE',
+                    BIKE_KEY,
+                    PED_KEY,
+                    CAR_KEY,
+                    TRUCK_KEY,
+                    'ETOH',
+                    'PRIMARYRD',
+                    'SECONDRD',
+                    'CRASHSEV',
+                    'VIOLCAT',
+                    'KILLED',
+                    'INJURED',
+                    'YEAR_',
+                    'MONTH_',
+                    'PEDKILL',
+                    'PEDINJ',
+                    'BICKILL',
+                    'BICINJ',
+                    'MCKILL',
+                    'MCINJURE'
+                ],
+                pointToLayer: pointToLayer,
+                minZoom: POINT_MIN_ZOOM,
+                where: 'KILLED > 0 AND YEAR_ >= ' + MIN_YEAR
+
+            }).addTo(map);
         }
 
 
         function setupMap() {
-            var joinedFeatures = [];
-            var breaks = [0, 11, 18, 26, 39];
+            // $('#map_title').html(year + ' ' + MAP_TITLE);
 
-
-            L.mapbox.accessToken = 'pk.eyJ1IjoicG9zdGNvZGUiLCJhIjoiWWdxRTB1TSJ9.phHjulna79QwlU-0FejOmw';
-            map = L.mapbox.map('map', 'postcode.kh28fdpk', {
+            map = L.map('map', {
                 infoControl: true,
                 attributionControl: false,
                 scrollWheelZoom: false,
-                center: [37.783367, -122.062378]
+                center: [37.804364,-122.271114], // [37.783367, -122.062378],
+                zoom: 10,
+                minZoom: 8
             });
+
+            var baseLayer = L.tileLayer('http://a.tiles.mapbox.com/v3/postcode.mna0lfce/{z}/{x}/{y}.png');
+            baseLayer.addTo(map);
+
             L.control.scale().addTo(map);
 
+            setupPoints();
+            setupTracts();
 
+            setupLegend();
         }
 
 
         function setup() {
-            leaderboard(_.filter(cityData, {'Year': FOCUS_YEAR}));
             setupMap();
-        }
-
-
-        function percent(n) {
-            return n * 100;
         }
 
 
         function setupNumbers(d) {
             var i;
-            for(i = 0; i < d.length; i++) {
-                d[i][FOCUS_KEY] = percent(d[i][FOCUS_KEY]);
-            }
+            // for(i = 0; i < d.length; i++) {
+            //     d[i][FOCUS_KEY] = percent(d[i][FOCUS_KEY]);
+            // }
             return d;
         }
 
-
-        // Get the data ready to visualize
-        // function prepData(region, county, city) {
-        //     regionData = setupNumbers(_.clone(region[0], true));
-        //     countyData = setupNumbers(_.clone(county[0], true));
-        //     cityData = setupNumbers(_.clone(city[0], true));
-//
-        //     // Once we have the data, set up the visualizations
-        // }
-//
-        // $.when(regionPromise, countyPromise, cityPromise).done(prepData);
-        //
         setup();
 
     });

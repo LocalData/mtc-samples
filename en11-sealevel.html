@@ -27,41 +27,31 @@
     </style>
   </head>
   <body>
-    <div id="en-a-city-select"></div>
     <div id="en-a-county-select"></div>
     <div class="btn-group btn-group-justified" style="margin-top:15px">
         <a class="btn btn-primary btn-fix active k-button" id="population">Vulnerable Population</a><a class="btn btn-primary btn-fix k-button" id="population-share">Vulnerable Share of Population</a>
     </div>
-    <div id="en-a-chart">EN A Chart Here</div>
+    <div id="en-a-chart"></div>
 
     <hr>
 
 
     <h3 id="map_title">Sea Level Rise</h3>
-    <div class="row">
-      <div class="col-lg-12">
-        <div class="row">
-          <div class="col-lg-4 col-md-4 map_chart_">
-            <div class="initial_map" style="font-size:16px; height: auto;">
-              Explore the data
-            </div>
-            <div id="en-b-slr-select"></div>
-<!--             <div id="en-b-title" class="map_info">
-              <div class="initial_map" style="font-size:16px; height:auto;">
-              [Click on a shape on the map for more information.]
-              </div>
-            </div>
- -->
-            <div id="en-b-details" style="float:left;width:100%;"></div>
-          </div>
-        </div>
+    <p>Select sea level rise forecast: <div id="en-b-slr-select"></div></p>
 
+    <p>
+      <a href="#" class="make-map-fullscreen">Increase map size</a>
+      <a href="#" class="reduce-map-size" style="display:none">Reduce map size</a>
+    </p>
+
+    <div class="row">
+      <div class="col-lg-12" id="slr-map-container">
         <div class="row">
           <div class="row-lg-6 col-md-6">
-            <h3>Sea level rise</h3>
+            <h3>Affected Land Area</h3>
           </div>
           <div class="row-lg-6 col-md-6">
-            <h3>Affected population</h3>
+            <h3>Vulnerable Population</h3>
           </div>
         </div>
 
@@ -73,6 +63,11 @@
       </div>
     </div>
 
+    <style type="text/css">
+    .fullscreen-map-container {
+      position: relative;
+    }
+    </style>
 
     <!-- libraries -->
     <script src="http://code.jquery.com/jquery.js"></script>

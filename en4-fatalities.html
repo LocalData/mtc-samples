@@ -13,8 +13,8 @@
     <link href="http://cdn.kendostatic.com/2014.1.528/styles/kendo.dataviz.min.css" rel="stylesheet" />
     <link href="http://cdn.kendostatic.com/2014.1.528/styles/kendo.dataviz.default.min.css" rel="stylesheet" />
 
-<link type="text/css" rel="stylesheet" href="https://api.tiles.mapbox.com/mapbox.js/v2.1.4/mapbox.css" media="all" />
-
+<!-- <link type="text/css" rel="stylesheet" href="https://api.tiles.mapbox.com/mapbox.js/v2.1.4/mapbox.css" media="all" />
+ -->
     <link rel="stylesheet" href="http://libs.cartocdn.com/cartodb.js/v3/3.13/themes/css/cartodb.css" />
     <script src="http://libs.cartocdn.com/cartodb.js/v3/3.13/cartodb.js"></script>
 
@@ -27,9 +27,11 @@
   </head>
   <body>
 
-    <h3 id="map_title">Fatalities</h3>
+    <h3 id="map_title">
+      Fatalities from Crashes 2000-2012
+    </h3>
     <div class="row">
-      <div class="col-lg-12">
+      <div class="col-lg-12" id="EC8-B">
         <div class="row">
 
           <div class="col-lg-8 col-md-8">
@@ -38,25 +40,89 @@
 
           <div class="col-lg-4 col-md-4 map_chart_">
             <div class="initial_map" style="font-size:16px; height: auto;">
-              Explore the data
             </div>
-            <div id="en-b-year-select"></div>
             <div id="en-b-title" class="map_info">
               <div class="initial_map" style="font-size:16px; height:auto;">
-              Zoom in to see individual pedestrian fatalities.
-              Click on a shape on the map for more information.
+              <!--<div>Change year:</div>
+              <div id="en-b-select"></div>-->
+              <p>Zoom in to see more details, including individual fatality reports.
+              Select a report on the map for more information.</p>
               </div>
             </div>
 
-            <div class="btn-group btn-group-justified" style="margin-top:15px; display:none;" id="en-b-buttons">
-                <a class="btn btn-primary btn-fix k-button active" id="en-b-annual">Annual Average Fine Particulate Concentrations</a><a class="btn btn-primary btn-fix k-button" id="en-b-top">98th Percentile Daily Fine Particulate Concentrations</a>
-            </div>
 
-            <div id="en-b-chart" style="float:left;width:100%;"></div>
+            <div id="ec-b-chart" style="float:left;width:100%;"></div>
           </div>
         </div>
       </div>
     </div>
+
+    <script type="text/template" id="template-map-legend">
+        <h3>
+            <%= data.KILLED %> killed<% if (data.INJURED) { %>,
+              <%= data.INJURED %> injured
+            <% } %>
+
+            in <%= months[data.MONTH_] %> <%= data.YEAR_ %>
+        </h3>
+
+        <ul>
+          <% function pedSuffix(n) { if (n === 1) {return 'y';} return 'ies';} %>
+          <% function sSuffix(n) { if (n === 1) {return '';} return 's';} %>
+          <% if (data.PEDINJ) { %>
+            <li><%= data.PEDINJ %> pedestrian<%= sSuffix(data.PEDINJ) %> injured</li>
+          <% } %>
+          <% if (data.PEDKILL) { %>
+            <li><%= data.PEDKILL %> pedestrian<%= sSuffix(data.PEDKILL) %> killed</li>
+          <% } %>
+
+          <% if (data.BICINJ) { %>
+            <li><%= data.BICINJ %> cyclist<%= sSuffix(data.BICINJ) %> injured</li>
+          <% } %>
+          <% if (data.BICKILL) { %>
+            <li><%= data.BICKILL %> pedestrian<%= sSuffix(data.BICKILL) %> killed</li>
+          <% } %>
+
+
+          <% if (data.MCINJ) { %>
+            <li><%= data.MCINJ %> motorcyclist<%= sSuffix(data.MCINJ) %> injured</li>
+          <% } %>
+          <% if (data.MCKILL) { %>
+            <li><%= data.MCKILL %> motorcyclist<%= sSuffix(data.MCKILL) %> killed</li>
+          <% } %>
+        </ul>
+
+        <p>
+            <%= data.PRIMARYRD %> at <%= data.SECONDRD %>,
+            <%= data.CITY %> <%= data.COUNTY %> <%= data.STATE %>
+        </p>
+    </script>
+
+    <script type="text/template" id="template-carto">
+    #ec_tracts {
+      polygon-fill: #FFFFB2;
+      polygon-opacity: 0.9;
+      line-color: #FFF;
+      line-width: 0.5;
+      line-opacity: 0.5;
+    }
+
+    #ec_tracts [ en_ped_killed_per_<%= year %> <= 0.11111111] {
+      polygon-fill: #843f1d;
+    }
+    #ec_tracts [ en_ped_killed_per_<%= year %> <= 0.00043022] {
+      polygon-fill: #bd5d21;
+    }
+    #ec_tracts [ en_ped_killed_per_<%= year %> <= 0.00028969] {
+      polygon-fill: #ec7429;
+    }
+    #ec_tracts [ en_ped_killed_per_<%= year %> <= 0.00022139] {
+      polygon-fill: #e19063;
+    }
+    #ec_tracts [ en_ped_killed_per_<%= year %> <= 0.00017679] {
+      polygon-fill: #ea9e77;
+    }
+    </script>
 
     <hr>
     <div id="en-a-city-select"></div>
@@ -76,7 +142,7 @@
     <!-- libraries -->
     <script src="http://code.jquery.com/jquery.js"></script>
     <!--<script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>-->
-    <script type="text/javascript" src="https://api.tiles.mapbox.com/mapbox.js/v2.1.4/mapbox.js"></script>
+    <!--<script type="text/javascript" src="https://api.tiles.mapbox.com/mapbox.js/v2.1.4/mapbox.js"></script>-->
 
     <script src="http://cdn.kendostatic.com/2014.1.528/js/kendo.all.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.5.0/lodash.js"></script>
