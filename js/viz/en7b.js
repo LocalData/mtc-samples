@@ -132,24 +132,28 @@ regionPromise, countyPromise, cityPromise, _, cartodb
         tractLegendControl.onAdd = function (map) {
             var div = L.DomUtil.create('div', 'info legend');
             $(div).addClass("col-lg-12");
-            $(div).append("<h5>Injuries from Crashes Per Capita<br></h5>");
+            $(div).append("<h5>Injuries from Crashes Per 100,000 Residents<br></h5>");
 
             // loop through our density intervals and generate a label
             // with a colored square for each interval
             var i;
             for (i = 0; i < BREAKS.length; i++) {
                 var s = '<div class="legend-row"><div class="legend-color" style="background:' + COLORS[i] + ';">&nbsp; </div><div class="legend-text">';
+                var currentBreak = Math.round(BREAKS[i] * 100);
 
+                // If this is the first break
                 if (i === 0) {
-                    s += BREAKS[i].toLocaleString() + ' - ' + BREAKS[i+1].toLocaleString();
+                    s += currentBreak.toLocaleString() + ' - ' + Math.round(BREAKS[i+1] * 100).toLocaleString();
                 }
 
+                // If this is not the last break and not the first
                 if (i !== BREAKS.length - 1 && i !== 0) {
-                    s += BREAKS[i].toLocaleString() + ' - ' + BREAKS[i+1].toLocaleString();
+                    s += currentBreak.toLocaleString() + ' - ' + Math.round(BREAKS[i+1] * 100).toLocaleString();
                 }
 
+                // If this is the last break
                 if (i === BREAKS.length - 1) {
-                    s += BREAKS[i].toLocaleString() + '+</div>';
+                    s += currentBreak.toLocaleString() + '+</div>';
                 }
 
                 $(div).append(s);
@@ -168,8 +172,8 @@ regionPromise, countyPromise, cityPromise, _, cartodb
             $(div).addClass("col-lg-12");
             // $(div).append("<h5>Mode of transportation<br></h5>");
 
-            var s = '<div class="legend-row"><div class="legend-color" style="background:' + PED_COLOR + ';">&nbsp; </div><div class="legend-text">Pedestrian</div>';
-            s += '<div class="legend-row"><div class="legend-color" style="background:' + BIKE_COLOR + ';">&nbsp; </div><div class="legend-text">Bicyclist</div>';
+            var s = '<div class="legend-row"><div class="legend-color" style="background:' + PED_COLOR + ';">&nbsp; </div><div class="legend-text">Pedestrian injured</div>';
+            s += '<div class="legend-row"><div class="legend-color" style="background:' + BIKE_COLOR + ';">&nbsp; </div><div class="legend-text">Bicyclist injured</div>';
             s += '<div class="legend-row"><div class="legend-color" style="background:' + VEHICLE_COLOR + ';">&nbsp; </div><div class="legend-text">Unclassified</div>';
 
             $(div).append(s);
@@ -181,13 +185,13 @@ regionPromise, countyPromise, cityPromise, _, cartodb
         function setupLegend() {
             try {
                 tractLegendControl.removeFrom(map);
-            } catch(error) {
+            } catch(tractLegendRemoveError) {
                 // noop
             }
 
             try {
                 pointLegendControl.removeFrom(map);
-            } catch(error) {
+            } catch(pointLegendRemoveError) {
                 // noop
             }
 
@@ -199,9 +203,35 @@ regionPromise, countyPromise, cityPromise, _, cartodb
         }
 
 
+        /*
+        Convert times like 1500 to "3:00pm"
+         */
+        function stringifyHours(time) {
+            console.log("Checking", time);
+
+            if (time === 1200) {
+                return 'Noon';
+            }
+
+            if (time === 2400) {
+                return 'Midnight';
+            }
+
+            if (time > 1200) {
+                time = (time - 1200) / 100;
+                return time + ':00 PM';
+            }
+
+            time = time / 100;
+            return time + ':00 AM';
+        }
+
+
         // Handle clicks on points
         function interaction(event, feature) {
             var p = feature.properties;
+
+            feature.properties.time = stringifyHours(feature.properties.TIMECAT);
 
             $('#en-b-title').html(mapLegendTemplate({
                 data: feature.properties,
@@ -233,16 +263,11 @@ regionPromise, countyPromise, cityPromise, _, cartodb
                 color = VEHICLE_COLOR;
             }
 
-            var opacity = 0.9;
-            // This would show the radius based on # of injured + killed
-            // var radius = (properties.INJURED + properties.KILLED) * 2;  //10;
-            var radius = 4;
-
             return {
               color: '#fff',
               fillColor: color,
-              fillOpacity: opacity,
-              radius: radius
+              fillOpacity: 0.9,
+              radius: 4
             };
         }
 
@@ -257,6 +282,24 @@ regionPromise, countyPromise, cityPromise, _, cartodb
         function tractsLoaded(layer) {
             tractLayer = layer; //.getSubLayer(0);
 
+            console.log();
+            layer.on('featureOver', function(e, latlng, pos, data, subLayerIndex) {
+                console.log("XYZ");
+            });
+            layer.on('mouseover', function(event, b) {
+                console.log("Clicked layer", event, b);
+            });
+            layer.on('mouseout', function(event, b) {
+                console.log("Clicked layer", event, b);
+            });
+
+            var tractSubLayer = tractLayer.getSubLayer(0);
+            console.log("Tracts loaded");
+
+            // tractLayer.featureOver(function() {
+            //     console.log("over");
+            // });
+
             // Listen for zoom changes and remove the layer if we are
             // zoomed far enough in.
             map.on('zoomend', function (event) {
@@ -270,6 +313,7 @@ regionPromise, countyPromise, cityPromise, _, cartodb
                 }
             });
 
+            // Update the map after the slider is changed
             function update(e) {
                 year = e.value;
 
@@ -277,7 +321,7 @@ regionPromise, countyPromise, cityPromise, _, cartodb
                 $('#map_title').html(year + ' ' + MAP_TITLE);
 
                 // Update the tract layer
-                tractLayer.getSubLayer(0).set({
+                tractSubLayer.set({
                     sql: "SELECT * FROM ec_tracts",
                     cartocss: cartoCSSTemplate({ year: year })
                 });
@@ -286,6 +330,7 @@ regionPromise, countyPromise, cityPromise, _, cartodb
                 pointLayer.setWhere('INJURED > 0 AND YEAR_=' + year);
             }
 
+            // Set up the year slider
             var slider = $("#en-b-select").kendoSlider({
                 min: 2008,
                 max: 2012,
@@ -311,7 +356,8 @@ regionPromise, countyPromise, cityPromise, _, cartodb
               type: 'cartodb',
               sublayers: [{
                 sql: "SELECT * FROM ec_tracts",
-                cartocss: cartoCSSTemplate({ year: year })
+                cartocss: cartoCSSTemplate({ year: year }),
+                interactivity: "en_ped_injured_per_2008, en_ped_injured_per_2009, en_ped_injured_per_2010, en_ped_injured_per_2011, en_ped_injured_per_2012"
               }]
             })
             .addTo(map)
@@ -343,6 +389,7 @@ regionPromise, countyPromise, cityPromise, _, cartodb
                     'INJURED',
                     'YEAR_',
                     'MONTH_',
+                    'TIMECAT',
                     'PEDKILL',
                     'PEDINJ',
                     'BICKILL',
@@ -365,8 +412,8 @@ regionPromise, countyPromise, cityPromise, _, cartodb
                 infoControl: true,
                 attributionControl: false,
                 scrollWheelZoom: false,
-                center: [37.804364,-122.271114], // [37.783367, -122.062378],
-                zoom: 10,
+                center: [37.809911,-122.402115],
+                zoom: 9,
                 minZoom: 8
             });
 

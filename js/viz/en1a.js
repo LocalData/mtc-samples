@@ -49,8 +49,7 @@ regionPromise, countyPromise: true
         var minYear;
         var maxYear;
         var yearNames = [];
-        var DASH_FORMAT = 'ShortDash';
-        var LONG_DASH = 'LongDash';
+        var STRONG_WIDTH = 3;
 
         var MODE_ANNUAL = {
             title: CHART_BASE_TITLE,
@@ -60,10 +59,12 @@ regionPromise, countyPromise: true
                     data: _.pluck(data, 'PM2#5_AnnualAvg_ugm3_1YR')
                 }, {
                     name: '3-Year Average',
-                    data: _.pluck(data, 'PM2#5_AnnualAvg_ugm3_3YR')
+                    data: _.pluck(data, 'PM2#5_AnnualAvg_ugm3_3YR'),
+                    lineWidth: STRONG_WIDTH
                 }, {
                     name: 'Worst Location',
-                    data: _.pluck(data, 'PM2#5_AnnualAvg_ugm3_WorstLocation_3YR')
+                    data: _.pluck(data, 'PM2#5_AnnualAvg_ugm3_WorstLocation_3YR'),
+                    lineWidth: STRONG_WIDTH
                 }];
 
                 return series;
@@ -78,10 +79,12 @@ regionPromise, countyPromise: true
                     data: _.pluck(data, 'PM2#5_daily98percentile_ugm3_1YR')
                 }, {
                     name: '3-Year Average',
-                    data: _.pluck(data, 'PM2#5_daily98percentile_ugm3_3YR')
+                    data: _.pluck(data, 'PM2#5_daily98percentile_ugm3_3YR'),
+                    lineWidth: STRONG_WIDTH
                 }, {
                     name: 'Worst Location',
-                    data: _.pluck(data, 'PM2#5_daily98percentile_ugm3_WorstLocation_3YR')
+                    data: _.pluck(data, 'PM2#5_daily98percentile_ugm3_WorstLocation_3YR'),
+                    lineWidth: STRONG_WIDTH
                 }];
 
                 return series;

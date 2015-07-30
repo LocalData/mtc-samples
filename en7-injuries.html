@@ -70,6 +70,24 @@
             in <%= months[data.MONTH_] %> <%= data.YEAR_ %>
         </h3>
 
+        <dl>
+          <dt>Location: </dt>
+          <dd><%= data.PRIMARYRD %> at <%= data.SECONDRD %></dd>
+          <dt>City: </dt>
+          <dd><%= data.CITY %></dd>
+          <dt>County: </dt>
+          <dd><%= data.COUNTY %></dd>
+          <dt>Time of day:</dt>
+          <dd><%= data.time %></dd>
+          <dt>Pedestrians injured:</dt>
+          <dd><%= data.PEDINJ %></dd>
+          <dt>Bicyclists injured:</dt>
+          <dd><%= data.BICINJ %></dd>
+          <dt>Motorists injured:</dt>
+          <dd><%= data.MCINJURE %></dd>
+        </dl>
+
+        <!--
         <ul>
           <% function pedSuffix(n) { if (n === 1) {return 'y';} return 'ies';} %>
           <% function sSuffix(n) { if (n === 1) {return '';} return 's';} %>
@@ -95,11 +113,8 @@
             <li><%= data.MCKILL %> motorcyclist<%= sSuffix(data.MCKILL) %> injured</li>
           <% } %>
         </ul>
+        -->
 
-        <p>
-            <%= data.PRIMARYRD %> at <%= data.SECONDRD %>,
-            <%= data.CITY %> <%= data.COUNTY %> <%= data.STATE %>
-        </p>
     </script>
 
     <script type="text/template" id="template-carto">

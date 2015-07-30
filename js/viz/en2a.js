@@ -48,7 +48,7 @@ regionPromise, countyPromise: true
         var minYear;
         var maxYear;
         var yearNames = [];
-        var DASH_FORMAT = 'ShortDash';
+        var STRONG_WIDTH = 3;
 
         Highcharts.setOptions({
             lang: {
@@ -121,23 +121,23 @@ regionPromise, countyPromise: true
 
         function getSeries() {
             var series = [{
-                name: TOP_LABEL,
-                data: _.pluck(data, TOP_KEY),
-                lineWidth: 1.5,
-                marker: {
-                    radius: 3
-                }
-            }, {
                 name: AVG_LABEL,
                 data: _.pluck(data, AVG_KEY),
-                lineWidth: 1.5,
+                lineWidth: 2,
                 marker: {
                     radius: 3
                 }
             }, {
                 name: AVG_3YR_LABEL,
                 data: _.pluck(data, AVG_3YR_KEY),
-                lineWidth: 3
+                lineWidth: STRONG_WIDTH
+            }, {
+                name: TOP_LABEL,
+                data: _.pluck(data, TOP_KEY),
+                lineWidth: STRONG_WIDTH,
+                marker: {
+                    radius: 3
+                }
             }];
             return series;
         }

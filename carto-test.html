@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>CartoDB test</title>
+  <link rel="stylesheet" href="http://libs.cartocdn.com/cartodb.js/v3/3.15/themes/css/cartodb.css" />
+  <script src="http://libs.cartocdn.com/cartodb.js/v3/3.15/cartodb.js"></script>
+
+  <style type="text/css">
+  #map {
+    height: 400px;
+    width: 400px;
+  }
+  </style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<script type="text/javascript">
+window.onload = function() {
+
+  // Create the Leaflet map
+  var map = new L.Map('map', {
+    center: [37.809911,-122.402115],
+    zoom: 8
+  });
+
+  // Add a new CartoDB map
+  var cdbTracts = cartodb.createLayer(map, {
+    user_name: 'mtc',
+    type: 'cartodb',
+    sublayers: [{
+      sql: "SELECT * FROM ec_tracts",
+      cartocss: '#ec_tracts { polygon-fill: green }',
+      interactivity: "en_ped_injured_per_2008"
+    }]
+  })
+  .addTo(map)
+  .done(function(layer) {
+    console.log("Done.");
+
+    // Listen for errors
+    layer.on('error', function(err) {
+      console.log('error: ' + err);
+    });
+
+    // Listen for featureOver events -- available?
+    layer.on('featureOver', function(e, latlng, pos, data) {
+      console.log(e, latlng, pos, data);
+    });
+
+    // Method exists on the layer, but this gives an error:
+    layer.featureOver(function(e, latlng, pos, data) {
+      console.log(e, latlng, pos, data);
+    });
+  });
+}
+</script>
+
+</body>
+</html>

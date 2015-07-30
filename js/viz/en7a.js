@@ -55,7 +55,6 @@ regionPromise, countyPromise, cityPromise: true
 
         var MODE_INJURIES = {
             yAxis: 'Injuries',
-            yMin: 0,
             format: "{value:,.0f}",
             pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
                 '<td style="padding:0"><b>{point.y:,.0f}</b></td></tr>',
@@ -81,7 +80,7 @@ regionPromise, countyPromise, cityPromise: true
             }
         };
         var MODE_PER_MILE = {
-            yAxis: 'Injuries per 100,000 Vehicle Miles Traveled',
+            yAxis: 'Injuries per 100 Million Vehicle Miles Traveled',
             format: "{value:,.1f}",
             pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
                 '<td style="padding:0"><b>{point.y:,.1f}</b></td></tr>',
@@ -195,7 +194,9 @@ regionPromise, countyPromise, cityPromise: true
                     reversedStacks: false,
                     stackLabels: {
                         enabled: false
-                    }
+                    },
+                    min: 0,
+                    max: mode.yMax
                 },
                 legend: {
                     enabled: true,
@@ -207,10 +208,6 @@ regionPromise, countyPromise, cityPromise: true
                 tooltip: tooltip,
                 series: series
             };
-
-            if (_.has(mode, 'yMin')) {
-                options.yAxis.min = mode.yMin;
-            }
 
             // Don't explicitly set step size on smaller screens
             if (window.innerWidth < 650) {
@@ -377,6 +374,11 @@ regionPromise, countyPromise, cityPromise: true
                 l[PER_MILE_KEY] = perMile[PER_MILE_KEY] || null;
                 localData.push(l);
             });
+
+            // Find the max of the keys we focus on to keep the y-axis consistent.
+            MODE_INJURIES.yMax = _.max(regionData, TOTAL_KEY)[TOTAL_KEY];
+            MODE_PER_CAPITA.yMax = _.max(localData, RATE_KEY)[RATE_KEY];
+            MODE_PER_MILE.yMax = _.max(localData, PER_MILE_KEY)[PER_MILE_KEY];
 
             // Once we have the data, set up the visualizations
             setup();

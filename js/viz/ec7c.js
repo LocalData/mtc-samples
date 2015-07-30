@@ -164,7 +164,7 @@ regionPromise, countyPromise, cityPromise: true
 
             // Explicitly set step size on smaller screens
             if (window.innerWidth < 650) {
-                delete options.xAxis.labels.step = 36;
+                delete options.xAxis.labels.step
             }
 
 

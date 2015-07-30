@@ -21,7 +21,7 @@ regionPromise, countyPromise, cityPromise, _
 
     $(function(){
         //var CHART_BASE_TITLE = 'Historical Trend for Labor Force Participation by Age Group';
-        var MAP_TITLE = '2012 Population Vulnerable to Sea Level Rise of ';
+        var MAP_TITLE = '2012 Population at Risk of Impacts from Sea Level Rise of ';
         var CENTER = [37.871593,-122.272747];
         var CHART_ID = '#en-b-chart';
         var Y_AXIS = '';

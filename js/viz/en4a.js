@@ -68,7 +68,7 @@ regionPromise, countyPromise, cityPromise: true
             }
         };
         var MODE_PER_CAPITA = {
-            yAxis: 'Fatalities per Capita',
+            yAxis: 'Fatalities per 100,000 Residents',
             format: "{value:,.0f}",
             pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
                 '<td style="padding:0"><b>{point.y:,.1f}</b></td></tr>',
@@ -81,13 +81,13 @@ regionPromise, countyPromise, cityPromise: true
             }
         };
         var MODE_PER_MILE = {
-            yAxis: 'Fatalities per Vehicle Mile Traveled',
+            yAxis: 'Fatalities per 100 Million Vehicle Miles Traveled',
             format: "{value:,.1f}",
             pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
                 '<td style="padding:0"><b>{point.y:,.1f}</b></td></tr>',
             getSeries: function(data, name) {
                 var series = [{
-                    name: 'Fatalities per 100,000 Vehicle Miles Traveled - ' + name,
+                    name: 'Fatalities per 100 Million Vehicle Miles Traveled - ' + name,
                     data: _.pluck(data, PER_MILE_KEY)
                 }];
                 return series;
@@ -195,7 +195,9 @@ regionPromise, countyPromise, cityPromise: true
                     reversedStacks: false,
                     stackLabels: {
                         enabled: false
-                    }
+                    },
+                    max: mode.yMax,
+                    min: 0
                 },
                 legend: {
                     enabled: true,
@@ -377,6 +379,11 @@ regionPromise, countyPromise, cityPromise: true
                 l[PER_MILE_KEY] = perMile[PER_MILE_KEY] || null;
                 localData.push(l);
             });
+
+            // Find the max of the keys we focus on to keep the y-axis consistent.
+            MODE_FATALITIES.yMax = _.max(regionData, TOTAL_KEY)[TOTAL_KEY];
+            MODE_PER_CAPITA.yMax = _.max(localData, RATE_KEY)[RATE_KEY];
+            MODE_PER_MILE.yMax = _.max(localData, PER_MILE_KEY)[PER_MILE_KEY];
 
             // Once we have the data, set up the visualizations
             setup();

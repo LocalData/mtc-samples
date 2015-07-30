@@ -38,6 +38,14 @@ regionPromise, countyPromise, cityPromise, _
         var FOCUS_KEY = 'Ozone_Max4_Daily_8HR_ppb_Annual_1YR';
         var DESELECTED_COLOR = allGray[2];
 
+        var EAST_BAY = ['Richmond', 'Hayward', 'San Leandro', 'Pittsburg', 'Bethel Island', 'Oakland', 'Oakland - Primary', 'Oakland - Laney College', 'Oakland - West', 'San Pablo', 'Concord', 'Livermore', 'Fremont'];
+        var NORTH_BAY = ['Fairfield', 'Point Reyes', 'San Rafael', 'Napa', 'Sebastopol', 'Vallejo', 'Santa Rosa'];
+        var SOUTH_BAY = ['San Jose', 'Alum Rock', 'San Martin', 'Los Gatos', 'San Jose - Primary', 'San Jose - Knox', 'San Jose - Tully', 'Gilroy'];
+        var EAST_BAY_COLOR = altColors[0];
+        var SOUTH_BAY_COLOR = altColors[1];
+        var NORTH_BAY_COLOR = altColors[2];
+        var DEFAULT_COLOR = '#6d5ba7'; // SF, Redwood City
+
         var i;
         var map;
         var maxYear, minYear;
@@ -112,8 +120,6 @@ regionPromise, countyPromise, cityPromise, _
                     Sensor: geo[GEO_KEY]
                 });
 
-                console.log("Sensor data", data, "from geo", geo);
-
                 series.push({
                     name: geo[GEO_KEY],
                     data: _.pluck(fillInYears(data, FOCUS_KEY), FOCUS_KEY),
@@ -122,7 +128,6 @@ regionPromise, countyPromise, cityPromise, _
                 });
             });
 
-            console.log("Generated series", series);
             return series;
         }
 
@@ -284,10 +289,26 @@ regionPromise, countyPromise, cityPromise, _
         }
 
 
+        function getColor(feature) {
+            if (_.contains(EAST_BAY, feature[GEO_KEY])) {
+                return EAST_BAY_COLOR;
+            }
+
+            if (_.contains(SOUTH_BAY, feature[GEO_KEY])) {
+                return SOUTH_BAY_COLOR;
+            }
+
+            if (_.contains(NORTH_BAY, feature[GEO_KEY])) {
+                return NORTH_BAY_COLOR;
+            }
+
+            return DEFAULT_COLOR;
+        }
+
         function setupColors(d) {
             var i;
             for(i = 0; i < d.length; i++) {
-                d[i].color = colors[i];
+                d[i].color = getColor(d[i]);
             }
             return d;
         }

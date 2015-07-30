@@ -38,22 +38,69 @@ regionPromise, countyPromise, cityPromise: true
         var i;
         var countyData, regionData;
 
-        var CHART_BASE_TITLE = 'Historical Trend for Home Prices';
         var CHART_ID = '#en-a-chart';
         var COUNTY_KEY = 'County';
         var YEAR_KEY = 'PopYear';
 
-        var SEA_LEVELS = ['1ft', '2ft', '3ft', '4ft', '5ft', '6ft'].reverse();
+        var SEA_LEVELS = ['1ft', '2ft', '3ft', '4ft', '5ft', '6ft'];
 
         var POPULATION_KEY = 'Pop12';
         var PERCENT_KEY = 'Pop12_Share';
         var POPULATION_KEY_REGION = 'Impacted';
         var PERCENT_KEY_REGION = 'Impacted_Share';
+        var FOCUS_YEAR = 2012;
 
         var DASH_FORMAT = 'ShortDash';
 
         var selectedGeography = {};
         var years;
+
+        function getSeries(populationKey, regionKey) {
+                var series = [];
+
+                // Set up the bay area data.
+                _.each(years, function(year, index) {
+                    var s = {
+                        name: 'Bay Area - ' + year,
+                        data: []
+                    };
+
+                    // Use desaturated colors if there is a county selected.
+                    if (selectedGeography.county) {
+                        s.color = altColors[index + 6];
+                    }
+
+                    _.each(SEA_LEVELS, function(level) {
+                        var regionValue = _.find(regionData, {
+                            PopYear: year,
+                            Scenario: level
+                        })[PERCENT_KEY_REGION];
+                        s.data.push(regionValue);
+                    });
+
+                    series = series.concat(s);
+                });
+
+                if (selectedGeography.county) {
+                    var s = {
+                        name: selectedGeography.county + ' - 2012',
+                        data: [],
+                        color: altColors[4]
+                    };
+
+                    _.each(SEA_LEVELS, function(level) {
+                        var countyValue = _.find(countyData, {
+                            County: selectedGeography.county,
+                            Scenario: level
+                        })[PERCENT_KEY];
+                        s.data.push(countyValue);
+                    });
+
+                    series = series.concat(s);
+                }
+
+                return series;
+        }
 
         var MODE_POPULATION = {
             title: 'Historical Trend for Vulnerability to Sea Level Rise',
@@ -64,32 +111,7 @@ regionPromise, countyPromise, cityPromise: true
                 '<td style="padding:0"><b>{point.y:,.0f} people</b></td></tr>',
             colors: altColors,
             getSeries: function(data, level) {
-                var series = {
-                    name: level,
-                    data: []
-                };
-
-                // Get regional data for all years
-                _.each(years, function(year) {
-                    var regionValue = _.find(regionData, {
-                        PopYear: year,
-                        Scenario: level
-                    })[POPULATION_KEY_REGION];
-                    series.data.push(regionValue);
-                });
-
-                // If a county is selected, get its value
-                if (selectedGeography.county) {
-                    console.log("Selected geo", selectedGeography.county, level);
-                    var countyValue = _.find(countyData, {
-                        County: selectedGeography.county,
-                        Scenario: level
-                    })[POPULATION_KEY];
-                    console.log("Got data", countyValue);
-                    series.data.push(countyValue);
-                }
-
-                return series;
+                return getSeries(POPULATION_KEY, POPULATION_KEY_REGION);
             }
         };
         var MODE_SHARE = {
@@ -99,37 +121,12 @@ regionPromise, countyPromise, cityPromise: true
             pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
                 '<td style="padding:0"><b>{point.y:,.1f}%</b></td></tr>',
             colors: altColors,
-            getSeries: function(data, level) {
-                var series = {
-                    name: level,
-                    data: []
-                };
-
-                // Get regional data
-                _.each(years, function(year) {
-                    var regionValue = _.find(regionData, {
-                        PopYear: year,
-                        Scenario: level
-                    })[PERCENT_KEY_REGION];
-                    series.data.push(regionValue);
-                });
-
-                // If a county is selected, get its value
-                if (selectedGeography.county) {
-                    console.log("Selected geo", selectedGeography.county);
-                    var countyValue = _.find(countyData, {
-                        County: selectedGeography.county,
-                        Scenario: level
-                    })[PERCENT_KEY];
-                    console.log("Got data", countyValue);
-                    series.data.push(countyValue);
-                }
-
-                return series;
+            getSeries: function() {
+                return getSeries(PERCENT_KEY, PERCENT_KEY_REGION);
             }
         };
 
-        var mode = MODE_POPULATION;
+        var mode = MODE_SHARE;
 
         Highcharts.setOptions({
             lang: {
@@ -148,15 +145,8 @@ regionPromise, countyPromise, cityPromise: true
 
 
         function getAllSeries() {
-            var series = [];
-
-            _.each(SEA_LEVELS, function(level) {
-                series = series.concat(mode.getSeries(regionData, level));
-            });
-
-            console.log("Got series", series);
-
-            return series.reverse();
+            var series = mode.getSeries();
+            return series;
         }
 
         function chart() {
@@ -172,19 +162,19 @@ regionPromise, countyPromise, cityPromise: true
 
             var categories = [];
 
-            _.each(years, function(year) {
-                categories.push('Bay Area - ' + year);
-            });
-
             var title = mode.title;
-            if (selectedGeography.county) {
-                categories.push(selectedGeography.county + ' - 2012');
-                // title += ' - ' + selectedGeography.county;
-            }
 
-            // if (!selectedGeography.city && !selectedGeography.county) {
-            //     title += ' - Bay Area';
-            // }
+            if (!selectedGeography.city && !selectedGeography.county) {
+                title += ' - Bay Area';
+            } else {
+                if (selectedGeography.city && selectedGeography.county) {
+                    title += ' - ' + selectedGeography.city + ' & ' + selectedGeography.county;
+                } else if (selectedGeography.city) {
+                    title += ' - ' + selectedGeography.city;
+                } else {
+                    title += ' - ' + selectedGeography.county;
+                }
+            }
 
             var options = {
                 chart: {
@@ -194,7 +184,7 @@ regionPromise, countyPromise, cityPromise: true
                     text: title
                 },
                 xAxis: {
-                    categories: categories,
+                    categories: SEA_LEVELS,
                     tickmarkPlacement: 'on',
                     labels: {
                         maxStaggerLines: 1,
@@ -220,7 +210,7 @@ regionPromise, countyPromise, cityPromise: true
                     reversed: false,
                     symbolWidth: 30,
                     title: {
-                        text: 'Sea Level Rise'
+                        text: 'Historical Population Living in Areas Vulnerable to Forecasted Future Sea Level Rise'
                     }
                 },
                 colors: altColors,

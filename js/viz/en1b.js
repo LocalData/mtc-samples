@@ -38,14 +38,22 @@ regionPromise, countyPromise, cityPromise, _
         var GEO_KEY = 'Sensor_Location';
         var YEAR_KEY = 'Year';
         var CHART_BASE_TITLE = 'Sensor Data for Fine Particulates';
-        var AVG_LABEL = 'Annual Average Fine Particulates';
+        var AVG_LABEL = 'Annaul Average Fine Particulates';
         var TOP_LABEL = '98th Percentile Day Fine Particulates';
-        var AVG_KEY = 'PM2#5_AnnualAvg_ugm3_1YR';
+        var AVG_KEY = 'PM2#5_AnnualAvg_ugm3_1YR'; // 'PM2#5_AnnualAvg_ugm3_3YR';
         var TOP_KEY = 'PM2#5_daily98percentile_ugm3_1YR';
         var DESELECTED_COLOR = allGray[2];
 
         // Replace the gray and other desaturated colors.
-        var colors = _.without(altColors, '#6B7078', '#65598A', '#2C2C2C');
+        // var colors = _.without(altColors, '#6B7078', '#65598A', '#2C2C2C');
+        var colors = altColors;
+        var EAST_BAY = ['Richmond', 'Hayward', 'San Leandro', 'Pittsburg', 'Bethel Island', 'Oakland', 'Oakland - Primary', 'Oakland - Laney College', 'Oakland - West', 'San Pablo', 'Concord', 'Livermore', 'Fremont'];
+        var NORTH_BAY = ['Fairfield', 'Point Reyes', 'San Rafael', 'Napa', 'Sebastopol', 'Vallejo', 'Santa Rosa'];
+        var SOUTH_BAY = ['San Jose', 'Alum Rock', 'San Martin', 'Los Gatos', 'San Jose - Primary', 'San Jose - Knox', 'San Jose - Tully', 'Gilroy'];
+        var EAST_BAY_COLOR = altColors[0];
+        var SOUTH_BAY_COLOR = altColors[1];
+        var NORTH_BAY_COLOR = altColors[2];
+        var DEFAULT_COLOR = '#6d5ba7'; // SF, Redwood City
 
         var i;
         var map;
@@ -119,8 +127,20 @@ regionPromise, countyPromise, cityPromise, _
             key: AVG_KEY,
             yAxis: 'Annual Average<br> Fine Particulate Concentration (&#181;g/m<sup>3</sup>)',
             format: "{value:,.1f}",
-            pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-                '<td style="padding:0"><b>{point.y:,.1f} &#181;g/m<sup>3</sup></b></td></tr>'
+            formatter: function() {
+                // Show the largest points first
+                var points = _.sortBy(this.points, 'y').reverse();
+                var s = '<table>';
+                _.each(points, function(p) {
+                    s += '<tr><td><strong style="color:' + p.series.color + '">';
+                    s += p.series.name + ':';
+                    s += '</strong></td><td> <strong>';
+                    s += p.y.toLocaleString();
+                    s += ' &#181;g/m<sup>3</sup></strong></tr>';
+                });
+                s += '</table>';
+                return s;
+            }
         };
         var MODE_TOP = {
             title: CHART_BASE_TITLE,
@@ -128,8 +148,20 @@ regionPromise, countyPromise, cityPromise, _
             key: TOP_KEY,
             yAxis: 'Annual Average<br> Fine Particulate Concentration (&#181;g/m<sup>3</sup>)',
             format: "{value:,.1f}",
-            pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-                '<td style="padding:0"><b>{point.y:,.1f} &#181;g/m<sup>3</sup></b></td></tr>'
+            formatter: function() {
+                // Show the largest points first
+                var points = _.sortBy(this.points, 'y').reverse();
+                var s = '<table>';
+                _.each(points, function(p) {
+                    s += '<tr><td><strong style="color:' + p.series.color + '">';
+                    s += p.series.name + ':';
+                    s += '</strong></td><td> <strong>';
+                    s += p.y.toLocaleString();
+                    s += ' &#181;g/m<sup>3</sup></strong></tr>';
+                });
+                s += '</table>';
+                return s;
+            }
         };
 
         var activeMode = MODE_ANNUAL;
@@ -158,7 +190,7 @@ regionPromise, countyPromise, cityPromise, _
 
             var tooltip = {
                 headerFormat: '<span style="font-size:10px">{point.key} ' + activeMode.label + '</span><table>',
-                pointFormat: activeMode.pointFormat,
+                formatter: activeMode.formatter,
                 footerFormat: '</table>',
                 shared: true,
                 useHTML: true
@@ -219,7 +251,6 @@ regionPromise, countyPromise, cityPromise, _
 
 
         function interaction(event, feature) {
-            console.log("Feature", event, feature);
             if (_.find(selectedGeography, feature.properties)) {
                 pointStyle.fillColor = DESELECTED_COLOR; // feature.properties.color;
                 event.target.setStyle(pointStyle);
@@ -334,11 +365,27 @@ regionPromise, countyPromise, cityPromise, _
             return n * 100;
         }
 
+        function getColor(feature) {
+            if (_.contains(EAST_BAY, feature[GEO_KEY])) {
+                return EAST_BAY_COLOR;
+            }
+
+            if (_.contains(SOUTH_BAY, feature[GEO_KEY])) {
+                return SOUTH_BAY_COLOR;
+            }
+
+            if (_.contains(NORTH_BAY, feature[GEO_KEY])) {
+                return NORTH_BAY_COLOR;
+            }
+
+            return DEFAULT_COLOR;
+        }
+
 
         function setupColors(d) {
             var i;
             for(i = 0; i < d.length; i++) {
-                d[i].color = colors[i];
+                d[i].color = getColor(d[i]);
             }
             return d;
         }

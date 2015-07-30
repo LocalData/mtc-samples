@@ -58,7 +58,7 @@
     </div>
 
     <script type="text/template" id="template-map-legend">
-        <h3>
+        <h3 style="margin-top: 0;">
             <%= data.KILLED %> killed<% if (data.INJURED) { %>,
               <%= data.INJURED %> injured
             <% } %>
@@ -66,6 +66,24 @@
             in <%= months[data.MONTH_] %> <%= data.YEAR_ %>
         </h3>
 
+        <dl>
+          <dt>Location: </dt>
+          <dd><%= data.PRIMARYRD %> at <%= data.SECONDRD %></dd>
+          <dt>City: </dt>
+          <dd><%= data.CITY %></dd>
+          <dt>County: </dt>
+          <dd><%= data.COUNTY %></dd>
+          <dt>Time of day:</dt>
+          <dd><%= data.time %></dd>
+          <dt>Pedestrians killed:</dt>
+          <dd><%= data.PEDKILL %></dd>
+          <dt>Bicyclists killed:</dt>
+          <dd><%= data.BICKILL %></dd>
+          <dt>Motorists killed:</dt>
+          <dd><%= data.CARKILLED %></dd>
+        </dl>
+
+        <!--
         <ul>
           <% function pedSuffix(n) { if (n === 1) {return 'y';} return 'ies';} %>
           <% function sSuffix(n) { if (n === 1) {return '';} return 's';} %>
@@ -91,11 +109,7 @@
             <li><%= data.MCKILL %> motorcyclist<%= sSuffix(data.MCKILL) %> killed</li>
           <% } %>
         </ul>
-
-        <p>
-            <%= data.PRIMARYRD %> at <%= data.SECONDRD %>,
-            <%= data.CITY %> <%= data.COUNTY %> <%= data.STATE %>
-        </p>
+        -->
     </script>
 
     <script type="text/template" id="template-carto">
@@ -135,7 +149,7 @@
     <hr>
 
     <div class="btn-group btn-group-justified" style="margin-top:15px">
-        <a class="btn btn-primary btn-fix k-button active" id="en-c-fatalities">Fatalities</a><a class="btn btn-primary k-button btn-fix" id="en-c-per-capita">Fatalities per Capita</a>
+        <a class="btn btn-primary btn-fix k-button" id="en-c-fatalities">Fatalities</a><a class="btn btn-primary k-button btn-fix active" id="en-c-per-capita">Fatalities per Capita</a>
     </div>
     <div id="en-c-chart"></div>
 

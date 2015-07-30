@@ -101,11 +101,11 @@ var layersByYear = {};
             layer.addTo(mapt9b);
         });
 
-// Define the years and colors we'll want to add.
+        // Define the years and colors we'll want to add.
         var layerDefs = [{
-            year:  '1992',
-            color: '#EBBD2F'
-        },
+                year:  '1992',
+                color: '#EBBD2F'
+            },
             {
                 year:  '1994',
                 color: '#EBBD2F'
@@ -195,224 +195,13 @@ var layersByYear = {};
             }
             // Add 1992 to the map
         });
-/*
-        sub = L.esri.featureLayer('http://gis.mtc.ca.gov/mtc/rest/services/VitalSigns/LU5_Greenfield_1990_Cache/MapServer/0', {
-            onEachFeature: onEachFeature2,
-            simplifyFactor: 0.50,
-            smoothFactor: 0.5,
-            precision: 4,
-            cacheLayers: true,
-            fields: ['YEAR','OBJECTID'],
-            style: function(feature) {
-                return {
-                    fillColor: "#AA9739",
-                    fillOpacity: 0.8,
-                    weight: 0.5,
-                    color: '#666',
-                    dashArray: ''
-                };
-            }
-        }).addTo(mapt9b);
-
-        s92 = L.esri.featureLayer('http://gis.mtc.ca.gov/mtc/rest/services/VitalSigns/LU5_Greenfield_1992_2012/FeatureServer/10', {
-            onEachFeature: onEachFeature2,
-            simplifyFactor: 0.50,
-            smoothFactor: 0.5,
-            precision: 4,
-            cacheLayers: true,
-            fields: ['YEAR','OBJECTID'],
-            style: function(feature) {
-                return {
-                    fillColor: "#4B2D73",
-                    fillOpacity: 0.8,
-                    weight: 0.5,
-                    color: '#666',
-                    dashArray: ''
-                };
-            }
-        });
-        s94 = L.esri.featureLayer('http://gis.mtc.ca.gov/mtc/rest/services/VitalSigns/LU5_Greenfield_1992_2012/FeatureServer/9', {
-            onEachFeature: onEachFeature2,
-            simplifyFactor: 1,
-            smoothFactor: 0.5,
-            precision: 4,
-            cacheLayers: true,
-            fields: ['YEAR','OBJECTID'],
-            style: function(feature) {
-                return {
-                    fillColor: "#2D882D",
-                    fillOpacity: 0.8,
-                    weight: 0.5,
-                    color: '#666',
-                    dashArray: ''
-                };
-            }
-        });
-        s96 = L.esri.featureLayer('http://gis.mtc.ca.gov/mtc/rest/services/VitalSigns/LU5_Greenfield_1992_2012/FeatureServer/8', {
-            onEachFeature: onEachFeature2,
-            simplifyFactor: 1,
-            smoothFactor: 0.5,
-            precision: 4,
-            cacheLayers: true,
-            fields: ['YEAR','OBJECTID'],
-            style: function(feature) {
-                return {
-                    fillColor: "#AA3939",
-                    fillOpacity: 0.8,
-                    weight: 0.5,
-                    color: '#666',
-                    dashArray: ''
-                };
-            }
-        });
-        s98 = L.esri.featureLayer('http://gis.mtc.ca.gov/mtc/rest/services/VitalSigns/LU5_Greenfield_1992_2012/FeatureServer/7', {
-            onEachFeature: onEachFeature2,
-            simplifyFactor: 1,
-            smoothFactor: 0.5,
-            precision: 4,
-            cacheLayers: true,
-            fields: ['YEAR','OBJECTID'],
-            style: function(feature) {
-                return {
-                    fillColor: "#592A71",
-                    fillOpacity: 0.8,
-                    weight: 0.5,
-                    color: '#666',
-                    dashArray: ''
-                };
-            }
-        });
-        s00 = L.esri.featureLayer('http://gis.mtc.ca.gov/mtc/rest/services/VitalSigns/LU5_Greenfield_1992_2012/FeatureServer/6', {
-            onEachFeature: onEachFeature2,
-            simplifyFactor: 1,
-            smoothFactor: 0.5,
-            precision: 4,
-            cacheLayers: true,
-            fields: ['YEAR','OBJECTID'],
-            style: function(feature) {
-                return {
-                    fillColor: "#AA6E39",
-                    fillOpacity: 0.8,
-                    weight: 0.5,
-                    color: '#666',
-                    dashArray: ''
-                };
-            }
-        });
-        s02 = L.esri.featureLayer('http://gis.mtc.ca.gov/mtc/rest/services/VitalSigns/LU5_Greenfield_1992_2012/FeatureServer/5', {
-            onEachFeature: onEachFeature2,
-            simplifyFactor: 1,
-            smoothFactor: 0.5,
-            precision: 4,
-            cacheLayers: true,
-            fields: ['YEAR','OBJECTID'],
-            style: function(feature) {
-                return {
-                    fillColor: "#2F4172",
-                    fillOpacity: 0.8,
-                    weight: 0.5,
-                    color: '#666',
-                    dashArray: ''
-                };
-            }
-        });
-        s04 = L.esri.featureLayer('http://gis.mtc.ca.gov/mtc/rest/services/VitalSigns/LU5_Greenfield_1992_2012/FeatureServer/4', {
-            onEachFeature: onEachFeature2,
-            simplifyFactor: 1,
-            smoothFactor: 0.5,
-            precision: 4,
-            cacheLayers: true,
-            fields: ['YEAR','OBJECTID'],
-            style: function(feature) {
-                return {
-                    fillColor: "#236167",
-                    fillOpacity: 0.8,
-                    weight: 0.5,
-                    color: '#666',
-                    dashArray: ''
-                };
-            }
-        });
-        s06 = L.esri.featureLayer('http://gis.mtc.ca.gov/mtc/rest/services/VitalSigns/LU5_Greenfield_1992_2012/FeatureServer/3', {
-            onEachFeature: onEachFeature2,
-            simplifyFactor: 1,
-            smoothFactor: 0.5,
-            precision: 4,
-            cacheLayers: true,
-            fields: ['YEAR','OBJECTID'],
-            style: function(feature) {
-                return {
-                    fillColor: "#2D882D",
-                    fillOpacity: 0.8,
-                    weight: 0.5,
-                    color: '#666',
-                    dashArray: ''
-                };
-            }
-        });
-        s08 = L.esri.featureLayer('http://gis.mtc.ca.gov/mtc/rest/services/VitalSigns/LU5_Greenfield_1992_2012/FeatureServer/2', {
-            onEachFeature: onEachFeature2,
-            simplifyFactor: 1,
-            smoothFactor: 0.5,
-            precision: 4,
-            cacheLayers: true,
-            fields: ['YEAR','OBJECTID'],
-            style: function(feature) {
-                return {
-                    fillColor: "#226666",
-                    fillOpacity: 0.8,
-                    weight: 0.5,
-                    color: '#666',
-                    dashArray: ''
-                };
-            }
-        });
-        s10 = L.esri.featureLayer('http://gis.mtc.ca.gov/mtc/rest/services/VitalSigns/LU5_Greenfield_1992_2012/FeatureServer/1', {
-            onEachFeature: onEachFeature2,
-            simplifyFactor: 1,
-            smoothFactor: 0.5,
-            precision: 4,
-            cacheLayers: true,
-            fields: ['YEAR','OBJECTID'],
-            style: function(feature) {
-                return {
-                    fillColor: "#4B2D73",
-                    fillOpacity: 0.8,
-                    weight: 0.5,
-                    color: '#666',
-                    dashArray: ''
-                };
-            }
-        });
-        s12 = L.esri.featureLayer('http://gis.mtc.ca.gov/mtc/rest/services/VitalSigns/LU5_Greenfield_1992_2012/FeatureServer/0', {
-            onEachFeature: onEachFeature2,
-            simplifyFactor: 1,
-            smoothFactor: 0.5,
-            precision: 4,
-            cacheLayers: true,
-            fields: ['YEAR','7A9F35'],
-            style: function(feature) {
-                return {
-                    fillColor: "#592A71",
-                    fillOpacity: 0.8,
-                    weight: 0.5,
-                    color: '#666',
-                    dashArray: ''
-                };
-            }
-        });
-*/
-
-
-
-
 
         function onEachFeature2(feature, layer) {
             layer.on({
                 //mouseover: mouseoverUpdate,
                 click: clickUpdate
             });
-                    }
+        }
 
         function clickUpdate(e) {
             //console.log(e.target.feature.properties);

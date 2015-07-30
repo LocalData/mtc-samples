@@ -69,7 +69,7 @@ Promise, regionPromise, countyPromise, cityPromise: true
 
         var TRACT_MIN_ZOOM = 8;
         var TRACT_MAX_ZOOM = 13;
-        var POINT_MIN_ZOOM = 13;
+        var POINT_MIN_ZOOM = 8;
 
         // Red-oranges
         var COLORS = [
@@ -140,17 +140,21 @@ Promise, regionPromise, countyPromise, cityPromise: true
             var i;
             for (i = 0; i < BREAKS.length; i++) {
                 var s = '<div class="legend-row"><div class="legend-color" style="background:' + COLORS[i] + ';">&nbsp; </div><div class="legend-text">';
+                var currentBreak = BREAKS[i] * 100000;
 
+                // If this is the first break
                 if (i === 0) {
-                    s += BREAKS[i].toLocaleString() + ' - ' + BREAKS[i+1].toLocaleString();
+                    s += currentBreak.toLocaleString() + ' - ' + (BREAKS[i+1] * 100000).toLocaleString();
                 }
 
+                // If this is not the last break and not the first
                 if (i !== BREAKS.length - 1 && i !== 0) {
-                    s += BREAKS[i].toLocaleString() + ' - ' + BREAKS[i+1].toLocaleString();
+                    s += currentBreak.toLocaleString() + ' - ' + (BREAKS[i+1] * 100000).toLocaleString();
                 }
 
+                // If this is the last break
                 if (i === BREAKS.length - 1) {
-                    s += BREAKS[i].toLocaleString() + '+</div>';
+                    s += currentBreak.toLocaleString() + '+</div>';
                 }
 
                 $(div).append(s);
@@ -169,8 +173,8 @@ Promise, regionPromise, countyPromise, cityPromise: true
             $(div).addClass("col-lg-12");
             // $(div).append("<h5>Mode of transportation<br></h5>");
 
-            var s = '<div class="legend-row"><div class="legend-color" style="background:' + PED_COLOR + ';">&nbsp; </div><div class="legend-text">Pedestrian</div>';
-            s += '<div class="legend-row"><div class="legend-color" style="background:' + BIKE_COLOR + ';">&nbsp; </div><div class="legend-text">Bicyclist</div>';
+            var s = '<div class="legend-row"><div class="legend-color" style="background:' + PED_COLOR + ';">&nbsp; </div><div class="legend-text">Pedestrians killed</div>';
+            s += '<div class="legend-row"><div class="legend-color" style="background:' + BIKE_COLOR + ';">&nbsp; </div><div class="legend-text">Bicyclists killed</div>';
             s += '<div class="legend-row"><div class="legend-color" style="background:' + VEHICLE_COLOR + ';">&nbsp; </div><div class="legend-text">Unclassified</div>';
 
             $(div).append(s);
@@ -182,13 +186,13 @@ Promise, regionPromise, countyPromise, cityPromise: true
         function setupLegend() {
             try {
                 tractLegendControl.removeFrom(map);
-            } catch(error) {
+            } catch(tractLegendRemoveError) {
                 // noop
             }
 
             try {
                 pointLegendControl.removeFrom(map);
-            } catch(error) {
+            } catch(pointLegendRemoveError) {
                 // noop
             }
 
@@ -199,10 +203,38 @@ Promise, regionPromise, countyPromise, cityPromise: true
             }
         }
 
+        /*
+        Convert times like 1500 to "3:00pm"
+         */
+        function stringifyHours(time) {
+            console.log("Checking", time);
+
+            if (time === 1200) {
+                return 'Noon';
+            }
+
+            if (time === 2400) {
+                return 'Midnight';
+            }
+
+            if (time > 1200) {
+                time = (time - 1200) / 100;
+                return time + ':00 PM';
+            }
+
+            time = time / 100;
+            return time + ':00 AM';
+        }
+
 
         function interaction(event, feature) {
             var p = feature.properties;
             console.log("Map clicked", p);
+
+            feature.properties.time = stringifyHours(feature.properties.TIMECAT);
+            feature.properties.CARKILLED = feature.properties.KILLED
+                                         - feature.properties.BICKILL
+                                         - feature.properties.PEDKILL;
 
             $('#en-b-title').html(mapLegendTemplate({
                 data: feature.properties,
@@ -350,6 +382,7 @@ Promise, regionPromise, countyPromise, cityPromise: true
                     'INJURED',
                     'YEAR_',
                     'MONTH_',
+                    'TIMECAT',
                     'PEDKILL',
                     'PEDINJ',
                     'BICKILL',
@@ -372,8 +405,8 @@ Promise, regionPromise, countyPromise, cityPromise: true
                 infoControl: true,
                 attributionControl: false,
                 scrollWheelZoom: false,
-                center: [37.804364,-122.271114], // [37.783367, -122.062378],
-                zoom: 10,
+                center: [37.778568,-122.102051], // [37.783367, -122.062378],
+                zoom: 9,
                 minZoom: 8
             });
 
@@ -383,7 +416,7 @@ Promise, regionPromise, countyPromise, cityPromise: true
             L.control.scale().addTo(map);
 
             setupPoints();
-            setupTracts();
+            // setupTracts();
 
             setupLegend();
         }

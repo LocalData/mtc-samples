@@ -135,8 +135,11 @@ regionPromise, countyPromise, cityPromise: true
             }
 
             if (selectedGeography.city) {
-                var selectedCityData = _.filter(cityData, {'City': selectedGeography.city});
-                series = series.concat(getSeries(selectedCityData, selectedGeography.city));
+                // Don't show SF twice.
+                if (selectedGeography.city !== 'San Francisco') {
+                    var selectedCityData = _.filter(cityData, {'City': selectedGeography.city});
+                    series = series.concat(getSeries(selectedCityData, selectedGeography.city));
+                }
             }
 
             return series;

@@ -37,7 +37,7 @@ regionPromise, countyPromise: true
         var i;
 
         var CHART_ID = '#en-c-chart';
-        var CHART_BASE_TITLE = 'Metro Comparison for Fatalities from Crashes';
+        var CHART_BASE_TITLE = 'Metro Comparison for 2012 Fatalities from Crashes';
 
         var TOTAL_KEY = 'Total Killed';
         var RATE_KEY = 'Rate Killed Per 100k Pop';
@@ -69,7 +69,7 @@ regionPromise, countyPromise: true
         };
         var MODE_PER_CAPITA = {
             key: RATE_KEY,
-            yAxis: 'Fatalities per Capita',
+            yAxis: 'Fatalities per 100,000 Residents',
             format: "{value:,.1f}",
             pointFormat: '<tr><td style="color:{series.color};padding:0">{point.category}: </td>' +
                 '<td style="padding:0"><b>{point.y:,.1f} per 100,000 residents</b></td></tr>',
@@ -82,7 +82,7 @@ regionPromise, countyPromise: true
             }
         };
 
-        var activeMode = MODE_FATALITIES;
+        var activeMode = MODE_PER_CAPITA;
 
 
         function formatter() {
