@@ -132,10 +132,12 @@ regionPromise, countyPromise, cityPromise, _
                 var points = _.sortBy(this.points, 'y').reverse();
                 var s = '<table>';
                 _.each(points, function(p) {
+                    var val = p.y.toFixed(1);
+
                     s += '<tr><td><strong style="color:' + p.series.color + '">';
                     s += p.series.name + ':';
                     s += '</strong></td><td> <strong>';
-                    s += p.y.toLocaleString();
+                    s += val;
                     s += ' &#181;g/m<sup>3</sup></strong></tr>';
                 });
                 s += '</table>';
@@ -151,12 +153,15 @@ regionPromise, countyPromise, cityPromise, _
             formatter: function() {
                 // Show the largest points first
                 var points = _.sortBy(this.points, 'y').reverse();
+
                 var s = '<table>';
                 _.each(points, function(p) {
+                    var val = p.y.toFixed(1);
+
                     s += '<tr><td><strong style="color:' + p.series.color + '">';
                     s += p.series.name + ':';
                     s += '</strong></td><td> <strong>';
-                    s += p.y.toLocaleString();
+                    s += val;
                     s += ' &#181;g/m<sup>3</sup></strong></tr>';
                 });
                 s += '</table>';

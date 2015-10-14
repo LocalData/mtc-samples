@@ -56,50 +56,50 @@ regionPromise, countyPromise, cityPromise: true
         var years;
 
         function getSeries(populationKey, regionKey) {
-                var series = [];
+            var series = [];
 
-                // Set up the bay area data.
-                _.each(years, function(year, index) {
-                    var s = {
-                        name: 'Bay Area - ' + year,
-                        data: []
-                    };
+            // Set up the bay area data.
+            _.each(years, function(year, index) {
+                var s = {
+                    name: 'Bay Area - ' + year,
+                    data: []
+                };
 
-                    // Use desaturated colors if there is a county selected.
-                    if (selectedGeography.county) {
-                        s.color = altColors[index + 6];
-                    }
-
-                    _.each(SEA_LEVELS, function(level) {
-                        var regionValue = _.find(regionData, {
-                            PopYear: year,
-                            Scenario: level
-                        })[PERCENT_KEY_REGION];
-                        s.data.push(regionValue);
-                    });
-
-                    series = series.concat(s);
-                });
-
+                // Use desaturated colors if there is a county selected.
                 if (selectedGeography.county) {
-                    var s = {
-                        name: selectedGeography.county + ' - 2012',
-                        data: [],
-                        color: altColors[4]
-                    };
-
-                    _.each(SEA_LEVELS, function(level) {
-                        var countyValue = _.find(countyData, {
-                            County: selectedGeography.county,
-                            Scenario: level
-                        })[PERCENT_KEY];
-                        s.data.push(countyValue);
-                    });
-
-                    series = series.concat(s);
+                    s.color = altColors[index + 6];
                 }
 
-                return series;
+                _.each(SEA_LEVELS, function(level) {
+                    var regionValue = _.find(regionData, {
+                        PopYear: year,
+                        Scenario: level
+                    })[regionKey];
+                    s.data.push(regionValue);
+                });
+
+                series = series.concat(s);
+            });
+
+            if (selectedGeography.county) {
+                var s = {
+                    name: selectedGeography.county + ' - 2012',
+                    data: [],
+                    color: altColors[4]
+                };
+
+                _.each(SEA_LEVELS, function(level) {
+                    var countyValue = _.find(countyData, {
+                        County: selectedGeography.county,
+                        Scenario: level
+                    })[populationKey];
+                    s.data.push(countyValue);
+                });
+
+                series = series.concat(s);
+            }
+
+            return series;
         }
 
         var MODE_POPULATION = {

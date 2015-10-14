@@ -32,8 +32,17 @@ regionPromise, countyPromise, cityPromise, _, cartodb
     $(function(){
         //var CHART_BASE_TITLE = 'Historical Trend for Labor Force Participation by Age Group';
         var MAP_TITLE = 'Injuries from Crashes';
+
+        // Chart Settings
         var CHART_ID = '#en-b-chart';
-        var Y_AXIS = '';
+        var CHART_BASE_TITLE = '';
+        var Y_LABEL = 'Injuries per 100,000 Residents';
+        var YEAR_KEY = 'Year';
+        var FOCUS_KEY = 'Rate of SevInj Per 100k Pop';
+
+        // A null for every year we don't have tract data (2001-2007)
+        var NULL_YEARS = [null, null, null, null, null, null, null];
+        var years = [];
 
         // The raw data uses numbers to refer to months
         var MONTHS = {
@@ -106,7 +115,7 @@ regionPromise, countyPromise, cityPromise, _, cartodb
         };
 
         var i;
-        var regionData, countyData, cityData;
+        var regionData;
         var selectedGeography = 'Bay Area';
 
         Highcharts.setOptions({
@@ -207,8 +216,6 @@ regionPromise, countyPromise, cityPromise, _, cartodb
         Convert times like 1500 to "3:00pm"
          */
         function stringifyHours(time) {
-            console.log("Checking", time);
-
             if (time === 1200) {
                 return 'Noon';
             }
@@ -233,7 +240,7 @@ regionPromise, countyPromise, cityPromise, _, cartodb
 
             feature.properties.time = stringifyHours(feature.properties.TIMECAT);
 
-            $('#en-b-title').html(mapLegendTemplate({
+            $('#en-b-chart').html(mapLegendTemplate({
                 data: feature.properties,
                 months: MONTHS
             }));
@@ -279,26 +286,99 @@ regionPromise, countyPromise, cityPromise, _, cartodb
         }
 
 
+        function getSeries(data) {
+            var series = [{
+                name: 'Bay Area',
+                data: _.pluck(regionData, FOCUS_KEY)
+            }, {
+                name: 'Tract ' + data.geoid10,
+                data: NULL_YEARS.concat([
+                    data.en_ped_injured_per_2008,
+                    data.en_ped_injured_per_2009,
+                    data.en_ped_injured_per_2010,
+                    data.en_ped_injured_per_2011,
+                    data.en_ped_injured_per_2012
+                ])
+            }];
+
+            return series;
+        }
+
+
+        function chart(data) {
+            var tooltip = {
+                headerFormat: '<span style="font-size:10px">{point.key} Injuries from Crashes per 100,00 Residents</span><table>',
+                pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+                '<td style="padding:0"><b>{point.y:,.1f}</b></td></tr>',
+                footerFormat: '</table>',
+                shared: true,
+                useHTML: true
+            };
+
+            var series = getSeries(data);
+
+            var options = {
+                chart: {
+                    type: 'line'
+                },
+                title: {
+                    text: CHART_BASE_TITLE
+                },
+                xAxis: {
+                    categories: years,
+                    tickmarkPlacement: 'on',
+                    labels: {
+                        step: 3
+                    }
+                },
+                yAxis: {
+                    title: {
+                        text: Y_LABEL
+                    },
+                    min: 0,
+                    reversedStacks: true,
+                    stackLabels: {
+                        enabled: false
+                    }
+                },
+                legend: {
+                    enabled: true
+                },
+                colors: altColors,
+                plotOptions: {
+                    line: {
+                         events: {
+                            legendItemClick: function () {
+                                return false;
+                            }
+                        }
+                    }
+                },
+                tooltip: tooltip,
+                series: series
+            };
+
+            // Don't explicitly set step size on smaller screens
+            if (window.innerWidth < 650) {
+                delete options.xAxis.labels.step;
+            }
+
+            $(CHART_ID).highcharts(options);
+        }
+
+
         function tractsLoaded(layer) {
             tractLayer = layer; //.getSubLayer(0);
-
-            console.log();
-            layer.on('featureOver', function(e, latlng, pos, data, subLayerIndex) {
-                console.log("XYZ");
-            });
-            layer.on('mouseover', function(event, b) {
-                console.log("Clicked layer", event, b);
-            });
-            layer.on('mouseout', function(event, b) {
-                console.log("Clicked layer", event, b);
-            });
-
             var tractSubLayer = tractLayer.getSubLayer(0);
-            console.log("Tracts loaded");
 
-            // tractLayer.featureOver(function() {
-            //     console.log("over");
-            // });
+            // Add cursor interaction
+            tractSubLayer.setInteraction(true);
+            cartodb.vis.Vis.addCursorInteraction(map, tractSubLayer);
+
+            // Show the tract when cursor is l
+            tractSubLayer.on('featureClick', function(event, latlng, pos, data, layerIndex) {
+                chart(data);
+            });
 
             // Listen for zoom changes and remove the layer if we are
             // zoomed far enough in.
@@ -327,7 +407,7 @@ regionPromise, countyPromise, cityPromise, _, cartodb
                 });
 
                 // Update the point layer
-                pointLayer.setWhere('INJURED > 0 AND YEAR_=' + year);
+                pointLayer.setWhere('SEVINJ > 0 AND YEAR_=' + year);
             }
 
             // Set up the year slider
@@ -357,7 +437,7 @@ regionPromise, countyPromise, cityPromise, _, cartodb
               sublayers: [{
                 sql: "SELECT * FROM ec_tracts",
                 cartocss: cartoCSSTemplate({ year: year }),
-                interactivity: "en_ped_injured_per_2008, en_ped_injured_per_2009, en_ped_injured_per_2010, en_ped_injured_per_2011, en_ped_injured_per_2012"
+                interactivity: "geoid10, en_ped_injured_per_2008, en_ped_injured_per_2009, en_ped_injured_per_2010, en_ped_injured_per_2011, en_ped_injured_per_2012"
               }]
             })
             .addTo(map)
@@ -399,7 +479,7 @@ regionPromise, countyPromise, cityPromise, _, cartodb
                 ],
                 pointToLayer: pointToLayer,
                 minZoom: POINT_MIN_ZOOM,
-                where: 'INJURED > 0 AND YEAR_ = ' + year
+                where: 'SEVINJ > 0 AND YEAR_ = ' + year
 
             }).addTo(map);
         }
@@ -428,12 +508,6 @@ regionPromise, countyPromise, cityPromise, _, cartodb
             setupLegend();
         }
 
-
-        function setup() {
-            setupMap();
-        }
-
-
         function setupNumbers(d) {
             var i;
             // for(i = 0; i < d.length; i++) {
@@ -442,7 +516,15 @@ regionPromise, countyPromise, cityPromise, _, cartodb
             return d;
         }
 
-        setup();
+        // Load the base data.
+        var localTotalsPromise = $.ajax({
+            dataType: "json",
+            url: "http://vitalsigns-production.elasticbeanstalk.com/en/8/region"
+        }).done(function(data) {
+            regionData = data;
+            years = _.uniq(_.pluck(regionData, YEAR_KEY));
+            setupMap();
+        });
 
     });
 })(jQuery);

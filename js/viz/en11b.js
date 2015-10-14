@@ -36,18 +36,9 @@ regionPromise, countyPromise, cityPromise, _
         var ZONE_MIN_ZOOM = 5;
 
         var ZONE_STYLE = '#slr_zones { polygon-fill: #EC7429; polygon-opacity: 0.3; line-width: 0; [rise=1], [rise=2] {polygon-opacity: 0.4} [zoom<11] { polygon-opacity: 0.4 } [zoom>12] { line-width:0.5; line-color: #e1671b; line-opacity: 0.6; } [zoom>15] { line-opacity: 0.9; } }';
-        // var TRACT_STYLE = '#slr_tracts { polygon-fill: #FFFFB2; polygon-opacity: 0.9; line-color: #FFF; line-width: 0.5; line-opacity: 0.5; } ';
-        // TRACT_STYLE  += '#slr_tracts [ popdens_10 <= 0.02088347] { polygon-fill: #843f1d; } #slr_tracts [ popdens_10 <= 0.00282527] { polygon-fill: #bd5d21; } #slr_tracts [ popdens_10 <= 0.00135319] { polygon-fill: #ec7429; } #slr_tracts [ popdens_10 <= 0.00069837] { polygon-fill: #e19063; } #slr_tracts [ popdens_10 <= 0.00016958] { polygon-fill: #ea9e77; }';
 
-        // Green
-        var TRACT_STYLE = '#slr_tracts { polygon-fill: #FFFFB2; polygon-opacity: 0.8; line-color: #FFF; line-width: 0.5; line-opacity: 0.5; } ';
-        TRACT_STYLE  += '#slr_tracts [ popdens_10 <= 0.02088347] { polygon-fill: #35592a; } #slr_tracts [ popdens_10 <= 0.00282527] { polygon-fill: #4e8508; } #slr_tracts [ popdens_10 <= 0.00135319] { polygon-fill: #62a60a; } #slr_tracts [ popdens_10 <= 0.00069837] { polygon-fill: #87b171; } #slr_tracts [ popdens_10 <= 0.00016958] { polygon-fill: #9dbf88; }';
-
-        //var TRACT_STYLE = '#slr_tracts { polygon-fill: #0c8ec5; polygon-opacity: 0.8; line-width: 0;  }';
-            // 4E8508 -- green
-            // EC7429 -- orange
-            // 0c8ec5 -- blue
-            // polygon-comp-op: multiply;
+        var TRACT_STYLE = '#slr_tracts { polygon-fill: #FFFFB2; polygon-opacity: 0.9; line-color: #FFF; line-width: 0.5; line-opacity: 0.5; } ';
+        TRACT_STYLE  += '#slr_tracts [ popdens12 <= 55384] { polygon-fill: #35592a; } #slr_tracts [ popdens12 <= 10710] { polygon-fill: #4e8508; } #slr_tracts [ popdens12 <= 6143] { polygon-fill: #62a60a; } #slr_tracts [ popdens12 <= 3120] { polygon-fill: #87b171; } #slr_tracts [ popdens12 <= 860] { polygon-fill: #9dbf88; }';
 
         var riseMap, tractMap;
         var riseLayer, tractLayer;
@@ -77,13 +68,12 @@ regionPromise, countyPromise, cityPromise, _
         var COLORS = allGreen;
 
         var BREAKS = [
-            1,
-            4,
-            7,
-            9,
-            10
+            0,
+            860,
+            3120,
+            6143,
+            10710
         ];
-
 
         function prepTracts(d) {
             var i;
@@ -175,26 +165,6 @@ regionPromise, countyPromise, cityPromise, _
             $('#en-b-title').html(template(feature.properties));
 
             console.log(feature, template(feature.properties));
-            /*
-            TODO once we have tract data defined
-            // This is a point click
-            if (_.has(p, 'price_IA')) {
-                chartOptions.city = p.CityName;
-                chartOptions.county = p.county;
-                chartOptions.tract = p.GEOID10;
-                chartOptions.point = p.price_IA;
-            }
-
-            // If this is a tract click
-            // We'll get a COUNTYFP but not a county name
-            if (_.has(p, 'TRACT')) {
-                chartOptions.tract = p.TRACT;
-
-                // Get the county name from the Fip
-                var countyFP = parseInt(_.trimLeft(p.COUNTYFP, '0'), 10);
-                chartOptions.county = _.find(countyData, { Countyfip: countyFP }).County;
-            }
-            */
         }
 
 
@@ -229,13 +199,6 @@ regionPromise, countyPromise, cityPromise, _
                     }
                 }
             });
-
-            // TODO:
-            // Handle map clicks
-            /*layer.on('click', function(event) {
-                interaction(event, feature);
-            });*/
-
         }
 
         function riseInteraction(layer) {
@@ -311,18 +274,18 @@ regionPromise, countyPromise, cityPromise, _
             .addTo(tractMap)
             .done(tractInteraction);
 
-
             setupInteraction();
 
             // Add the legend
-            // TODO once we have breaks set
             var legendControl = new L.control({
                 position: 'bottomright'
             });
+
             legendControl.onAdd = function (map) {
                 var div = L.DomUtil.create('div', 'info legend');
                 $(div).addClass("col-lg-12");
-                $(div).append("<h5>Population  Density of Affected Neighborhoods</h5>");
+                $(div).append("<h5>Population  Density<br> of Neighborhoods at Risk</h5>");
+                $(div).append("<p>Population per square mile</p>");
 
                 // loop through our density intervals and generate a label
                 // with a colored square for each interval
@@ -331,44 +294,25 @@ regionPromise, countyPromise, cityPromise, _
                     var s = '<div class="legend-row"><div class="legend-color" style="background:' + COLORS[i] + ';">&nbsp; </div><div class="legend-text">';
 
                     if (i === 0) {
-                        s += '$' + BREAKS[i].toLocaleString() + ' - $' + BREAKS[i+1].toLocaleString();
+                        s += BREAKS[i].toLocaleString() + ' - ' + BREAKS[i+1].toLocaleString();
                     }
 
                     if (i !== BREAKS.length - 1 && i !== 0) {
-                        s += '$' + (BREAKS[i] + 1).toLocaleString() + ' - $' + BREAKS[i+1].toLocaleString();
+                        s += (BREAKS[i] + 1).toLocaleString() + ' - ' + BREAKS[i+1].toLocaleString();
                     }
 
                     if (i === BREAKS.length - 1) {
-                        s += '$' + (BREAKS[i] + 1).toLocaleString() + '+';
+                        s += (BREAKS[i] + 1).toLocaleString() + '+';
                     }
 
                     $(div).append(s);
-
-                    // $(div).append('<div><div class="col-lg-1" style="background:' + colors[i] + ';">&nbsp; </div><div class="col-lg-8">' +
-                    //     Math.round(breaks[i]*100)/100 + (Math.round(breaks[i + 1]*100)/100 ? '&ndash;' + Math.round(breaks[i + 1]*100)/100 + '</div>' : '+'));
                 }
-
 
                 return div;
             };
             legendControl.addTo(tractMap);
         }
 
-
-        function setup() {
-            setupMap();
-        }
-
-
-        function setupNumbers(d) {
-            var i;
-            // for(i = 0; i < d.length; i++) {
-            //     d[i][FOCUS_KEY] = percent(d[i][FOCUS_KEY]);
-            // }
-            return d;
-        }
-
-        setup();
-
+        setupMap();
     });
 })(jQuery);

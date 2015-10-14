@@ -42,7 +42,7 @@ regionPromise, countyPromise: true
         var AVG_KEY = 'Ozone_Max4_Daily_8HR_ppb_Annual_1YR';
 
         var TOP_LABEL = 'Worst Location';
-        var TOP_KEY = 'Ozone_Max4_Daily_8HR_ppb_WorstLocation_1YR';
+        var TOP_KEY = 'Ozone_Max4_Daily_8HR_ppb_WorstLocation_3YR';
 
         var YEAR_KEY = 'Year';
         var minYear;

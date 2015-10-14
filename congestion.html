@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Traffic Congestion by Time of Day</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="css/app.css" rel="stylesheet" media="screen">
+
+    <!--<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />-->
+
+    <link href="http://cdn.kendostatic.com/2014.1.528/styles/kendo.common.min.css" rel="stylesheet" />
+    <link href="http://cdn.kendostatic.com/2014.1.528/styles/kendo.default.min.css" rel="stylesheet" />
+    <link href="http://cdn.kendostatic.com/2014.1.528/styles/kendo.dataviz.min.css" rel="stylesheet" />
+    <link href="http://cdn.kendostatic.com/2014.1.528/styles/kendo.dataviz.default.min.css" rel="stylesheet" />
+
+  <link type="text/css" rel="stylesheet" href="https://api.tiles.mapbox.com/mapbox.js/v2.1.4/mapbox.css" media="all" />
+
+    <link rel="stylesheet" href="http://libs.cartocdn.com/cartodb.js/v3/3.13/themes/css/cartodb.css" />
+    <script src="http://libs.cartocdn.com/cartodb.js/v3/3.13/cartodb.js"></script>
+
+    <style type="text/css">
+      .map {
+        height: 600px;
+        width: 80%;
+      }
+    </style>
+  </head>
+  <body>
+
+
+    <h3 id="map_title">
+      Congestion By Time of Day
+    </h3>
+    <p>
+      Time: <div id="en-b-slr-select"></div>
+    </p>
+
+    <div class="row">
+      <div class="col-lg-12" id="slr-map-container">
+        <div class="map" id="map-congestion"></div></div>
+      </div>
+    </div>
+
+    <script type="text/template" id="speed-template">
+@offset11: 3;
+@offset12: 4;
+@offset13: 5;
+
+@congested: #ec7429;
+@fast: #88b5c4;
+@slow: #235365;
+@road: @fast;
+
+#speed_segments{
+  line-color: @slow;
+  line-width: 4;
+  line-opacity: 1;
+  line-offset: 2;
+  line-join: miter;
+  line-cap: round;
+
+  [zoom <= 10] {
+    line-color: @road;
+  }
+
+  [zoom = 11] {
+    line-width: 6;
+    line-offset: 3;
+  }
+
+  [zoom = 12] {
+    line-width: 8;
+    line-offset: 4;
+  }
+
+  [zoom >= 13] {
+    line-width: 10;
+    line-offset: 5;
+  }
+
+  [direction='{EB}'],
+  [direction='{NB}'] {
+    line-color: @fast;
+
+    line-offset: 3;
+    [zoom = 11] {
+      line-offset: 4;
+    }
+    [zoom = 12] {
+      line-offset: 5;
+    }
+    [zoom >= 13] {
+      line-offset: 6;
+    }
+
+    /* Run a white line down the middle to separate
+    the lanes */
+    ::outline {
+      line-color: #ffffff;
+      line-width: 2;
+      line-opacity: 1;
+      line-cap: round;
+
+        [zoom = 11] {
+        line-width: 3;
+      }
+      [zoom = 12] {
+        line-width: 3;
+      }
+      [zoom = 13] {
+        line-width: 4;
+      }
+    }
+  }
+
+
+  /* Outline the congested lanes */
+  [direction='{EB}'] {
+
+    [zoom <=10] {
+      line-color: @congested;
+    }
+
+    ::outline {
+        [zoom>=11] {
+        line-color: #FFFFFF;
+        line-width: 5;
+        line-opacity: 1;
+        line-cap: round;
+        }
+
+        [zoom = 11] {
+        line-width: 5;
+      }
+      [zoom = 12] {
+        line-width: 5;
+          line-offset: @offset12;
+      }
+      [zoom >= 13] {
+        line-width: 6;
+            line-offset: @offset13;
+      }
+
+    ::congested {
+        [zoom >= 11] {
+        line-color: #FF5C00;
+        line-width: 3;
+        line-opacity: 1;
+        line-cap: round;
+        }
+
+        [zoom = 11] {
+        line-width: 3;
+      }
+      [zoom = 12] {
+        line-width: 3;
+            line-offset: @offset12;
+      }
+      [zoom >= 13] {
+        line-width: 4;
+            line-offset: @offset13;
+      }
+    }
+    }
+  }
+}
+    </script>
+
+
+    <!-- libraries -->
+    <script src="http://code.jquery.com/jquery.js"></script>
+    <!--<script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>-->
+    <!--<script type="text/javascript" src="https://api.tiles.mapbox.com/mapbox.js/v2.1.4/mapbox.js"></script>-->
+
+    <script src="http://cdn.kendostatic.com/2014.1.528/js/kendo.all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.5.0/lodash.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bluebird/2.9.13/bluebird.min.js"></script>
+    <script src="http://code.highcharts.com/highcharts.js"></script>
+
+    <!--<script src="js/esri-leaflet.js"></script>-->
+
+    <!-- From MTC server -->
+    <script src="http://dev-mtc-vital-signs.pantheon.io/sites/all/themes/vitalsigns/js/colors.js"></script>
+
+    <script src="js/viz/congestion.js"></script>
+  </body>
+</html>

@@ -3,7 +3,7 @@
 <head>
   <title>CartoDB test</title>
   <link rel="stylesheet" href="http://libs.cartocdn.com/cartodb.js/v3/3.15/themes/css/cartodb.css" />
-  <script src="http://libs.cartocdn.com/cartodb.js/v3/3.15/cartodb.js"></script>
+  <script src="http://libs.cartocdn.com/cartodb.js/v3/3.15/cartodb.uncompressed.js"></script>
 
   <style type="text/css">
   #map {
@@ -25,7 +25,8 @@ window.onload = function() {
     zoom: 8
   });
 
-  // Add a new CartoDB map
+  // Create a Standard Layer Source Object
+  // per http://docs.cartodb.com/cartodb-platform/cartodb-js.html#standard-layer-source-object-type-cartodb
   var cdbTracts = cartodb.createLayer(map, {
     user_name: 'mtc',
     type: 'cartodb',
@@ -44,15 +45,20 @@ window.onload = function() {
       console.log('error: ' + err);
     });
 
-    // Listen for featureOver events -- available?
+    // Listen for featureOver events
+    // Doesn't seem to fire.
     layer.on('featureOver', function(e, latlng, pos, data) {
       console.log(e, latlng, pos, data);
     });
 
-    // Method exists on the layer, but this gives an error:
-    layer.featureOver(function(e, latlng, pos, data) {
-      console.log(e, latlng, pos, data);
-    });
+    var subLayer = layer.getSubLayer(0);
+    subLayer.setInteraction(true);
+    subLayer.on('featureOver', function(e) {
+      console.log("Hovered over layer");
+    })
+    subLayer.on('featureClick', function(e) {
+      console.log("Clicked sublayer feature");
+    })
   });
 }
 </script>
