@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Traffic Congestion by Time of Day</title>
+    <title>Reliablity</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <link href="css/app.css" rel="stylesheet" media="screen">
@@ -64,164 +64,121 @@
     -->
 
     <p>
-      Time: <div id="congestion-time-select"></div>
+      Time: <div id="t9btimeslider"></div>
     </p>
 
     <div class="row">
-      <div class="col-lg-12" id="congestion-map-container">
-        <div id="legend"></div>
-        <div class="map" id="map-congestion"></div>
+      <div class="col-lg-12" id="reliability-map-container">
+        <div id="corridor-info-text"></div>
+        <div class="map" id="mapt9b"></div>
       </div>
     </div>
 
     <script type="text/template" id="map-legend-template">
     <div class="highway-sign">
-    <h2><%= highway %> <%= longDirection %></h2>
-    <h2><%= location %></h2>
-
-    <%= delay_veh_hrs %> vehicle hours of congested delay
-    between <%= starttime %> and <%= endtime %>
-
-    <%= rank %><%= rankSuffix %> most congested of 144 segments in the region
-    <div class="rank-gradient">
-      <div class="rank-marker" style="left: <%= rankPercent %>%"></div>
+      <h2><%= corridor %> <%= longDirection %></h2>
+      <h2>From <%= endpoint1 %> to <%= endpoint2 %> </h2>
     </div>
-
-    </div>
+    <div id="corridor-chart"></div>
     </script>
 
-    <script type="text/template" id="congestion-template">
-      /** simple visualization */
-      @offset11: 3;
-      @offset12: 3;
-      @offset13: 5;
-
-      @congested: #ec7429;
-      @congested-close: #ec7429;
-      @fast: #88b5c4;
-      @slow: #235365;
-      @road: @fast;
-
-      #congestion {
-        line-color: @congested;
-        line-offset: 4;
-        line-cap: round;
-        line-opacity: 1;
-        line-width: 5;
-        line-offset: 4;
-
-        [zoom = 11] {
-          line-width: 5;
-            line-offset: 5;
-        }
-        [zoom = 12] {
-          line-width: 3;
-              line-offset: @offset12;
-        }
-        [zoom >= 13] {
-          line-width: 4;
-              line-offset: @offset13;
-        }
-      }
-    </script>
-
-    <script type="text/template" id="center-template">
-      #speed_segments{
-
-        /* Separate the lines */
-        [direction='{EB}'],
-        [direction='{NB}'] {
-
-          ::outline {
-              [zoom>=11] {
-              line-color: #FFFFFF;
-              line-width: 4;
-              line-opacity: 1;
-              line-cap: round;
-              }
-
-              [zoom = 11] {
-              line-width: 4;
-            }
-            [zoom = 12] {
-              line-width: 3;
-            }
-            [zoom >= 13] {
-              line-width: 4;
-            }
-          }
-
-        }
-      }
-    </script>
-
-    <script type="text/template" id="speed-template">
+    <script type="text/template" id="reliability-template">
       /** choropleth visualization */
 
-      #speed_data_merged{
+      #reliability_new {
         polygon-opacity: 0;
-        line-color: #88b5c4;
-        line-width: 6;
+        line-color: #c6e2ec;
+        line-width: 3;
         line-opacity: 1;
+        line-offset: 3;
 
-        line-offset: 4;
-        line-join: miter;
-        line-cap: round;
-
-        [zoom < 11] {
-          line-width: 4;
+        [zoom<11] {
+          line-width: 2;
+          line-offset: 2;
         }
-
-        [zoom = 12] {
-          line-width: 8;
+        [zoom=11] {
+          line-width: 4;
           line-offset: 4;
         }
-
-        [zoom = 13] {
-          line-width: 10;
+        [zoom=12] {
+          line-width: 5;
           line-offset: 5;
         }
-
-        [zoom = 14] {
-          line-width: 12;
+        [zoom=13] {
+          line-width: 6;
           line-offset: 6;
         }
+        [zoom=14] {
+          line-width: 7;
+          line-offset: 7;
+        }
 
-        ::outline {
-           [zoom>=9] {
-            line-color: #FFFFFF;
-            line-width: 2;
-            line-opacity: 1;
-            line-cap: round;
+        [corridor='I-280'],
+        [corridor='I-380'],
+
+        [corridor='SR-12 '],
+        [corridor='SR-13'],
+        [corridor='SR-24'],
+        [corridor='SR-29'],
+        [corridor='SR-242'],
+
+        [corridor='I-238'][endpoint1='I-880'][endpoint2='I-580'],
+
+        [corridor='I-580'][endpoint1='US-101'][endpoint2='I-80'],
+        [corridor='I-580'][endpoint1='I-238'][endpoint2='I-680'],
+
+          [corridor='I-680'][endpoint1='SR-4'][endpoint2='I-80'],
+        [corridor='I-680'][endpoint1='SR-24'][endpoint2='SR-4'],
+        [corridor='I-680'][endpoint1='I-580'][endpoint2='SR-24'],
+
+        [corridor='I-80'][endpoint1='I-680'][endpoint2='I-505'],
+        [corridor='I-80'][endpoint1='SR-4'][endpoint2='I-680'],
+        [corridor='I-80'][endpoint1='I-505'][endpoint2='SR-113'],
+
+        [corridor='I-880'][endpoint1='SR-84'][endpoint2='SR-92'],
+        [corridor='SR-92'][endpoint1='US-101'][endpoint2='I-880'],
+        [corridor='SR-237'][endpoint1='SR-85'][endpoint2='I-880'],
+        [corridor='I-980'][endpoint1='SR-85'][endpoint2='I-880'],
+
+        [corridor='US-101'][endpoint1='SR-152'][endpoint2='SR-85'],
+        [corridor='US-101'][endpoint1='SR-37'][endpoint2='SR-116/Gravenstein Highway'],
+        [corridor='US-101'][endpoint1='SR-116/Gravenstein Highway'][endpoint2='Arata Lane (Windsor)'],
+        [corridor='US-101'][endpoint1='Arata Lane (Windsor)'][endpoint2='Mendocino County Line']{
+          [direction='SB'],
+          [direction='WB'] {
+            line-offset: -5;
+
+            [zoom < 11] {
+              line-offset: -2;
             }
-
-          [zoom = 11] {
-            line-width: 3;
-          }
-          [zoom = 12] {
-            line-width: 0;
-          }
-          [zoom >= 13] {
-            line-width: 0;
           }
         }
       }
 
-      [zoom > 10] {
-        #speed_data_merged [speed <= 72] {
-           line-color: #c6e2ec;
-        }
-        #speed_data_merged [speed <= 60.7] {
-           line-color: #8dbfd2;
-        }
-        #speed_data_merged [speed <= 49.7] {
-           line-color: #4ba8d3;
-        }
-        #speed_data_merged [speed <= 37.9] {
-           line-color: #2c6d8c;
-        }
-        #speed_data_merged [speed <= 26.3] {
-           line-color: #235365;
+      #reliability_new [<%= time %> <= 2.735] {
+         line-color: #ec7429;
+      }
+      #reliability_new [<%= time %> <= 1.375] {
+         line-color: #ea9e77;
+      }
+      #reliability_new [<%= time %> <= 0.9875] {
+         line-color: #d9b305;
+      }
+      #reliability_new [<%= time %> <= 0.6025] {
+         line-color: #9dbf88;
+      }
+      #reliability_new [<%= time %> <= 0.24] {
+         line-color: #62a60a;
+      }
+
+      [zoom <= 10] {
+        ::outline {
+          [direction='SB'],
+          [direction='WB'] {
+            line-width: 2;
+            line-offset: 0;
+            line-color: #fff;
+          }
         }
       }
     </script>
@@ -242,6 +199,6 @@
     <!-- From MTC server -->
     <script src="http://dev-mtc-vital-signs.pantheon.io/sites/all/themes/vitalsigns/js/colors.js"></script>
 
-    <script src="js/viz/congestion.js"></script>
+    <script src="js/viz/reliability.js"></script>
   </body>
 </html>

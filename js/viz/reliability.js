@@ -1,5 +1,5 @@
 /*globals
-jQuery, L, geocities, allGreen, allOrange, altColors, Highcharts, turf, cartodb,
+jQuery, L, geocities, allBlue, allOrange, altColors, Highcharts, turf, cartodb,
 regionPromise, countyPromise, cityPromise, _
 */
 (function($) {
@@ -26,13 +26,9 @@ regionPromise, countyPromise, cityPromise, _
         var CHART_ID = '#b-chart';
         var Y_AXIS = '';
 
-        var CITY_KEY = 'City';
-        var CITY_FEATURE_KEY = 'NAME';
-        var COUNTY_KEY = 'County';
-
         var CARTODB_USER = 'localdata';
+        var sql = new cartodb.SQL({user: CARTODB_USER});
 
-        var NUMBER_OF_RANKS = 144;
         var DIRECTIONS = {
             'NB': 'Northbound',
             'SB': 'Southbound',
@@ -40,19 +36,105 @@ regionPromise, countyPromise, cityPromise, _
             'WB': 'Westbound'
         };
 
-        var SPEED_MIN_ZOOM = 5;
-        var CONGESTION_STYLE = _.template($('#congestion-template').html())();
-        var CENTER_STYLE = _.template($('#center-template').html())();
-        var SPEED_STYLE = _.template($('#speed-template').html())();
+        var TIME_SLIDER_VALUES = [{
+          id: 1,
+          value: "bti_12am",
+          time: "12am"
+        }, {
+          id: 2,
+          value: "bti_1am",
+          time: "1am"
+        }, {
+          id: 3,
+          value: "bti_2am",
+          time: "2am"
+        }, {
+          id: 4,
+          value: "bti_3am",
+          time: "3am"
+        }, {
+          id: 5,
+          value: "bti_4am",
+          time: "4am"
+        }, {
+          id: 6,
+          value: "bti_5am",
+          time: "5am"
+        }, {
+          id: 7,
+          value: "bti_6am",
+          time: "6am"
+        }, {
+          id: 8,
+          value: "bti_7am",
+          time: "7am"
+        }, {
+          id: 9,
+          value: "bti_8am",
+          time: "8am"
+        }, {
+          id: 10,
+          value: "bti_9am",
+          time: "9am"
+        }, {
+          id: 11,
+          value: "bti_10am",
+          time: "10am"
+        }, {
+          id: 12,
+          value: "bti_11am",
+          time: "11am"
+        }, {
+          id: 13,
+          value: "bti_12pm",
+          time: "12pm"
+        }, {
+          id: 14,
+          value: "bti_1pm",
+          time: "1pm"
+        }, {
+          id: 15,
+          value: "bti_2pm",
+          time: "2pm"
+        }, {
+          id: 16,
+          value: "bti_3pm",
+          time: "3pm"
+        }, {
+          id: 17,
+          value: "bti_4pm",
+          time: "4pm"
+        }, {
+          id: 18,
+          value: "bti_5pm",
+          time: "5pm"
+        }, {
+          id: 19,
+          value: "bti_6pm",
+          time: "6pm"
+        }, {
+          id: 20,
+          value: "bti_7pm",
+          time: "7pm"
+        }, {
+          id: 21,
+          value: "bti_8pm",
+          time: "8pm"
+        }, {
+          id: 22,
+          value: "bti_9pm",
+          time: "9pm"
+        }, {
+          id: 23,
+          value: "bti_10pm",
+          time: "10pm"
+        }, {
+          id: 24,
+          value: "bti_11pm",
+          time: "11pm"
+        }];
 
-        var sql = new cartodb.SQL({ user: 'localdata' });
-
-        var congestionMap;
-        var congestionLayer;
-        var selectedSegmentLayer = L.geoJson();
-        var time = "'18:00:00'";
-
-        var template = _.template($('#map-legend-template').html());
+        var RELIABILTY_MIN_ZOOM = 5;
 
         var SELECTED_SEGMENT_STYLE = {
             radius: 5,
@@ -62,9 +144,7 @@ regionPromise, countyPromise, cityPromise, _
             opacity: 1,
             fillOpacity: 1
         };
-
-        var COLORS = allGreen;
-
+        var colors = allBlue;
         var BREAKS = [
             0,
             860,
@@ -72,6 +152,16 @@ regionPromise, countyPromise, cityPromise, _
             6143,
             10710
         ];
+
+
+        /* Global values for this viz */
+        var reliabilityMap;
+        var reliabilityStyle = _.template($('#reliability-template').html());
+        var reliabilityLayer;
+        var selectedSegmentLayer = L.geoJson();
+        var time = 9;
+
+        var template = _.template($('#map-legend-template').html());
 
         var i;
         var regionData, countyData, cityData;
@@ -83,22 +173,11 @@ regionPromise, countyPromise, cityPromise, _
             }
         });
 
-
         function formatter() {
             if (this.value === 'Bay Area') {
                 return '<span style="font-weight:800;color:#000;">' + this.value + '</span>';
             }
             return this.value;
-        }
-
-
-        function interaction(event, feature) {
-            var p = feature.properties;
-            console.log("Map clicked", p);
-
-            $('#en-b-title').html(template(feature.properties));
-
-            console.log(feature, template(feature.properties));
         }
 
 
@@ -132,73 +211,98 @@ regionPromise, countyPromise, cityPromise, _
                 });
             });
 
-            congestionMap.removeLayer(selectedSegmentLayer);
+            reliabilityMap.removeLayer(selectedSegmentLayer);
             selectedSegmentLayer = L.geoJson(shapes, {
                 style: SELECTED_SEGMENT_STYLE
             });
-            congestionMap.addLayer(selectedSegmentLayer);
+            reliabilityMap.addLayer(selectedSegmentLayer);
         }
 
-        function updateSidebar(data) {
-            // Data processing TODO:
-            data = data.rows[0];
-            data.starttime = readableDate(data.starttime);
-            data.endtime = readableDate(data.endtime);
-            data.longDirection = DIRECTIONS[data.direction];
-
-            var rank = parseInt(data.rank, 10);
-            data.rankPercent = 100 - rank / NUMBER_OF_RANKS * 100;
-            data.rankPercent = data.rankPercent.toFixed(0);
-
-            var lastDigit = data.rank[data.rank.length - 1];
-            var suffix = 'th';
-            if (lastDigit === '1') {
-                suffix = 'st';
-            }
-            if (lastDigit === '2') {
-                suffix = 'nd';
-            }
-            if (lastDigit === '3') {
-                suffix = 'rd';
-            }
-
-            data.rankSuffix = suffix;
-
+        function chart(data) {
             console.log("Got query data", data);
+            data = data.rows;
 
-            $('#legend').html(template(data));
+            var amPeak = {
+                name: 'AM Peak Buffer Time Index',
+                data: _.pluck(data, 'bti_ampeak')
+            };
+            var pmPeak = {
+                name: 'PM Peak Buffer Time Index',
+                data: _.pluck(data, 'bti_pmpeak')
+            };
+            var years = _.pluck(data, 'year');
 
-            // Fetch
-            var shapePromise = sql.execute("SELECT ST_AsGeoJSON(the_geom) as shape, cartodb_id, location, rank FROM congestion WHERE location = '" + data.location + "' and endtime > " + time + " and starttime < " + time, { location: data.location });
-            shapePromise.done(highlightShape);
+
+            var options = {
+              chart: {
+                renderTo: 'corridor-chart',
+                defaultSeriesType: 'column'
+              },
+              series: [
+                amPeak,
+                pmPeak
+              ],
+              exporting: {
+                enabled: true
+              },
+              legend: {
+                enabled: false
+              },
+              yAxis: {
+                title: {
+                  text: 'Peak Period Buffer Time Index'
+                }
+              },
+              xAxis: {
+                categories: years
+              },
+
+              title: {
+                text: ''
+              },
+              colors: [
+                colors[2],
+                colors[4]
+              ],
+              tooltip: {
+                shared: true,
+                crosshairs: false,
+                pointFormat: '<div style="color:{series.color};padding:0">{series.name}: <b>{point.y:.1f}</b><br/></div>'
+              }
+            };
+
+            console.log("using options", years);
+
+            chart = new Highcharts.Chart(options);
         }
-
 
         function handleFeatureClick(event, latlng, pos, data, layerIndex) {
-            console.log("Clicked congested segment", data, pos );
+            console.log("Clicked congested segment", data);
+            data.longDirection = DIRECTIONS[data.direction];
+            $('#corridor-info-text').html(template(data));
 
-            // Fetch
-            var congestionPromise = sql.execute("SELECT ST_AsGeoJSON(the_geom) as shape, cartodb_id, delay_veh_hrs, endtime, starttime, highway, direction, location, rank FROM congestion WHERE cartodb_id = {{id}}", { id: data.cartodb_id });
-
-            // TODO -- should use .then, but CartoDB promises don't
-            // seem to play nice with that (or jquery)
-            congestionPromise.done(updateSidebar);
+            // Get data needed to create the chart
+            var reliabilityPromise = sql.execute("select id, year, bti_ampeak, bti_pmpeak, direction FROM reliability_new WHERE id = '" + data.id + "' ORDER BY year ASC");
+            reliabilityPromise.done(chart);
         }
 
         function setupInteraction() {
             function update(e) {
-                time = e.value;
+                time = _.find(TIME_SLIDER_VALUES, { id: parseInt(e.value, 10) });
+                console.log("Changing time to", time, e.value);
 
                 // Update the map title
                 updateTitle();
 
-                congestionLayer.set({
-                    sql: "SELECT * FROM speed_segments", // WHERE time <=" + time,
-                    cartocss: SPEED_STYLE
+                reliabilityLayer.set({
+                    sql: "SELECT * FROM reliability_new where year = 2014",
+                    cartocss: reliabilityStyle({
+                        time: time.value
+                    })
                 });
             }
 
-            var slider = $("#congestion-time-select").kendoSlider({
+            var slider = $("#t9btimeslider").kendoSlider({
                 min: 1,
                 max: 24,
                 tickPlacement: "none",
@@ -207,27 +311,28 @@ regionPromise, countyPromise, cityPromise, _
                 value: time,
                 tooltip: {
                     template: function(e) {
-                        return e.value + ' [am/pm]';
+                        return TIME_SLIDER_VALUES[e.value].time;
                     }
                 }
             });
         }
 
         function layersLoaded(layer) {
-            congestionLayer = layer.getSubLayer(2);
+            console.log("Layers loaded", layer);
+            reliabilityLayer = layer.getSubLayer(0);
 
             // Add cursor interaction
-            congestionLayer.setInteraction(true);
-            cartodb.vis.Vis.addCursorInteraction(congestionMap, congestionLayer);
+            reliabilityLayer.setInteraction(true);
+            cartodb.vis.Vis.addCursorInteraction(reliabilityMap, reliabilityLayer);
 
             // Show the tract when cursor is l
-            congestionLayer.on('featureClick', handleFeatureClick);
+            reliabilityLayer.on('featureClick', handleFeatureClick);
         }
 
-        function setupMap() {
+        function setupmap() {
             updateTitle();
 
-            congestionMap = L.map('map-congestion', {
+            reliabilityMap = L.map('mapt9b', {
                 center: CENTER,
                 zoom: 9,
                 minZoom: 8,
@@ -238,32 +343,26 @@ regionPromise, countyPromise, cityPromise, _
             // Standard basemap: postcode.kh28fdpk
             // Terrain basemap: postcode.mna0lfce
             var baseLayer = L.tileLayer('http://a.tiles.mapbox.com/v3/postcode.kh28fdpk/{z}/{x}/{y}.png')
-                             .addTo(congestionMap);
+                             .addTo(reliabilityMap);
 
-            L.control.scale().addTo(congestionMap);
-            congestionMap.addLayer(selectedSegmentLayer);
+            L.control.scale().addTo(reliabilityMap);
+            reliabilityMap.addLayer(selectedSegmentLayer);
 
-            // Add the layers to the two maps
-            // Add the SLR map
-            var cdbCongestion = cartodb.createLayer(congestionMap, {
+            console.log("Creating cartodb layer");
+            cartodb.createLayer(reliabilityMap, {
               user_name: CARTODB_USER,
               cartodb_logo: false,
               type: 'cartodb',
               sublayers: [{
-                sql: "SELECT * FROM speed_data_merged where hour_beginning = " + time,
-                cartocss: SPEED_STYLE
-              }, {
-                sql: "SELECT * FROM speed_segments",
-                cartocss: CENTER_STYLE
-              }, {
-                sql: "select * from congestion where endtime > " + time + " and starttime < " + time,
-                cartocss: CONGESTION_STYLE,
-                interactivity: 'cartodb_id'
+                sql: "SELECT * FROM reliability_new where year = 2014",
+                cartocss: reliabilityStyle({
+                    time: 'bti_5pm'
+                }),
+                interactivity: 'cartodb_id, id, corridor, direction, endpoint1, endpoint2'
               }]
             })
-            .addTo(congestionMap)
+            .addTo(reliabilityMap)
             .done(layersLoaded);
-
             setupInteraction();
 
             // Add the legend
@@ -303,9 +402,9 @@ regionPromise, countyPromise, cityPromise, _
                 return div;
                 */
             };
-            legendControl.addTo(congestionMap);
+            legendControl.addTo(reliabilityMap);
         }
 
-        setupMap();
+        setupmap();
     });
 })(jQuery);

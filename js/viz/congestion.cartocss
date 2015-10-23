@@ -1,0 +1,91 @@
+/** choropleth visualization */
+
+#speed_data_merged{
+  polygon-opacity: 0;
+  line-color: #88b5c4;
+  line-width: 6;
+  line-opacity: 1;
+
+  line-offset: 4;
+  line-join: miter;
+  line-cap: round;
+
+  [zoom < 11] {
+    line-width: 4
+  }
+
+    ::outline {
+       [zoom>=11] {
+        line-color: #FFFFFF;
+        line-width: 2;
+        line-opacity: 1;
+        line-cap: round;
+        }
+
+      [zoom = 11] {
+        line-width: 3;
+      }
+      [zoom = 12] {
+        line-width: 0;
+      }
+      [zoom >= 13] {
+        line-width: 4;
+      }
+    }
+}
+[zoom > 11] {
+#speed_data_merged [ speed <= 72] {
+   line-color: #35592a;
+}
+#speed_data_merged [ speed <= 60.7] {
+   line-color: #62a60a;
+}
+#speed_data_merged [ speed <= 49.7] {
+   line-color: #9dbf88;
+}
+#speed_data_merged [ speed <= 37.9] {
+   line-color: #dfc888;
+}
+#speed_data_merged [ speed <= 26.3] {
+   line-color: #ea9e77;
+}
+}
+
+
+///
+
+
+
+/** simple visualization */
+@offset11: 3;
+@offset12: 8;
+@offset13: 5;
+
+@congested: #ec7429;
+@fast: #88b5c4;
+@slow: #235365;
+@road: @fast;
+
+
+
+#congestion{
+  line-color: @congested;
+  line-offset: 4;
+  line-cap: round;
+  line-opacity: 1;
+  line-width: 4;
+  line-offset: 4;
+
+      [zoom = 11] {
+        line-width: 5;
+          line-offset: 4;
+      }
+      [zoom = 12] {
+        line-width: 3;
+            line-offset: @offset12;
+      }
+      [zoom >= 13] {
+        line-width: 5;
+            line-offset: @offset13;
+      }
+}
