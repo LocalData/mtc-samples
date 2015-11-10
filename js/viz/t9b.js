@@ -133,6 +133,7 @@ regionPromise, countyPromise, cityPromise, _
           value: "bti_11pm",
           time: "11pm"
         }];
+        var time = TIME_SLIDER_VALUES[9];
 
         var RELIABILTY_MIN_ZOOM = 5;
 
@@ -145,24 +146,26 @@ regionPromise, countyPromise, cityPromise, _
             fillOpacity: 1
         };
         var colors = allBlue;
+        var COLOR_SCALE = [
+          '#62a60a',
+          '#9dbf88',
+          '#d9b305',
+          '#ea9e77',
+          '#ec7429'
+        ];
         var BREAKS = [
             0,
-            860,
-            3120,
-            6143,
-            10710
+            24,
+            60,
+            99,
+            138
         ];
 
-
-        /* Global values for this viz */
         var reliabilityMap;
         var reliabilityStyle = _.template($('#reliability-template').html());
         var reliabilityLayer;
         var selectedSegmentLayer = L.geoJson();
-        var time = 9;
-
         var template = _.template($('#map-legend-template').html());
-
         var i;
         var regionData, countyData, cityData;
 
@@ -180,9 +183,8 @@ regionPromise, countyPromise, cityPromise, _
             return this.value;
         }
 
-
         function updateTitle() {
-            // TODO
+            $('#timesliderheading').html('Time of day - ' + time.time);
         }
 
         function readableDate(date) {
@@ -219,7 +221,6 @@ regionPromise, countyPromise, cityPromise, _
         }
 
         function chart(data) {
-            console.log("Got query data", data);
             data = data.rows;
 
             var amPeak = {
@@ -231,7 +232,6 @@ regionPromise, countyPromise, cityPromise, _
                 data: _.pluck(data, 'bti_pmpeak')
             };
             var years = _.pluck(data, 'year');
-
 
             var options = {
               chart: {
@@ -251,7 +251,8 @@ regionPromise, countyPromise, cityPromise, _
               yAxis: {
                 title: {
                   text: 'Peak Period Buffer Time Index'
-                }
+                },
+                max: 2.5
               },
               xAxis: {
                 categories: years
@@ -271,15 +272,13 @@ regionPromise, countyPromise, cityPromise, _
               }
             };
 
-            console.log("using options", years);
-
-            chart = new Highcharts.Chart(options);
+            console.log("using options", options);
+            var corridorChart = new Highcharts.Chart(options);
         }
 
         function handleFeatureClick(event, latlng, pos, data, layerIndex) {
-            console.log("Clicked congested segment", data);
             data.longDirection = DIRECTIONS[data.direction];
-            $('#corridor-info-text').html(template(data));
+            $('.corridor-info-text').html(template(data));
 
             // Get data needed to create the chart
             var reliabilityPromise = sql.execute("select id, year, bti_ampeak, bti_pmpeak, direction FROM reliability_new WHERE id = '" + data.id + "' ORDER BY year ASC");
@@ -289,9 +288,8 @@ regionPromise, countyPromise, cityPromise, _
         function setupInteraction() {
             function update(e) {
                 time = _.find(TIME_SLIDER_VALUES, { id: parseInt(e.value, 10) });
-                console.log("Changing time to", time, e.value);
+                console.log(time);
 
-                // Update the map title
                 updateTitle();
 
                 reliabilityLayer.set({
@@ -308,17 +306,16 @@ regionPromise, countyPromise, cityPromise, _
                 tickPlacement: "none",
                 change: update,
                 slide: update,
-                value: time,
+                value: time.id,
                 tooltip: {
                     template: function(e) {
-                        return TIME_SLIDER_VALUES[e.value].time;
+                        return TIME_SLIDER_VALUES[e.value - 1].time;
                     }
                 }
             });
         }
 
         function layersLoaded(layer) {
-            console.log("Layers loaded", layer);
             reliabilityLayer = layer.getSubLayer(0);
 
             // Add cursor interaction
@@ -348,7 +345,6 @@ regionPromise, countyPromise, cityPromise, _
             L.control.scale().addTo(reliabilityMap);
             reliabilityMap.addLayer(selectedSegmentLayer);
 
-            console.log("Creating cartodb layer");
             cartodb.createLayer(reliabilityMap, {
               user_name: CARTODB_USER,
               cartodb_logo: false,
@@ -356,7 +352,7 @@ regionPromise, countyPromise, cityPromise, _
               sublayers: [{
                 sql: "SELECT * FROM reliability_new where year = 2014",
                 cartocss: reliabilityStyle({
-                    time: 'bti_5pm'
+                    time: time.value
                 }),
                 interactivity: 'cartodb_id, id, corridor, direction, endpoint1, endpoint2'
               }]
@@ -373,34 +369,32 @@ regionPromise, countyPromise, cityPromise, _
             legendControl.onAdd = function (map) {
                 var div = L.DomUtil.create('div', 'info legend');
                 $(div).addClass("col-lg-12");
-                return;
-                /*
-                $(div).append("<h5>Population  Density<br> of Neighborhoods at Risk</h5>");
-                $(div).append("<p>Population per square mile</p>");
+
+                $(div).append("<h5>Travel Time Reliability</h5>");
+                $(div).append("<p>Amount of buffer time needed on a trip</p>");
 
                 // loop through our density intervals and generate a label
                 // with a colored square for each interval
                 var i;
                 for (i = 0; i < BREAKS.length; i++) {
-                    var s = '<div class="legend-row"><div class="legend-color" style="background:' + COLORS[i] + ';">&nbsp; </div><div class="legend-text">';
+                    var s = '<div class="legend-row"><div class="legend-color" style="background:' + COLOR_SCALE[i] + ';">&nbsp; </div><div class="legend-text">';
 
                     if (i === 0) {
-                        s += BREAKS[i].toLocaleString() + ' - ' + BREAKS[i+1].toLocaleString();
+                        s += BREAKS[i].toLocaleString() + '% - ' + BREAKS[i+1].toLocaleString() + '%';
                     }
 
                     if (i !== BREAKS.length - 1 && i !== 0) {
-                        s += (BREAKS[i] + 1).toLocaleString() + ' - ' + BREAKS[i+1].toLocaleString();
+                        s += (BREAKS[i] + 1).toLocaleString() + '% - ' + BREAKS[i+1].toLocaleString() + '%';
                     }
 
                     if (i === BREAKS.length - 1) {
-                        s += (BREAKS[i] + 1).toLocaleString() + '+';
+                        s += (BREAKS[i] + 1).toLocaleString() + '%+';
                     }
 
                     $(div).append(s);
                 }
 
                 return div;
-                */
             };
             legendControl.addTo(reliabilityMap);
         }

@@ -20,7 +20,7 @@
 
     <style type="text/css">
       .map {
-        height: 600px;
+        height: 450px;
         width: 80%;
       }
 
@@ -30,158 +30,416 @@
         border: 5px solid #fff;
         color: #fff;
       }
-
-      .rank-gradient {
-        width: 100%;
-        height: 10px;
-        background: rgba(98,166,10,1);
-        background: -moz-linear-gradient(left, rgba(98,166,10,1) 0%, rgba(235,188,47,1) 100%);
-        background: -webkit-gradient(left top, right top, color-stop(0%, rgba(98,166,10,1)), color-stop(100%, rgba(235,188,47,1)));
-        background: -webkit-linear-gradient(left, rgba(98,166,10,1) 0%, rgba(235,188,47,1) 100%);
-        background: -o-linear-gradient(left, rgba(98,166,10,1) 0%, rgba(235,188,47,1) 100%);
-        background: -ms-linear-gradient(left, rgba(98,166,10,1) 0%, rgba(235,188,47,1) 100%);
-        background: linear-gradient(to right, rgba(98,166,10,1) 0%, rgba(235,188,47,1) 100%);
-        filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#62a60a', endColorstr='#ebbc2f', GradientType=1 );
-        position: relative;
-      }
-
-      .rank-marker {
-        height: 16px;
-        width: 4px;
-        background: #000;
-        left: 30%;
-        top: -3px;
-        position: absolute;
-      }
     </style>
   </head>
   <body>
 
-  <!--
-    <h3 id="map_title">
-      Congestion By Time of Day
-    </h3>
-    -->
 
-    <p>
-      Time: <div id="t9btimeslider"></div>
-    </p>
-
-    <div class="row">
-      <div class="col-lg-12" id="reliability-map-container">
-        <div id="corridor-info-text"></div>
-        <div class="map" id="mapt9b"></div>
-      </div>
+  <div class="row">
+    <div class="col-lg-12">
+      <h4 class="map_title">
+        2014 Travel Time Reliability along Freeway Segments
+      </h4>
+      <div id="T9-B">
+        <div class="row">
+          <div class="map col-lg-8" id="mapt9b"></div>
+          <div class="col-lg-4" id="T9-B-info">
+            <div class="row">
+              <div class="col-lg-12" id="T9-B-chart-wrapper">
+                <h4 id="timesliderheading">Time of day - 9am</h4>
+                <input class="slider" id="t9btimeslider"  />
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-lg-12">
+                <div class="corridor-info-header">
+                  <p>Select a corridor on the map for more information.</p>
+                </div>
+                <div class="corridor-info-text"></div>
+              </div>
+            </div>
+          </div>
+        </div><!-- end map row -->
+        <div class="row">
+          <div class="col-lg-6 col-md-6 col-sm-12">
+            <h4>Least reliable segments for AM peak</h4>
+            <h6>1. SR-242 southbound from I-680 to SR-4</h6>
+            <h6>2. US-101 northbound from SR-85 to I-280/I-680</h6>
+            <h6>3. I-680 southbound from SR-24 to SR-4</h6>
+            <h6>4. I-880 southbound from SR-84 to SR-92</h6>
+            <h6>5. I-80 westbound from US-101 to MacArthur Maze</h6>
+          </div>
+          <div class="col-lg-6 col-md-6 col-sm-12">
+            <h4>Least reliable segments for PM peak</h4>
+            <h6>1. US-101 northbound from SR-84 to SR-92</h6>
+            <h6>2. SR-13 eastbound from SR-24 to I-580</h6>
+            <h6>3. I-280 southbound from US-101 to SR-85</h6>
+            <h6>4. I-880 southbound from SR-92 to I-80</h6>
+            <h6>5. I-80 eastbound from MacArthur maze to I-580</h6>
+          </div>
+        </div><!-- end top 10 row -->
+      </div><!-- end t9b -->
     </div>
+  </div>
 
-    <script type="text/template" id="map-legend-template">
-    <div class="highway-sign">
-      <h2><%= corridor %> <%= longDirection %></h2>
-      <h2>From <%= endpoint1 %> to <%= endpoint2 %> </h2>
-    </div>
-    <div id="corridor-chart"></div>
-    </script>
+  <script type="text/template" id="map-legend-template">
+  <div class="highway-sign">
+    <h2 style="margin-bottom:0;"><%= corridor %> <%= longDirection %></h2>
+    <h3 style="margin-top:0;">From <%= endpoint1 %> to <%= endpoint2 %> </h3>
+  </div>
+  <div class="chart" id="corridor-chart" style="min-height: 250px;"></div>
+  </script>
 
-    <script type="text/template" id="reliability-template">
-      /** choropleth visualization */
+  <script type="text/template" id="reliability-template">
+    /** choropleth visualization */
 
-      #reliability_new {
-        polygon-opacity: 0;
-        line-color: #c6e2ec;
-        line-width: 3;
-        line-opacity: 1;
-        line-offset: 3;
+    #reliability_new {
+      polygon-opacity: 0;
+      line-color: #c6e2ec;
+      line-width: 3;
+      line-opacity: 1;
+      line-offset: -3;
 
-        [zoom<11] {
-          line-width: 2;
-          line-offset: 2;
-        }
-        [zoom=11] {
-          line-width: 4;
-          line-offset: 4;
-        }
-        [zoom=12] {
-          line-width: 5;
+      [zoom<11] {
+        line-width: 2;
+        line-offset: -2;
+      }
+      [zoom=11] {
+        line-width: 4;
+        line-offset: -4;
+      }
+      [zoom=12] {
+        line-width: 5;
+        line-offset: -5;
+      }
+      [zoom=13] {
+        line-width: 6;
+        line-offset: -6;
+      }
+      [zoom=14] {
+        line-width: 7;
+        line-offset: -7;
+      }
+
+      [corridor='I-280'],
+      [corridor='I-380'],
+
+      [corridor='SR-12 '],
+      [corridor='SR-13'],
+      [corridor='SR-24'],
+      [corridor='SR-92'][endpoint1='US-101'][endpoint2='I-880'],
+
+      [corridor='SR-237'][endpoint1='SR-85'][endpoint2='I-880'],
+      [corridor='I-238'][endpoint1='I-880'][endpoint2='I-580'],
+
+      [corridor='I-580'][endpoint1='I-238'][endpoint2='I-680'],
+
+      [corridor='I-680'][endpoint1='SR-4'][endpoint2='I-80'],
+      [corridor='I-680'][endpoint1='I-580'][endpoint2='SR-24'],
+
+      [corridor='I-80'][endpoint1='I-680'][endpoint2='I-505'],
+      [corridor='I-80'][endpoint1='SR-4'][endpoint2='I-680'],
+      [corridor='I-80'][endpoint1='I-505'][endpoint2='SR-113'],
+
+      [corridor='I-980'][endpoint1='SR-85'][endpoint2='I-880'],
+
+      [corridor='US-101'][endpoint1='SR-152'][endpoint2='SR-85'],
+      [corridor='US-101'][endpoint1='SR-116/Gravenstein Highway'][endpoint2='Arata Lane (Windsor)'],
+      [corridor='US-101'][endpoint1='Arata Lane (Windsor)'][endpoint2='Mendocino County Line']{
+        [direction='SB'],
+        [direction='WB'] {
           line-offset: 5;
+
+          [zoom < 11] {
+           line-offset: 2;
+          }
         }
-        [zoom=13] {
-          line-width: 6;
-          line-offset: 6;
+      }
+
+
+      /*
+      // Lines with southbound and northbound swapped
+      [corridor='SR-29'],
+      [corridor='I-280'][endpoint1='SR-1/Cabrillo Highway'][endpoint2='End/Begin Freeway'] {
+        [direction='SB'] {
+          line-offset: 5;
+
+          [zoom < 11] {
+            line-offset: 2;
+          }
         }
-        [zoom=14] {
-          line-width: 7;
-          line-offset: 7;
+        [direction='NB'] {
+          line-offset: -5;
+
+          [zoom < 11] {
+            line-offset: -2;
+          }
         }
+      }
+      */
 
-        [corridor='I-280'],
-        [corridor='I-380'],
+     // These E/W lanes are in the wrong direction.
+      [corridor='SR-24'],
+      //[corridor='SR-12'][endpoint1='I-80'][endpoint2='SR-113'],
+      [corridor='I-580'][endpoint1='US-101'][endpoint2='I-80'] {
+        [direction='EB'] {
+          line-offset: 5;
 
-        [corridor='SR-12 '],
-        [corridor='SR-13'],
-        [corridor='SR-24'],
-        [corridor='SR-29'],
-        [corridor='SR-242'],
+          [zoom < 11] {
+            line-offset: 2;
+          }
+          [zoom = 12] {
+            line-offset: 5;
+          }
+          [zoom = 13] {
+            line-offset: 6;
+          }
+          [zoom = 14] {
+            line-offset: 7;
+          }
+        }
+        [direction='WB'] {
+          line-offset: -5;
 
-        [corridor='I-238'][endpoint1='I-880'][endpoint2='I-580'],
-
-        [corridor='I-580'][endpoint1='US-101'][endpoint2='I-80'],
-        [corridor='I-580'][endpoint1='I-238'][endpoint2='I-680'],
-
-          [corridor='I-680'][endpoint1='SR-4'][endpoint2='I-80'],
-        [corridor='I-680'][endpoint1='SR-24'][endpoint2='SR-4'],
-        [corridor='I-680'][endpoint1='I-580'][endpoint2='SR-24'],
-
-        [corridor='I-80'][endpoint1='I-680'][endpoint2='I-505'],
-        [corridor='I-80'][endpoint1='SR-4'][endpoint2='I-680'],
-        [corridor='I-80'][endpoint1='I-505'][endpoint2='SR-113'],
-
-        [corridor='I-880'][endpoint1='SR-84'][endpoint2='SR-92'],
-        [corridor='SR-92'][endpoint1='US-101'][endpoint2='I-880'],
-        [corridor='SR-237'][endpoint1='SR-85'][endpoint2='I-880'],
-        [corridor='I-980'][endpoint1='SR-85'][endpoint2='I-880'],
-
-        [corridor='US-101'][endpoint1='SR-152'][endpoint2='SR-85'],
-        [corridor='US-101'][endpoint1='SR-37'][endpoint2='SR-116/Gravenstein Highway'],
-        [corridor='US-101'][endpoint1='SR-116/Gravenstein Highway'][endpoint2='Arata Lane (Windsor)'],
-        [corridor='US-101'][endpoint1='Arata Lane (Windsor)'][endpoint2='Mendocino County Line']{
-          [direction='SB'],
-          [direction='WB'] {
+          [zoom < 11] {
+            line-offset: -2;
+          }
+          [zoom = 12] {
             line-offset: -5;
-
-            [zoom < 11] {
-              line-offset: -2;
-            }
+          }
+          [zoom = 13] {
+            line-offset: -6;
+          }
+          [zoom = 14] {
+            line-offset: -7;
           }
         }
       }
 
-      #reliability_new [<%= time %> <= 2.735] {
-         line-color: #ec7429;
-      }
-      #reliability_new [<%= time %> <= 1.375] {
-         line-color: #ea9e77;
-      }
-      #reliability_new [<%= time %> <= 0.9875] {
-         line-color: #d9b305;
-      }
-      #reliability_new [<%= time %> <= 0.6025] {
-         line-color: #9dbf88;
-      }
-      #reliability_new [<%= time %> <= 0.24] {
-         line-color: #62a60a;
-      }
+   // These E/W lanes are in the wrong direction and offset poorly
+      [corridor='SR-37'],
+      [corridor='I-80'][endpoint1='I-580'][endpoint2='SR-4'],
+      [corridor='I-780'] {
+        [direction='EB'] {
+          line-offset: 5;
 
-      [zoom <= 10] {
-        ::outline {
-          [direction='SB'],
-          [direction='WB'] {
-            line-width: 2;
-            line-offset: 0;
-            line-color: #fff;
+          [zoom < 11] {
+            line-offset: 2;
+          }
+          [zoom = 12] {
+            line-offset: 5;
+          }
+          [zoom = 13] {
+            line-offset: 6;
+          }
+          [zoom = 14] {
+            line-offset: 7;
+          }
+        }
+        [direction='WB'] {
+          line-offset: 5;
+
+          [zoom < 11] {
+            line-offset: 2;
+          }
+          [zoom = 12] {
+            line-offset: 5;
+          }
+          [zoom = 13] {
+            line-offset: 6;
+          }
+          [zoom = 14] {
+            line-offset: 7;
           }
         }
       }
-    </script>
+
+      // These N/S lanes are in the correct direction but need
+      // better offsets
+      [corridor='SR-29'] {
+        [direction='SB'] {
+          line-offset: 5;
+
+          [zoom < 11] {
+            line-offset: 2;
+          }
+          [zoom = 12] {
+            line-offset: 5;
+          }
+          [zoom = 13] {
+            line-offset: 6;
+          }
+          [zoom = 14] {
+            line-offset: 7;
+          }
+        }
+        [direction='NB'] {
+          line-offset: -5;
+
+          [zoom < 11] {
+            line-offset: -2;
+          }
+          [zoom = 12] {
+            line-offset: -5;
+          }
+          [zoom = 13] {
+            line-offset: -6;
+          }
+          [zoom = 14] {
+            line-offset: -7;
+          }
+        }
+      }
+
+      // These N/S lanes are incorrectly offset in the base data
+      [corridor='SR-17'][endpoint1='Summit Road'][endpoint2='I-280'],
+      [corridor='SR-87'][endpoint1='SR-85'][endpoint2='US-101'],
+
+      // South Bay 101
+      [corridor='US-101'][endpoint1='I-280/I-680'][endpoint2='SR-84'],
+      [corridor='US-101'][endpoint1='SR-85'][endpoint2='I-280/I-680'],
+
+      // North Bay 101
+      [corridor='US-101'][endpoint1='SR-1/Veterans Boulevard'][endpoint2='SR-37'],
+
+      [corridor='I-880'][endpoint1='SR-92'][endpoint2='I-80'] {
+        [direction='SB'] {
+          line-offset: 5;
+
+          [zoom < 11] {
+            line-offset: 2;
+          }
+          [zoom = 12] {
+            line-offset: 5;
+          }
+          [zoom = 13] {
+            line-offset: 6;
+          }
+          [zoom = 14] {
+            line-offset: 7;
+          }
+        }
+        [direction='NB'] {
+          line-offset: 5;
+
+          [zoom < 11] {
+            line-offset: 2;
+          }
+          [zoom = 12] {
+            line-offset: 5;
+          }
+          [zoom = 13] {
+            line-offset: 6;
+          }
+          [zoom = 14] {
+            line-offset: 7;
+          }
+        }
+      }
+
+      // These N/S lanes are swapped and incorrectly offset
+      [corridor='US-101'][endpoint1='SR-37'][endpoint2='SR-116/Gravenstein Highway'],
+      [corridor='US-101'][endpoint1='SR-152'][endpoint2='SR-85'],
+
+      [corridor='SR-242'],
+
+      [corridor='I-280'][endpoint1='SR-92'][endpoint2='SR-1/Cabrillo Highway'],
+      [corridor='I-280'][endpoint1='SR-85'][endpoint2='SR-92'],
+      [corridor='I-280'][endpoint1='US-101'][endpoint2='SR-85'],
+
+      [corridor='I-680'][endpoint1='SR-24'][endpoint2='SR-4'],
+      [corridor='I-880'][endpoint1='SR-84'][endpoint2='SR-92'] {
+        [direction='SB'] {
+          line-offset: -5;
+
+          [zoom < 11] {
+            line-offset: -2;
+          }
+          [zoom = 12] {
+            line-offset: -5;
+          }
+          [zoom = 13] {
+            line-offset: -6;
+          }
+          [zoom = 14] {
+            line-offset: -7;
+          }
+        }
+        [direction='NB'] {
+          line-offset: 5;
+
+          [zoom < 11] {
+            line-offset: 2;
+          }
+          [zoom = 12] {
+            line-offset: 5;
+          }
+          [zoom = 13] {
+            line-offset: 6;
+          }
+          [zoom = 14] {
+            line-offset: 7;
+          }
+        }
+      }
+
+    } /* end #reliability_new */
+
+
+
+
+
+    #reliability_new [<%= time %> <= 2.735] {
+       line-color: #ec7429;
+    }
+    #reliability_new [<%= time %> <= 1.375] {
+       line-color: #ea9e77;
+    }
+    #reliability_new [<%= time %> <= 0.9875] {
+       line-color: #d9b305;
+    }
+    #reliability_new [<%= time %> <= 0.6025] {
+       line-color: #9dbf88;
+    }
+    #reliability_new [<%= time %> <= 0.24] {
+       line-color: #62a60a;
+    }
+
+
+    [zoom <= 10] {
+      ::outline {
+        [direction='SB'],
+        [direction='WB'] {
+          line-width: 2;
+          line-offset: 0;
+          line-color: #fff;
+        }
+      }
+    }
+
+    /*
+    #reliability_new[direction='SB'] {
+      line-color: red;
+    }
+    #reliability_new[direction='NB'] {
+      line-color: green;
+    }
+    #reliability_new[direction='EB'] {
+      line-color: yellow;
+    }
+    #reliability_new[direction='WB'] {
+      line-color: purple;
+    }
+    */
+  </script>
+
+    <!--
+    To select top AM & PM peaks, start with this SQL:
+    SELECT bti_pmpeak, corridor, direction, endpoint1, endpoint2 FROM reliability_new
+    where year = 2014
+    order by bti_pmpeak desc
+    limit 5
+    -->
 
 
     <!-- libraries -->
@@ -199,6 +457,6 @@
     <!-- From MTC server -->
     <script src="http://dev-mtc-vital-signs.pantheon.io/sites/all/themes/vitalsigns/js/colors.js"></script>
 
-    <script src="js/viz/reliability.js"></script>
+    <script src="js/viz/t9b.js"></script>
   </body>
 </html>

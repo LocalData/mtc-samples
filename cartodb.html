@@ -14,24 +14,43 @@
 
     <script type="text/javascript">
       window.onload = function() {
-        cartodb.createVis('map', 'http://mtc.cartodb.com/api/v2/viz/3c4a4858-dd38-11e4-a2a8-0e0c41326911/viz.json')
-          .done(function(vis, layers) {
-            // layer 0 is the base layer, layer 1 is cartodb layer
-            // when setInteraction is disabled featureOver is triggered
-            layers[1].setInteraction(true);
-            layers[1].on('featureClick', function(e, latlng, pos, data, layerNumber) {
-              cartodb.log.log(e, latlng, pos, data, layerNumber);
-            });
 
-            // you can get the native map to work with it
-            var map = vis.getNativeMap();
+        var map = L.map('map', {
+            center: [37.871593,-122.272747],
+            zoom: 9,
+            minZoom: 8,
+            fullscreen: true,
+            scrollWheelZoom: false
+        });
+        L.tileLayer('http://a.tiles.mapbox.com/v3/postcode.kh28fdpk/{z}/{x}/{y}.png').addTo(map);
 
-            // now, perform any operations you need, e.g. assuming map is a L.Map object:
-            // map.setZoom(3);
-            // map.panTo([50.5, 30.5]);
+        function layersLoaded(layers) {
+          var middleLayer = layers.getSubLayer(1);
+          middleLayer.set({
+            sql: "select * from speed_segments where direction='{EB}'",
+            cartocss: '#speed_segments { line-color: purple; line-width: 5 }'
           });
-      };
+        }
 
+        var congestion = cartodb.createLayer(map, {
+          user_name: 'localdata',
+          cartodb_logo: false,
+          type: 'cartodb',
+          sublayers: [{
+            sql: "SELECT * FROM speed_data_merged",
+            cartocss: '#speed_data_merged { line-color: red; line-width: 7 } '
+          }, {
+            sql: "SELECT * FROM speed_segments",
+            cartocss: '#speed_segments { line-color: green; line-width: 5 } '
+          }, {
+            sql: "select * from congestion",
+            cartocss: '#congestion { line-color: yellow; line-width: 3 } '
+          }]
+        })
+        .addTo(map)
+        .done(layersLoaded);
+
+      };
     </script>
 
 </head>

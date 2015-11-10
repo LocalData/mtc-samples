@@ -84,7 +84,7 @@
                 title: {
                     text: 'Historical Trend for Job Growth by Industry'
                 },
-                xAxis: {
+                xAxis: {q
                     categories: YEARNAMES
                 },
                 yAxis: {

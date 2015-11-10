@@ -24,7 +24,7 @@
         width: 80%;
       }
 
-      .highway-sign {
+      .hhighway-sign {
         paddding: 20px;
         background: #62A60A;
         border: 5px solid #fff;
@@ -57,70 +57,73 @@
   </head>
   <body>
 
-  <!--
-    <h3 id="map_title">
-      Congestion By Time of Day
-    </h3>
-    -->
-
-    <p>
-      Time: <div id="congestion-time-select"></div>
-    </p>
-
-    <div class="row">
-      <div class="col-lg-12" id="congestion-map-container">
-        <div id="legend"></div>
-        <div class="map" id="map-congestion"></div>
+    <div id="T7-B">
+      <div class="row">
+        <div class="map col-lg-10" id="mapt7b">&nbsp;</div>
+        <div class="col-lg-2" id="T7-B-info">
+            <h4 id="timesliderheading">9am</h4>
+            <input class="slider" id="T7-B-time-slider" value="18" />
+            <div class="corridor-info-header">
+              <p>Select a <strong style="color:#ec7429">congested corridor</strong> on the map for more information.</p>
+            </div>
+            <div class="corridor-info-text"></div>
+        </div>
       </div>
     </div>
 
+
     <script type="text/template" id="map-legend-template">
     <div class="highway-sign">
-    <h2><%= highway %> <%= longDirection %></h2>
-    <h2><%= location %></h2>
+      <h3><%= highway %> <%= longDirection %></h3>
+      <p><strong><%= location %></strong></p>
 
-    <%= delay_veh_hrs %> vehicle hours of congested delay
-    between <%= starttime %> and <%= endtime %>
+      <p><%= delay_veh_hrs %> vehicle hours of congested delay
+      between <%= starttime %> and <%= endtime %></p>
 
-    <%= rank %><%= rankSuffix %> most congested of 144 segments in the region
-    <div class="rank-gradient">
-      <div class="rank-marker" style="left: <%= rankPercent %>%"></div>
-    </div>
-
+      <p><%= rank %><%= rankSuffix %> most congested of 144 segments in the region
+      <div class="rank-gradient">
+        <div class="rank-marker" style="left: <%= rankPercent %>%"></div>
+      </div></p>
     </div>
     </script>
 
-    <script type="text/template" id="congestion-template">
-      /** simple visualization */
-      @offset11: 3;
-      @offset12: 3;
-      @offset13: 5;
-
+    <script type="text/template" id="congestion-far-template">
       @congested: #ec7429;
-      @congested-close: #ec7429;
-      @fast: #88b5c4;
-      @slow: #235365;
-      @road: @fast;
 
       #congestion {
         line-color: @congested;
-        line-offset: 4;
         line-cap: round;
         line-opacity: 1;
-        line-width: 5;
-        line-offset: 4;
+        line-width: 3;
+        line-offset: -3;
+
+        [zoom >= 11] {
+          line-width: 0;
+        }
+      }
+    </script>
+
+    <script type="text/template" id="congestion-template">
+      @congested: #ec7429;
+
+      #congestion {
+        line-color: @congested;
+        line-cap: round;
+        line-opacity: 1;
+        line-width: 0;
+        line-offset: 0;
 
         [zoom = 11] {
-          line-width: 5;
-            line-offset: 5;
+          line-width: 10;
+            line-offset: -6;
         }
         [zoom = 12] {
-          line-width: 3;
-              line-offset: @offset12;
+          line-width: 12;
+              line-offset: -6;
         }
         [zoom >= 13] {
-          line-width: 4;
-              line-offset: @offset13;
+          line-width: 30;
+              line-offset: 0;
         }
       }
     </script>
@@ -164,27 +167,28 @@
         line-width: 6;
         line-opacity: 1;
 
-        line-offset: 4;
+        line-offset: -4;
         line-join: miter;
         line-cap: round;
 
         [zoom < 11] {
-          line-width: 4;
+          line-width: 3;
+          line-offset: -3
         }
 
         [zoom = 12] {
           line-width: 8;
-          line-offset: 4;
+          line-offset: -4;
         }
 
         [zoom = 13] {
           line-width: 10;
-          line-offset: 5;
+          line-offset: -5;
         }
 
         [zoom = 14] {
           line-width: 12;
-          line-offset: 6;
+          line-offset: -6;
         }
 
         ::outline {
@@ -242,6 +246,6 @@
     <!-- From MTC server -->
     <script src="http://dev-mtc-vital-signs.pantheon.io/sites/all/themes/vitalsigns/js/colors.js"></script>
 
-    <script src="js/viz/congestion.js"></script>
+    <script src="js/viz/t7b.js"></script>
   </body>
 </html>
