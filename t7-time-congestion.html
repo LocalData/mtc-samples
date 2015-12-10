@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>T6 Regional Volume</title>
+    <title>T7 Congestion</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <link href="css/app.css" rel="stylesheet" media="screen">
@@ -26,14 +26,9 @@
   </head>
   <body>
 
-    <div id="T6">
-      <h3 class="chart-title">Historical Trend for Traffic Volumes at Regional Gateways</h3>
-      <div id="T1-T2-B-map">
-        <div id="t6aCountyCombo">&nbsp;</div>
-        <div id="t6aHaloCountyCombo">&nbsp;</div>
-      </div>
-      <div id="T6-A-chart" style="width:100%;height:85%">&nbsp;</div>
-    </div>
+    <div id="T7-A"><h3 class="chart-title">Historical Trend for Time Spent in Congestion - Bay Area</h3><div id="T7-A-chart" style="width:100%;height:85%">&nbsp;</div></div>
+
+    <div id="T7-C"><h3 class="chart-title">Metro Comparison for 2011 Time Spent in Congestion</h3><div id="T7-C-chart" style="width:100%;height:85%">&nbsp;</div></div>
 
     <!-- libraries -->
     <script src="http://code.jquery.com/jquery.js"></script>
@@ -44,6 +39,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.5.0/lodash.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bluebird/2.9.13/bluebird.min.js"></script>
     <script src="http://code.highcharts.com/highcharts.js"></script>
+    <script src="http://code.highcharts.com/modules/exporting.js"></script>
+    <script src="http://code.highcharts.com/modules/offline-exporting.js"></script>
 
 
     <!-- From MTC server -->
@@ -51,6 +48,7 @@
     <script src="http://dev-mtc-vital-signs.pantheon.io/sites/all/themes/vitalsigns/js/colors.js"></script>
     <script src="http://dev-mtc-vital-signs.pantheon.io/sites/all/themes/vitalsigns/js/science.v1.min.js"></script>
 
-    <script src="js/viz/t6.js"></script>
+    <script src="js/viz/t7a.js"></script>
+    <script src="js/viz/t7c.js"></script>
   </body>
 </html>

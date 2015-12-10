@@ -1,21 +1,70 @@
- (function($, Promise, L, _) {
-    var currentVariable = "OverallTime_Est"
-    var homeWork = "home"
-    var countyData, countyDataWork, cityData, cityDataWork, tractData, regionData
+/*globals
+jQuery, L, geocities, allBlue, allOrange, allGreen, allRed, altColors, Highcharts, turf, cartodb,
+regionPromise, countyPromise, cityPromise, _
+*/
+
+/*
+T1 & T3 are Home
+T2 & T4 are Work
+
+T3: Home
+T4: Work
+http://vitalsignsvs2.elasticbeanstalk.com/api/t3/region
+http://vitalsignsvs2.elasticbeanstalk.com/api/t3/city
+http://vitalsignsvs2.elasticbeanstalk.com/api/t3/tract
+http://vitalsignsvs2.elasticbeanstalk.com/api/t4/city
+*/
+// Get the city data
+// Get the tract data
+// Show tract geodata the right zoom
+// Zoom out at right levels
+// Load the graphs and charts from existing data.
+
+/*
+
+        var cities = _.uniq(_.pluck(data, 'City'));
+        t3t4bcitydata = {};
+        _.each(cities, function(city) {
+            if t3t4bcitydata[city] == undefined {
+                t3t4bcitydata[city] = {};
+            }
+
+            _.each(fieldToModeMapping, function(mode, key) {
+                var datapoint = _.find(data, {
+                    City: city,
+                    Mode: mode
+                }).Time;
+                t3t4bcitydata[city][key] = datapoint;
+            });
+        });
+
+ */
+
+(function($, Promise, L, _) {
+    var currentVariable = "OverallTime_Est";
+    var homeWork = "home";
+    var countyData, countyDataWork, cityData, cityDataWork, tractData, regionData;
+
+    var fieldToModeMapping = {
+        OverallTime_Est: 'Overall',
+        DATime_Est: 'Drive Alone',
+        CPTime_Est: 'Carpool',
+        PTTime_Est: 'Public Transit'
+    };
 
     var variables = [
       'OverallTime_Est',
       'DATime_Est',
       'CPTime_Est',
       'PTTime_Est'
-      ];
+    ];
 
     var variablesWork = [
       'Workers_Est',
       'DAWorkers_Est',
       'CPWorkers_Est',
       'PTWorkers_Est'
-      ];
+    ];
 
     var ranges = {};
     var rangesWork = {};
@@ -25,7 +74,7 @@
         '#6baed6',
         '#3182bd',
         '#08519c'
-        ];
+    ];
 
     function get(url) {
       return Promise.resolve($.ajax({
@@ -44,9 +93,10 @@
       'DAWorkers_Est': {title: 'Single Driver Commute', hues: allRed},
       'CPWorkers_Est': {title: 'Carpool Commute Time', hues: allOrange},
       'PTWorkers_Est': {title: 'Transit Commute Time', hues: allBlue }
-    }
+    };
 
-    for (var i = 0; i < variables.length; i++) {
+    var i;
+    for (i = 0; i < variables.length; i++) {
       ranges[variables[i]] = {};
     }
 
@@ -56,22 +106,32 @@
         infoControl: true,
         attributionControl: false
     });
-   map.on('load', function() {
-    countyLayer.setFilter(function() { return true; })
-  })
+
+    // Add zoom prompt
+    $('#map').append('<div class="zoom-in-prompt">Zoom in to see city-level data</div>');
+    //$('.zoom-in-prompt').hide();
+
+    map.on('zoomend', function() {
+      console.log(map.getZoom());
+      if(map.getZoom() >= 10) {
+        $('.zoom-in-prompt').hide();
+      } else {
+        $('.zoom-in-prompt').show();
+      }
+    });
 
     var legendControl = new L.mapbox.legendControl();
     L.control.scale().addTo(map);
 
     legendControl.onAdd = function (map) {
-          var div = L.DomUtil.create('div', 'info legend')
-          $(div).addClass("col-lg-12")
-          $(div).append("<h5>Drive Alone Percentage</h5>")
-            return div;
-        }
-        legendControl.addTo(map);
+      var div = L.DomUtil.create('div', 'info legend');
+      $(div).addClass("col-lg-12");
+      $(div).append("<h5>Drive Alone Percentage</h5>");
+      return div;
+    };
+    legendControl.addTo(map);
 
-    var basemap = L.mapbox.tileLayer('postcode.kh28fdpk').addTo(map)
+    var basemap = L.mapbox.tileLayer('postcode.kh28fdpk').addTo(map);
     // The visible tile layer
 
     var flatCities = flatten(geocities);
@@ -81,7 +141,7 @@
         })
         .on('click', function(e) {
           barChart(cityData, "Year", variables, e.layer.feature.properties["City"], "T3-T4-B-chart", 2013, "City", e.layer.feature.properties["City"] )
-         })
+        })
         .addTo(map);
 
     var cityLayerWork = L.mapbox.featureLayer(flatCities)
@@ -95,23 +155,6 @@
 
     var flatCounties = flatten(geocounties);
 
-    var countyLayer = L.mapbox.featureLayer(flatCounties)
-        .on('mouseover', function(e) {
-        })
-        .on('click', function(e) {
-        barChart(countyData, "Year", variables, e.layer.feature.properties["County"] + " County", "T3-T4-B-chart", 2013, "County", e.layer.feature.properties["County"] )
-        })
-        .addTo(map);
-
-
-     var countyLayerWork = L.mapbox.featureLayer(flatCounties)
-        .on('mouseover', function(e) {
-        })
-        .on('click', function(e) {
-        barChart(countyDataWork, "Year", variables, e.layer.feature.properties["County"] + " County", "T3-T4-B-chart", 2013, "County", e.layer.feature.properties["County"] )
-        })
-        .addTo(map);
-
     var flatTracts = flatten(tracts)
     var tractLayer = L.mapbox.featureLayer(flatTracts)
         .on('click', function(e) {
@@ -119,75 +162,117 @@
         })
         .addTo(map);
 
+
+    function convertNewDataFormat(data, geography) {
+      var geographies = _.uniq(_.pluck(data, geography));
+      formattedData = {};
+      _.each(geographies, function(geo) {
+        if (formattedData[geo] == undefined) {
+          formattedData[geo] = {};
+
+          // Need to strip whitespace from geo names.
+          formattedData[geo][geography] = _.trim(geo);
+          formattedData[geo].Year = 2014;
+        }
+
+        _.each(fieldToModeMapping, function(mode, key) {
+          var searchOpts = {};
+          searchOpts[geography] = geo;
+          searchOpts.Mode = mode;
+          var results = _.find(data, searchOpts);
+          if (_.has(results, 'Time')) {
+            var datapoint = results.Time;
+            formattedData[geo][key] = datapoint;
+          } else {
+            formattedData[geo][key] = null;
+          }
+        });
+      });
+
+      console.log("Converted data to new format", _.values(formattedData));
+
+      return _.values(formattedData);
+    }
+
     Promise.join(
+      /*
+      T1 & T3 are Home
+      T2 & T4 are Work
+
+      T3: Home
+      T4: Work
+      http://vitalsignsvs2.elasticbeanstalk.com/api/t3/region
+      http://vitalsignsvs2.elasticbeanstalk.com/api/t3/city
+      http://vitalsignsvs2.elasticbeanstalk.com/api/t3/tract
+      http://vitalsignsvs2.elasticbeanstalk.com/api/t4/city
+      */
+
+      // get('http://vitalsigns-production.elasticbeanstalk.com/t3t4/cities'),
+      // get('http://vitalsigns-production.elasticbeanstalk.com/t3t4/t4/cities'),
+      // get('http://vitalsigns-production.elasticbeanstalk.com/t3t4/tracts'),
+      // get('http://vitalsigns-production.elasticbeanstalk.com/t3t4/region'),
+
       get('http://vitalsigns-production.elasticbeanstalk.com/t3t4/cities'),
-      get('http://vitalsigns-production.elasticbeanstalk.com/t3t4/t4/cities'),
-      get('http://vitalsigns-production.elasticbeanstalk.com/t3t4/counties'),
-      get('http://vitalsigns-production.elasticbeanstalk.com/t3t4/t4/counties'),
-      get('http://vitalsigns-production.elasticbeanstalk.com/t3t4/tracts'),
-      get('http://vitalsigns-production.elasticbeanstalk.com/t3t4/region'),
-      function (city, cityWork, county, countyWork, tract, region) {
-        joinData(city, cityLayer, "City", "2013");
+      get('http://vitalsignsvs2.elasticbeanstalk.com/api/t3/city'),
+      get('http://vitalsignsvs2.elasticbeanstalk.com/api/t4/city'),
+      get('http://vitalsignsvs2.elasticbeanstalk.com/api/t3/tract'),
+      get('http://vitalsignsvs2.elasticbeanstalk.com/api/t3/region'),
+      function (city, cityNew, cityWork, tract, region) {
+        cityNew = convertNewDataFormat(cityNew, "City");
+
+        joinData(city, cityLayer, "City", "2014");
         cityData = city;
-        joinData(cityWork, cityLayerWork, "City", "2013");
+        console.log("New joined data", city, cityLayer);
+
+        joinData(cityWork, cityLayerWork, "City", "2014");
         cityDataWork = cityWork;
-        joinData(county, countyLayer, "County", "2013");
-        countyData = county;
-        joinData(countyWork, countyLayerWork, "County", "2013");
-        countyDataWork = countyWork;
-        joinData(tract, tractLayer, "Id2", "2013");
+
+
+        joinData(tract, tractLayer, "Id2", "2014");
+
         tractData = tract;
         regionData = region;
       }
     ).then(function () {
 
-      barChart(regionData, "Year", variables, "Region", "T3-T4-B-chart", 2013, "Region", "Bay Area" )
+      barChart(regionData, "Year", variables, "Region", "T3-T4-B-chart", 2014, "Region", "Bay Area" )
 
       map.setView([37.7833, -122.4167], 9)
 
       map.on('viewreset', function() {
         if ((map.getZoom() === 10 || map.getZoom() === 11 || map.getZoom() === 12)) {
           if(homeWork == "home") {
-            cityLayer.setFilter(function() { return true; })
-            cityLayerWork.setFilter(function() { return false; })
+            cityLayer.setFilter(function() { return true; });
+            cityLayerWork.setFilter(function() { return false; });
             setVariable(currentVariable, cityLayer);
             sortTopTen(cityData, currentVariable);
             sortBottomFive(cityData, currentVariable);
           } else {
-            cityLayerWork.setFilter(function() { return true; })
-            cityLayer.setFilter(function() { return false; })
+            cityLayerWork.setFilter(function() { return true; });
+            cityLayer.setFilter(function() { return false; });
             setVariable(currentVariable, cityLayerWork);
             sortTopTen(cityDataWork, currentVariable);
             sortBottomFive(cityDataWork, currentVariable);
           }
-          tractLayer.setFilter(function() { return false; })
-          countyLayer.setFilter(function() { return false; })
-          countyLayerWork.setFilter(function() { return false; })
+          tractLayer.setFilter(function() { return false; });
         } else if (map.getZoom() >= 13) {
-          tractLayer.setFilter(function() { return true; })
+          tractLayer.setFilter(function() { return true; });
           setVariable(currentVariable, tractLayer);
-          countyLayer.setFilter(function() { return false; })
-          cityLayer.setFilter(function() { return false; })
-          cityLayerWork.setFilter(function() { return false; })
+          cityLayer.setFilter(function() { return false; });
+          cityLayerWork.setFilter(function() { return false; });
           sortTopTen(cityData, currentVariable);
           sortBottomFive(cityData, currentVariable);
         } else {
           if(homeWork == "home") {
-            countyLayer.setFilter(function() { return true; })
-            countyLayerWork.setFilter(function() { return false; })
-            setVariable(currentVariable, countyLayer);
-            tractLayer.setFilter(function() { return false; })
-            cityLayer.setFilter(function() { return false; })
-            cityLayerWork.setFilter(function() { return false; })
+            tractLayer.setFilter(function() { return false; });
+            cityLayer.setFilter(function() { return false; });
+            cityLayerWork.setFilter(function() { return false; });
             sortTopTen(cityData, currentVariable);
             sortBottomFive(cityData, currentVariable);
           } else {
-            countyLayer.setFilter(function() { return false; })
-            countyLayerWork.setFilter(function() { return true; })
-            setVariable(currentVariable, countyLayerWork);
-            tractLayer.setFilter(function() { return false; })
-            cityLayer.setFilter(function() { return false; })
-            cityLayerWork.setFilter(function() { return false; })
+            tractLayer.setFilter(function() { return false; });
+            cityLayer.setFilter(function() { return false; });
+            cityLayerWork.setFilter(function() { return false; });
             sortTopTen(cityDataWork, currentVariable);
             sortBottomFive(cityDataWork, currentVariable);
           }
@@ -213,23 +298,23 @@
       });
 
       $("#transitButton").click(function() {
-        zoomFilter("PTTime_Est")
-        $(this).addClass("active")
+        zoomFilter("PTTime_Est");
+        $(this).addClass("active");
         $(this).siblings('a.button-mode').removeClass('active');
       });
 
       $("#homeButton").click(function() {
-        $(this).addClass("active")
-        $("#workButton ").removeClass("active")
-        homeWork = "home"
-        zoomFilter(currentVariable)
+        $(this).addClass("active");
+        $("#workButton ").removeClass("active");
+        homeWork = "home";
+        zoomFilter(currentVariable);
       });
 
       $("#workButton").click(function() {
-        $(this).addClass("active")
-        $("#homeButton ").removeClass("active")
-        homeWork = "work"
-        zoomFilter(currentVariable)
+        $(this).addClass("active");
+        $("#homeButton ").removeClass("active");
+        homeWork = "work";
+        zoomFilter(currentVariable);
       });
 
       // Kick things off
@@ -262,7 +347,7 @@
           }
       }
 
-      modes = variables
+      modes = variables;
 
       for (var j = 0; j < modes.length; j++) {
         var n = modes[j];
@@ -296,15 +381,15 @@
       dataLayer.eachLayer(function(layer) {
         var q
         if (layer.feature.properties[name] > ranges[name][2]) {
-          q = 3
+          q = 3;
         } else if(layer.feature.properties[name] > ranges[name][1]) {
-          q = 2
+          q = 2;
         } else if(layer.feature.properties[name] > ranges[name][0]) {
-          q = 1
+          q = 1;
         } else if(layer.feature.properties[name] < ranges[name][0]) {
-          q = 0
+          q = 0;
         } else {
-          q = -1
+          q = -1;
         }
         if(q > -1) {
           layer.setStyle({
@@ -317,12 +402,13 @@
             fillColor: '#ffffff',
             fillOpacity: 0,
             weight: 0
-        })
+          });
         }
       });
     }
 
     function zoomFilter(mode) {
+
       if ((map.getZoom() === 10 || map.getZoom() === 11 || map.getZoom() === 12)) {
         if(homeWork == "home") {
           cityLayer.setFilter(function() { return true; })
@@ -338,30 +424,21 @@
           sortBottomFive(cityDataWork, mode);
         }
         tractLayer.setFilter(function() { return false; })
-        countyLayer.setFilter(function() { return false; })
-        countyLayerWork.setFilter(function() { return false; })
       } else if (map.getZoom() >= 13) {
         tractLayer.setFilter(function() { return true; })
         setVariable(mode, tractLayer);
-        countyLayer.setFilter(function() { return false; })
         cityLayer.setFilter(function() { return false; })
         cityLayerWork.setFilter(function() { return false; })
         sortTopTen(cityData, mode);
         sortBottomFive(cityData, mode);
       } else {
         if(homeWork == "home") {
-          countyLayer.setFilter(function() { return true; })
-          countyLayerWork.setFilter(function() { return false; })
-          setVariable(mode, countyLayer);
           tractLayer.setFilter(function() { return false; })
           cityLayer.setFilter(function() { return false; })
           cityLayerWork.setFilter(function() { return false; })
           sortTopTen(cityData, mode);
           sortBottomFive(cityData, mode);
         } else {
-          countyLayer.setFilter(function() { return false; })
-          countyLayerWork.setFilter(function() { return true; })
-          setVariable(mode, countyLayerWork);
           tractLayer.setFilter(function() { return false; })
           cityLayer.setFilter(function() { return false; })
           cityLayerWork.setFilter(function() { return false; })
@@ -472,20 +549,20 @@ function barChart(data, seriesName, seriesData, title, container, year, searchVa
         text: 'Minutes'
       }
      },
-     xAxis: {
-          categories: []
-      },
+    xAxis: {
+      categories: []
+    },
+    title: {
+        text: ''
+    },
 
-          title: {
-              text: ''
-          },
+    tooltip: {
+      shared: true,
+      crosshairs: false,
+      pointFormat: '<b>{point.y:.1f} minutes</b>'
+    }
+  }
 
-          tooltip: {
-              shared: true,
-              crosshairs: false,
-              pointFormat: '<b>{point.y:.1f} minutes</b>'
-          }
-      }
     yaxis = [];
     dataArray = []
     jQuery.each(seriesData, function(key, name) {

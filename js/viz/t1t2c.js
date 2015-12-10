@@ -11,10 +11,22 @@
     var year = 2012;
 (function($) {
     $(function() {
+        var $chartContainer = $('#T1-T2-C');
+        $chartContainer.prepend('<h3 class="chart-title"></h3>');
+        var $chartTitle = $chartContainer.find('h3.chart-title');
+
+        // Set the default highcharts separator
+        Highcharts.setOptions({
+            lang: {
+                decimalPoint: '.',
+                thousandsSep: ','
+            }
+        });
+
         //REQUEST DATA FROM SERVER
         $.ajax({
             dataType: "json",
-            url: "http://vitalsigns-production.elasticbeanstalk.com/t1t2/t1/metros",
+            url: "http://vitalsignsvs2.elasticbeanstalk.com/api/t1/metro",
             //data: data,
             async: false,
             success: successMetroDatat1a
@@ -23,27 +35,85 @@
         function successMetroDatat1a(data) {
             t1aMetroData = data;
         }
-        t1aMetroData = sortData(t1aMetroData, "DriveAlone_Est")
-        for (var key in t1aMetroData) {
-            if (t1aMetroData[key].Year === 2012) {
-                regionnames.push(t1aMetroData[key].Name);
-                drivealone.push(t1aMetroData[key].DriveAlone_Est);
-                carpool.push(t1aMetroData[key].Carpool_Est);
-                publictransit.push(t1aMetroData[key].Transit_Est);
-                walk.push(t1aMetroData[key].Walk_Est);
-                bike.push(t1aMetroData[key].Bike_Est);
-                other.push(t1aMetroData[key].Other_Est);
-                workathome.push(t1aMetroData[key].Telework_Est);
-            }
+
+        regionnames = _(t1aMetroData)
+        .filter('Mode', 'Drive Alone')
+        .sortBy('Share')
+        .pluck('Metro')
+        .value();
+        
+        var order = {};
+        _.forEach(regionnames, function (name, index) {
+          order[name] = index;
+        });
+
+        function getOrder(item) {
+          return order[item.Metro];
+        }
+        
+        function times100(x) {
+          return x * 100;
         }
 
+        drivealone = _(t1aMetroData)
+        .filter('Mode', 'Drive Alone')
+        .sortBy(getOrder)
+        .pluck('Share')
+        .map(times100)
+        .value();
+
+        carpool = _(t1aMetroData)
+        .filter('Mode', 'Carpool')
+        .sortBy(getOrder)
+        .pluck('Share')
+        .map(times100)
+        .value();
+
+        publictransit = _(t1aMetroData)
+        .filter('Mode', 'Public Transit')
+        .sortBy(getOrder)
+        .pluck('Share')
+        .map(times100)
+        .value();
+
+        walk = _(t1aMetroData)
+        .filter('Mode', 'Walk')
+        .sortBy(getOrder)
+        .pluck('Share')
+        .map(times100)
+        .value();
+
+        bike = _(t1aMetroData)
+        .filter('Mode', 'Bike')
+        .sortBy(getOrder)
+        .pluck('Share')
+        .map(times100)
+        .value();
+
+        other = _(t1aMetroData)
+        .filter('Mode', 'Other')
+        .sortBy(getOrder)
+        .pluck('Share')
+        .map(times100)
+        .value();
+
+        workathome = _(t1aMetroData)
+        .filter('Mode', 'Telework')
+        .sortBy(getOrder)
+        .pluck('Share')
+        .map(times100)
+        .value();
+        
         //CREATE CHART
+        $chartTitle.html('Metro Comparison for 2014 Commute Mode Choice');
         var t1t2cChart = $('#T1-T2-C-chart').highcharts({
             chart: {
-                type: 'bar'
+                type: 'bar',
+                spacingTop: 0
             },
             title: {
-                text: 'Metro Comparison for 2012 Commute Mode Choice'
+                text: '&nbsp;',
+                useHTML: true
             },
             xAxis: {
                 categories: regionnames,

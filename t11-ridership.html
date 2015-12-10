@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>T11-12: Ridership</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link href="css/app.css" rel="stylesheet" media="screen">
+
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
+    <link href="http://cdn.kendostatic.com/2014.1.528/styles/kendo.common.min.css" rel="stylesheet" />
+    <link href="http://cdn.kendostatic.com/2014.1.528/styles/kendo.default.min.css" rel="stylesheet" />
+    <link href="http://cdn.kendostatic.com/2014.1.528/styles/kendo.dataviz.min.css" rel="stylesheet" />
+    <link href="http://cdn.kendostatic.com/2014.1.528/styles/kendo.dataviz.default.min.css" rel="stylesheet" />
+    <link type="text/css" rel="stylesheet" href="https://api.tiles.mapbox.com/mapbox.js/v2.1.4/mapbox.css" media="all" />
+
+    <style type="text/css">
+      #map {
+        height: 300px;
+        width: 500px;
+      }
+    </style>
+  </head>
+  <body>
+
+<div id="T11-T12-A">
+  <div class="row">
+    <div class="col-md-12">
+      <h3 class="chart-title">
+        Historical Trend for Daily Transit Ridership
+      </h3>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12">
+      <div class="btn-group btn-group-justified"><a class="btn btn-primary btn-fix active" id="totalButtont11t12a">Total</a> <a class="btn btn-primary btn-fix" id="percapitaTotalButtont11t12a">Total Per Capita</a> <a class="btn btn-primary btn-fix" id="modeButtont11t12a">Total by Mode</a> <a class="btn btn-primary btn-fix" id="percapitaModeButtont11t12a">Total Mode Per Capita</a></div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12">
+      <div id="T11-T12-A-chart">&nbsp;</div>
+    </div>
+  </div>
+</div>
+
+    <div id="T11-T12-A-system">
+      <div class="row">
+        <div class="col-md-12">
+            <h3 class="chart-title">
+              Historical Trend for Daily Transit Ridership
+            </h3>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <div class="btn-group btn-group-justified"><a class="btn btn-primary btn-fix active" id="totalButtont11t12aSystem">Total by Operator</a> <a class="btn btn-primary btn-fix" id="percentButtont11t12aSystem">Total Percent Change</a> <a class="btn btn-primary btn-fix" id="percapitaButtont11t12aSystem">Per Capita by Operator</a> <a class="btn btn-primary btn-fix" id="percapitaPercentButtont11t12aSystem">Per Capita Percent Change</a></div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <div id="T11-T12-A-system-chart">&nbsp;</div>
+        </div>
+      </div>
+    </div>
+
+
+    <div id="T11-T12-B">
+            <h3 class="chart-title">
+              Metro Comparison for Daily Transit Ridership
+            </h3>
+          <div class="btn-group btn-group-justified"><a class="btn btn-primary btn-fix active" id="totalButtont11t12b">Total</a> <a class="btn btn-primary btn-fix" id="percentTotalButtont11t12b">Total Percent Change</a> <a class="btn btn-primary btn-fix" id="percapitaButtont11t12b">Per Capita</a> <a class="btn btn-primary btn-fix" id="percentPercapitaButtont11t12b">Per Capita Percent Change</a></div>
+          <div id="T11-T12-B-chart" style="width:100%;height:85%">&nbsp;</div>
+    </div>
+
+
+    <!-- libraries -->
+    <script src="http://code.jquery.com/jquery.js"></script>
+    <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+    <!--<script src="http://libs.cartocdn.com/cartodb.js/v3/3.13/cartodb.js"></script>-->
+    <script type="text/javascript" src="https://api.tiles.mapbox.com/mapbox.js/v2.1.4/mapbox.js"></script>
+
+    <script src="http://dev-mtc-vital-signs.pantheon.io/sites/all/themes/vitalsigns/js/leaflet.label.js"></script>
+    <!--<script src="http://cdn-geoweb.s3.amazonaws.com/esri-leaflet/1.0.0-rc.3/esri-leaflet.js"></script>-->
+
+        <script src="http://dev-mtc-vital-signs.pantheon.io/sites/all/themes/vitalsigns/js/esri-leaflet.js"></script>
+
+    <script src="http://cdn.kendostatic.com/2014.1.528/js/kendo.all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.5.0/lodash.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bluebird/2.9.13/bluebird.min.js"></script>
+    <script src="http://code.highcharts.com/highcharts.js"></script>
+
+
+    <!-- From MTC server -->
+    <script src="http://dev-mtc-vital-signs.pantheon.io/sites/all/themes/vitalsigns/js/geocities.js"></script>
+    <script src="http://dev-mtc-vital-signs.pantheon.io/sites/all/themes/vitalsigns/js/geocounties.js"></script>
+    <script src="http://dev-mtc-vital-signs.pantheon.io/sites/all/themes/vitalsigns/js/colors.js"></script>
+    <script src="http://dev-mtc-vital-signs.pantheon.io/sites/all/themes/vitalsigns/js/science.v1.min.js"></script>
+
+    <script src="http://dev-mtc-vital-signs.pantheon.io/sites/all/themes/vitalsigns/js/select2.min.js"></script>
+    <link type="text/css" rel="stylesheet" href="http://dev-mtc-vital-signs.pantheon.io/sites/all/themes/vitalsigns/stylesheets/select2.css" media="all" />
+
+
+    <script src="js/viz/tracts.js"></script>
+    <script src="js/viz/t11t12a.js"></script>
+    <script src="js/viz/t11t12a-system.js"></script>
+    <script src="js/viz/t11t12b.js"></script>
+
+  </body>
+</html>

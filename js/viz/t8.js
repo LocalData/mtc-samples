@@ -70,7 +70,7 @@ regionPromise, countyPromise: true
             s += '<tr><td><strong style="color:' + p.series.color + '">';
             s += p.series.name + ':';
             s += '</strong></td><td> <strong>';
-            s += p.y + '%';
+            s += p.y.toFixed(1) + '%';
             s += '</strong></tr>';
           });
           s += '</table>';
@@ -81,8 +81,11 @@ regionPromise, countyPromise: true
     };
 
     $('#T8-chart').highcharts({
+      chart: {
+        marginTop: 40
+      },
       title: {
-        text: '' // 'Historical Trend for Share of Miles Traveled in Congestion'
+        text: ''
       },
       colors: allBlue,
       xAxis: {
@@ -158,7 +161,11 @@ regionPromise, countyPromise: true
     // Format the county data
     countyData = countyDataRaw[0];
     for (i = 0; i < countyData.length; i++) {
-      countyData[i][FOCUS_KEY] = Number((countyData[i][FOCUS_KEY] * 100).toFixed(1));
+      if (countyData[i][FOCUS_KEY] === null) {
+        countyData[i][FOCUS_KEY] = null;
+      } else {
+        countyData[i][FOCUS_KEY] = Number((countyData[i][FOCUS_KEY] * 100).toFixed(1));
+      }
     }
 
     setup();
@@ -166,11 +173,11 @@ regionPromise, countyPromise: true
 
   var regionPromise = $.ajax({
       dataType: "json",
-      url: "http://vitalsigns-production.elasticbeanstalk.com/t8/region"
+      url: "http://vitalsignsvs2.elasticbeanstalk.com/api/t8/region"
   });
   var countyPromise = $.ajax({
       dataType: "json",
-      url: "http://vitalsigns-production.elasticbeanstalk.com/t8/counties"
+      url: "http://vitalsignsvs2.elasticbeanstalk.com/api/t8/county"
   });
 
   $.when(regionPromise, countyPromise).done(prepData);

@@ -8,6 +8,16 @@ var mode = "OverallTime_Est";
 
 (function($) {
   $(function() {
+    $('#T3-T4-C').prepend('<h3 class="chart-title">Metro Comparison for 2012 Commute Time</h3>');
+
+    // Set the default highcharts separator
+    Highcharts.setOptions({
+        lang: {
+            decimalPoint: '.',
+            thousandsSep: ','
+        }
+    });
+
     //ON SELECT FUNCTION FOR COMBOBOX T3-T4-C
     function ont3t4cSelect(e) {
        // console.log(e);
@@ -91,7 +101,8 @@ function stackedChart(dataUrl, seriesName, seriesData) {
           enabled: false
         },
         title: {
-              text: 'Metro Comparison for 2012 Commute Time'
+              text: '&nbsp;',
+              useHTML: true
           },
 
           tooltip: {

@@ -43,17 +43,21 @@
     function manageLayers() {
       var zoomLevel = map.getZoom();
       if (zoomLevel >= 12) {
+        $('.zoom-in-prompt').hide();
         map.removeLayer(cityLayer);
         streetLayer.addTo(map);
         gridLayer.addTo(map);
      } else {
       if (cityLayer) {
+        $('.zoom-in-prompt').show();
         map.removeLayer(streetLayer);
         map.removeLayer(gridLayer);
         map.addLayer(cityLayer);
        }
      }
     }
+
+    $('#map').append('<div class="zoom-in-prompt">Zoom in to see individual street segments</div>');
 
     map.on({
         zoomend: manageLayers

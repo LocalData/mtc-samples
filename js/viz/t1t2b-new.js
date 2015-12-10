@@ -1,26 +1,27 @@
- /* globals L, Highcharts, science,
-    allRed, allOrange, allBlue, allGreen, allYellow, allPurple, allGray */
+ /*globals L, Highcharts, science, allRed, allOrange, allBlue, allGreen, allYellow, allPurple, allGray */
  (function($, _) {
-    var currentVariable = 'DriveAlone_Est'
-    var homeWork = "home"
-    var tractData, cityData, cityDataWork, regionData
-    var variables = [
-      'DriveAlone_Est',
-      'Carpool_Est',
-      'Transit_Est',
-      'Walk_Est',
-      'Bike_Est',
-      'Telework_Est',
-      'Other_Est'];
+  var currentVariable = 'DriveAlone_Est';
+  var homeWork = "home";
+  var tractData, cityData, cityDataWork, regionData;
+  var variables = [
+    'DriveAlone_Est',
+    'Carpool_Est',
+    'Transit_Est',
+    'Walk_Est',
+    'Bike_Est',
+    'Telework_Est',
+    'Other_Est'
+  ];
 
-    var ranges = {};
+  var ranges = {};
 
-    var hues = [
-        '#bdd7e7',
-        '#6baed6',
-        '#3182bd',
-        '#08519c'
-        ];
+  var hues = [
+    '#bdd7e7',
+    '#6baed6',
+    '#3182bd',
+    '#08519c'
+  ];
+
   $(function() {
     // Set the default highcharts separator
     Highcharts.setOptions({
@@ -38,7 +39,7 @@
       'Bike_Est': {title: 'Bike', hues: allYellow},
       'Telework_Est': {title: 'Telecommute', hues: allPurple},
       'Other_Est': {title: 'Other', hues: allGray}
-    }
+    };
 
     for (var i = 0; i < variables.length; i++) {
       ranges[variables[i]] = {};
@@ -194,13 +195,39 @@
     $.ajax({
       dataType: "json",
       url: "http://vitalsigns-production.elasticbeanstalk.com/t1t2/t1/region",
+      // Was: http://vitalsigns-production.elasticbeanstalk.com/t1t2/t1/region
       async: false,
       success: function(data) {
-        regionData = data
+        // Process the region data into the new format.
+        // DriveTot_Est: 69.9,
+        // DriveAlone_Est: null,
+        // Carpool_Est: null,
+        // Transit_Est: 15.5,
+        // Walk_Est: 7.8,
+        // Other_w_Bike_Est: 2.2,
+        // Bike_Est: null,
+        // Other_Est: null,
+        // Telework_Est: 5,
+
+        var formattedData = {};
+
+        // We only need the 2014 data here.
+        data = _.where(data, { Year: 2014 });
+        console.log("Using region data", 2014);
+        var regionData = data[0];
+        regionData.DriveTot_Est = _.find(data, { });
+        regionData.DriveAlone_Est =  _.find(data, { Mode: "Auto"}).Share;
+        regionData.Carpool_Est = ;
+        regionData.Transit_Est =  _.find(data, { Mode: "Public Transit"}).Share;
+        regionData.Walk_Est =  _.find(data, { Mode: "Walk"}).Share;
+        regionData.Other_w_Bike_Est = ;
+        regionData.Bike_Est = ;
+        regionData.Other_Est = ;
+        regionData.Telework_Est = _.find(data, { Mode: "Telecommute"}).Share;
       }
     });
 
-    pieChart(regionData, "Year", variables, "Region", "T1-T2-B-chart", 2013, "Residence_Geo", "Bay Area" )
+    pieChart(regionData, "Year", variables, "Region", "T1-T2-B-chart", 2014, "Region", "Bay Area" )
 
     map.setView([37.7833, -122.4167], 10)
 

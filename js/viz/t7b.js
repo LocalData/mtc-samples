@@ -3,22 +3,6 @@ jQuery, L, geocities, allBlue, allOrange, altColors, Highcharts, turf, cartodb,
 regionPromise, countyPromise, cityPromise, _
 */
 (function($) {
-    /*
-    Overlay map that shows the various levels of sea level rise, flagging census
-    tracts that would be considered impacted by SLR using 2013 population data.
-    The color coding should emphasize the number of people impacted by
-    displaying population density of affected zones. A slider bar should allow
-    the user to choose different levels of SLR (1-6 feet), with 3 feet shown
-    by default. A subtle animation might be a nice touch as the user activates
-    different levels of SLR. Clicking on a zone should provide information about
-    the number of people impacted if that zone is underwater. Affected airports
-    should also appear as symbols or as a special color code when the SLR affects
-    their property. A full-screen option should be provided for users.
-
-    http://gis.mtc.ca.gov/mtc/rest/services/VitalSigns/EN11_SeaLevelRise/FeatureServer
-    http://gis.mtc.ca.gov/mtc/rest/services/VitalSigns/EN11_SeaLevelRise/MapServer
-    */
-
     $(function(){
         var MAP_TITLE = 'Site ';
         var CENTER = [37.871593,-122.272747];
@@ -40,10 +24,12 @@ regionPromise, countyPromise, cityPromise, _
         };
 
         var SPEED_MIN_ZOOM = 5;
+        var CONGESTION_SPEED_STYLE = _.template($('#congestion-speed-template').html())();
+        var CONGESTION_SPEED_FAR_STYLE = _.template($('#congestion-speed-far-template').html())();
         var CONGESTION_STYLE = _.template($('#congestion-template').html())();
-        var CONGESTION_FAR_STYLE = _.template($('#congestion-far-template').html())();
         var CENTER_STYLE = _.template($('#center-template').html())();
         var SPEED_STYLE = _.template($('#speed-template').html())();
+        var NO_SPEED_STYLE = _.template($('#no-speed-template').html())();
 
         var sql = new cartodb.SQL({ user: 'localdata' });
 
@@ -51,6 +37,7 @@ regionPromise, countyPromise, cityPromise, _
         var congestionLayer, congestionFarLayer, speedLayer;
         var selectedSegmentLayer = L.geoJson();
         var legendControl;
+        var showSpeed;
 
         var TIME_SLIDER_VALUES = [{
           id: 1,
@@ -162,32 +149,26 @@ regionPromise, countyPromise, cityPromise, _
             fillOpacity: 1
         };
 
-        var COLORS = allBlue.reverse();
+        var COLORS = _.clone(allBlue).reverse();
         var COLOR_SCALE = [
-            '#235365',
-            '#2c6d8c',
-            '#4ba8d3',
-            '#8dbfd2',
-            '#c6e2ec'
+            '#ec7429',
+            '#ea9e77',
+            '#d9b305',
+            '#9dbf88',
+            '#62a60a'
         ];
+        var congestedColor = '#65598a';
+
         var BREAKS = [
             0,
-            26,
-            38,
+            25,
+            35,
             50,
-            61
+            60
         ];
 
         var i;
         var regionData, countyData, cityData;
-
-        Highcharts.setOptions({
-            lang: {
-                decimalPoint: '.',
-                thousandsSep: ','
-            }
-        });
-
 
         function formatter() {
             if (this.value === 'Bay Area') {
@@ -196,11 +177,9 @@ regionPromise, countyPromise, cityPromise, _
             return this.value;
         }
 
-
         function updateTitle() {
             $('#timesliderheading').html(time.time);
         }
-
 
         function readableDate(date) {
             // Comes in like 18:00:00
@@ -216,6 +195,73 @@ regionPromise, countyPromise, cityPromise, _
             }
 
             return hour + ':' + minute + ' ' + suffix;
+        }
+
+        function makeMapFullScreen(event) {
+            event.preventDefault();
+            $('.make-map-fullscreen').hide();
+            $('.reduce-map-size').show();
+            var center = congestionMap.getCenter();
+
+            var $container = $('#mapt7b');
+            $container.toggleClass('fullscreen-map-container');
+
+            // Move the legend
+            $('.info.legend').show();
+            $('#mapt7b .info.legend').hide();
+
+            // Calculate thew new offset
+            var offset = $('#mapt7b').offset();
+            var leftOffset = offset.left;
+
+            // Get any existing left offset
+            var left = $container.css('left');
+            left = _.trim(left, 'px');
+            left = parseInt(left, 10);
+            console.log('left', left);
+            if (left) {
+                console.log("We need add subtract", left);
+                leftOffset -= left;
+            }
+
+            // Set the new offiset
+            $container.css('left', '-' + leftOffset + 'px');
+
+            // Set the new width
+            var fullWidth = window.innerWidth - 30;
+            $container.width(fullWidth);
+
+            console.log("Resizing?", offset, leftOffset, fullWidth);
+
+            // Resize the map if the window resizes
+            window.addEventListener('resize', makeMapFullScreen);
+            congestionMap._onResize();
+
+            congestionMap.panTo(center);
+            console.log("Panned to ", center);
+        }
+
+        function disableFullScreen(event) {
+            event.preventDefault();
+            $('.make-map-fullscreen').show();
+            $('.reduce-map-size').hide();
+
+            var center = congestionMap.getCenter();
+
+            // Move the legend
+            $('.info.legend').hide();
+            $('#mapt7b .info.legend').show();
+
+            window.removeEventListener('resize', makeMapFullScreen);
+
+            var $container = $('#mapt7b');
+            $container.removeClass('fullscreen-map-container');
+            $container.css('left', 'auto');
+            $container.css('width', '100%');
+
+            congestionMap._onResize();
+            congestionMap.panTo(center);
+            console.log("Panned to ", center);
         }
 
         function highlightShape(data) {
@@ -266,10 +312,9 @@ regionPromise, countyPromise, cityPromise, _
             $('.corridor-info-text').html(template(data));
 
             // Fetch
-            var shapePromise = sql.execute("SELECT ST_AsGeoJSON(the_geom) as shape, cartodb_id, location, rank FROM congestion WHERE location = '" + data.location + "' and endtime > " + time.value + " and starttime < " + time.value, { location: data.location });
+            var shapePromise = sql.execute("SELECT ST_AsGeoJSON(the_geom) as shape, cartodb_id, location, rank FROM congestion WHERE location = '" + data.location + "' and endtime >= " + time.value + " and starttime <= " + time.value, { location: data.location });
             shapePromise.done(highlightShape);
         }
-
 
         function handleFeatureClick(event, latlng, pos, data, layerIndex) {
             console.log("Clicked congested segment", data, pos );
@@ -290,14 +335,27 @@ regionPromise, countyPromise, cityPromise, _
                 // Update the map title
                 updateTitle();
 
+                var speedCartoCSS = SPEED_STYLE;
+                if(!showSpeed) {
+                  speedCartoCSS = NO_SPEED_STYLE;
+                }
+
+                // In the early morning hours, we need to show generic speed info
+                var speedTime = time.value;
+                if (time.id < 5 || time.id >= 23) {
+                  speedTime = "'16:00:00'";
+                  speedCartoCSS = NO_SPEED_STYLE;
+                }
                 speedLayer.set({
-                    sql: "SELECT * FROM speed_data_merged WHERE hour_beginning =" + time.value
+                    sql: "SELECT * FROM speed_data_merged WHERE hour_beginning =" + speedTime,
+                    cartocss: speedCartoCSS
                 });
+
                 congestionLayer.set({
-                    sql: "select * from congestion where endtime > " + time.value + " and starttime < " + time.value
+                    sql: "select * from congestion where endtime >= " + time.value + " and starttime <= " + time.value
                 });
                 congestionFarLayer.set({
-                    sql: "select * from congestion where endtime > " + time.value + " and starttime < " + time.value
+                    sql: "select * from congestion where endtime >= " + time.value + " and starttime <= " + time.value
                 });
 
                 // congestionLayer.setSQL("SELECT * FROM speed_data_merged WHERE hour_beginning =" + time.value);
@@ -318,7 +376,82 @@ regionPromise, countyPromise, cityPromise, _
             });
         }
 
+        function showCongestionLegend() {
+          var $div = $('.legend');
+          $div.html('');
+          $div.append("<h5 style='margin-top: 0; font-weight:bold'>Congestion</h5>");
+          // Add the congestion header
+          $div.append('<div class="legend-row"><div class="legend-color" style="background:' + congestedColor + ';">&nbsp; </div><div class="legend-text">Congested Freeway</div></div>');
+          $div.append('<div class="legend-row"><div class="legend-color" style="background:#aaa;">&nbsp; </div><div class="legend-text">Uncongested Freeway</div></div>');
+        }
+
+        function showSpeedLegend() {
+          // Clear out existing legend.
+          var $div = $('.legend');
+          $div.html('');
+          $div.append("<h5 style='margin-top: 0; font-weight:bold'>Congestion &amp; Travel Speeds</h5>");
+
+          // Add the congestion header
+          $div.append('<div class="legend-row"><div class="legend-color" style="background:' + congestedColor + ';">&nbsp; </div><div class="legend-text">Congested Freeway</div></div>');
+
+          // loop through our density intervals and generate a label
+          // with a colored square for each interval
+          var i;
+          for (i = 0; i < BREAKS.length; i++) {
+              var s = '<div class="legend-row"><div class="legend-color" style="background:' + COLOR_SCALE[i] + ';">&nbsp; </div><div class="legend-text">';
+
+              if (i === 0) {
+                  s += BREAKS[i].toLocaleString() + ' - ' + BREAKS[i+1].toLocaleString() + ' mph';
+              }
+
+              if (i !== BREAKS.length - 1 && i !== 0) {
+                  s += (BREAKS[i] + 1).toLocaleString() + ' - ' + BREAKS[i+1].toLocaleString() + ' mph';
+              }
+
+              if (i === BREAKS.length - 1) {
+                  s += (BREAKS[i] + 1).toLocaleString() + '+ mph';
+              }
+
+              $div.append(s);
+          }
+        }
+
+        function disableSpeed() {
+          speedLayer.setCartoCSS(NO_SPEED_STYLE);
+          congestionLayer.setCartoCSS(CONGESTION_STYLE);
+          congestionFarLayer.setCartoCSS('#congestion {}');
+          showSpeed = false;
+          showCongestionLegend();
+        }
+
+        function enableSpeed() {
+          console.log("Enable speed", time.id);
+          if (!(time.id < 5 || time.id >= 23)) {
+            speedLayer.setCartoCSS(SPEED_STYLE);
+          }
+          congestionLayer.setCartoCSS(CONGESTION_SPEED_FAR_STYLE);
+          congestionFarLayer.setCartoCSS(CONGESTION_SPEED_STYLE);
+          showSpeed = true;
+          showSpeedLegend();
+        }
+
         function layersLoaded(layer) {
+            $('.make-map-fullscreen').click(makeMapFullScreen);
+            $('.reduce-map-size').click(disableFullScreen);
+
+            $('#toggle-congestion-only').click(function(){
+                $(this).addClass("active");
+                $(this).siblings('a').removeClass('active');
+
+                disableSpeed();
+            });
+            $('#toggle-speed').click(function(){
+                $(this).addClass("active");
+                $(this).siblings('a').removeClass('active');
+
+                enableSpeed();
+            });
+
             speedLayer = layer.getSubLayer(1);
             congestionFarLayer = layer.getSubLayer(0);
             congestionLayer = layer.getSubLayer(3);
@@ -334,42 +467,9 @@ regionPromise, countyPromise, cityPromise, _
             congestionFarLayer.on('featureClick', handleFeatureClick);
         }
 
-        function updateLegend() {
-          // Clear out existing legend.
-          var $div = $('.info.legend');
-          $div.html('');
-          $div.append("<h5>Congestion &amp; Travel Speeds</h5>");
-
-          // Add the congestion header
-          $div.append('<div class="legend-row"><div class="legend-color" style="background:' + allOrange[2] + ';">&nbsp; </div><div class="legend-text">Congested</div></div>');
-
-          if (congestionMap.getZoom() < 11) {
-            // If we are zoomed far out, show a basic level
-            $div.append('<div class="legend-row"><div class="legend-color" style="background:#88b5c4;">&nbsp; </div><div class="legend-text">Highways</div></div>');
-            $div.append('<div class="legend-row"><div class="legend-text">Zoom in to see speed details</div></div>');
-          } else {
-
-            // loop through our density intervals and generate a label
-            // with a colored square for each interval
-            var i;
-            for (i = 0; i < BREAKS.length; i++) {
-                var s = '<div class="legend-row"><div class="legend-color" style="background:' + COLOR_SCALE[i] + ';">&nbsp; </div><div class="legend-text">';
-
-                if (i === 0) {
-                    s += BREAKS[i].toLocaleString() + ' - ' + BREAKS[i+1].toLocaleString() + ' mph';
-                }
-
-                if (i !== BREAKS.length - 1 && i !== 0) {
-                    s += (BREAKS[i] + 1).toLocaleString() + ' - ' + BREAKS[i+1].toLocaleString() + ' mph';
-                }
-
-                if (i === BREAKS.length - 1) {
-                    s += (BREAKS[i] + 1).toLocaleString() + '+ mph';
-                }
-
-                $div.append(s);
-            }
-          }
+        function clearSelectedElement() {
+          $('.corridor-info-text').html('');
+          congestionMap.removeLayer(selectedSegmentLayer);
         }
 
         function setupMap() {
@@ -391,34 +491,37 @@ regionPromise, countyPromise, cityPromise, _
             L.control.scale().addTo(congestionMap);
             congestionMap.addLayer(selectedSegmentLayer);
 
+            congestionMap.on('click', clearSelectedElement);
+
+            // Add zoom-in note
+            // $('#mapt7b').append('<div class="zoom-in-prompt">Zoom in to see speed details</div>');
+
             // Make sure the selected segment stays on top
             congestionMap.on('zoomend', function() {
+              console.log(congestionMap.getZoom());
                 if(selectedSegmentLayer) {
                     selectedSegmentLayer.bringToFront();
                 }
-
-                updateLegend();
             });
 
             // Add the layers to the two maps
-            // Add the SLR map
             var cdbCongestion = cartodb.createLayer(congestionMap, {
               user_name: CARTODB_USER,
               cartodb_logo: false,
               type: 'cartodb',
               sublayers: [{
-                sql: "select * from congestion where endtime > " + time.value + " and starttime < " + time.value,
+                sql: "select * from congestion where endtime >= " + time.value + " and starttime <= " + time.value,
                 cartocss: CONGESTION_STYLE,
                 interactivity: 'cartodb_id'
               }, {
                 sql: "SELECT * FROM speed_data_merged where hour_beginning = " + time.value,
-                cartocss: SPEED_STYLE
+                cartocss: NO_SPEED_STYLE
               }, {
                 sql: "SELECT * FROM speed_segments",
                 cartocss: CENTER_STYLE
               }, {
-                sql: "select * from congestion where endtime > " + time.value + " and starttime < " + time.value,
-                cartocss: CONGESTION_FAR_STYLE,
+                sql: "select * from congestion where endtime >= " + time.value + " and starttime <= " + time.value,
+                cartocss: CONGESTION_STYLE,
                 interactivity: 'cartodb_id'
               }]
             })
@@ -435,36 +538,11 @@ regionPromise, countyPromise, cityPromise, _
             legendControl.onAdd = function (map) {
                 var div = L.DomUtil.create('div', 'info legend');
                 $(div).addClass("col-lg-12");
-
-                $(div).append("<h5>Congestion &amp; Travel Speeds</h5>");
+                $(div).append("<h5 style='margin-top: 0; font-weight:bold'>Congestion</h5>");
 
                 // Add the congestion header
-                $(div).append('<div class="legend-row"><div class="legend-color" style="background:' + allOrange[2] + ';">&nbsp; </div><div class="legend-text">Congested</div></div>');
-                $(div).append('<div class="legend-row"><div class="legend-color" style="background:#88b5c4;">&nbsp; </div><div class="legend-text">Highways</div></div>');
-                $(div).append('<div class="legend-row"><div class="legend-text">Zoom in to see speed details</div></div>');
-
-                /*
-                // loop through our density intervals and generate a label
-                // with a colored square for each interval
-                var i;
-                for (i = 0; i < BREAKS.length; i++) {
-                    var s = '<div class="legend-row"><div class="legend-color" style="background:' + COLOR_SCALE[i] + ';">&nbsp; </div><div class="legend-text">';
-
-                    if (i === 0) {
-                        s += BREAKS[i].toLocaleString() + ' - ' + BREAKS[i+1].toLocaleString() + ' mph';
-                    }
-
-                    if (i !== BREAKS.length - 1 && i !== 0) {
-                        s += (BREAKS[i] + 1).toLocaleString() + ' - ' + BREAKS[i+1].toLocaleString() + ' mph';
-                    }
-
-                    if (i === BREAKS.length - 1) {
-                        s += (BREAKS[i] + 1).toLocaleString() + '+ mph';
-                    }
-
-                    $(div).append(s);
-                }*/
-
+                $(div).append('<div class="legend-row"><div class="legend-color" style="background:' + congestedColor + ';">&nbsp; </div><div class="legend-text">Congested Freeway</div></div>');
+                $(div).append('<div class="legend-row"><div class="legend-color" style="background:#aaa;">&nbsp; </div><div class="legend-text">Uncongested Freeway</div></div>');
                 return div;
             };
             legendControl.addTo(congestionMap);

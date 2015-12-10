@@ -87,7 +87,7 @@ regionPromise, countyPromise, cityPromise: true
 
             var options = {
                 chart: {
-                    type: 'line'
+3                    type: 'line'
                 },
                 title: {
                     text: CHART_BASE_TITLE

@@ -1,3 +1,5 @@
+
+(function($) {
     //CREATE BAR CHART T16-A
     var t16acountylist;
     var t16acitydata;
@@ -5,7 +7,7 @@
     var t16aregiondata;
     var countyname;
     var cityname;
-(function($) {
+
     $(function() {
         //REQUEST COUNTY LIST DATA FROM SERVER
         $.ajax({
@@ -21,8 +23,7 @@
 
         }
 
-
-        //REQUEST COUNTY DATA FROM SERVER
+        //REQUEST CITY DATA FROM SERVER
         $.ajax({
             dataType: "json",
             url: "http://vitalsigns-production.elasticbeanstalk.com/t16/city",
@@ -35,7 +36,6 @@
             t16acitydata = data;
 
         }
-
 
         //REQUEST COUNTY DATA FROM SERVER
         $.ajax({
@@ -75,14 +75,15 @@
           }
         }
 
-
+        $('#T16-A .chart-title').html('Historical Trend for Street Pavement Condition - Bay Area');
         var t1t2cChart = $('#T16-A-chart').highcharts({
             chart: {
-                type: 'line'
+                type: 'line',
+                marginTop: 40
             },
             colors: altColors,
             title: {
-                text: 'Historical Trend for Street Pavement Condition - Bay Area'
+                text: ''
             },
             xAxis: {
                 categories: yearNames,
@@ -166,8 +167,6 @@
             }
         }
 
-
-
         $.fn.Updatet16aChartData = function(searchcity) {
             var countyPCI = [];
             var cityPCI = [];
@@ -188,13 +187,16 @@
             }
             countyname += " County"
 
+            console.log("Point A");
+            $('#T16-A .chart-title').html('Historical Trend for Street Pavement Condition - ' + searchcity + ' and ' + countyname);
             var t14t15Chart = $('#T16-A-chart').highcharts({
                 chart: {
-                    type: 'line'
+                    type: 'line',
+                    marginTop: 40
                 },
                 colors: altColors,
                 title: {
-                    text: "Historical Trend for Street Pavement Condition - "+searchcity +" and "+countyname
+                    text: ""
                 },
                 xAxis: {
                     categories: yearNames,
@@ -261,13 +263,14 @@
         }
 
       function regionChart() {
-      var t1t2cChart = $('#T16-A-chart').highcharts({
+        $('#T16-A .chart-title').html('Historical Trend for Street Pavement Condition - Bay Area');
+            var t1t2cChart = $('#T16-A-chart').highcharts({
               chart: {
                   type: 'line'
               },
              colors: altColors,
               title: {
-                  text: 'Regional Annual PCI'
+                  text: '' //'Regional Annual PCI'
               },
               xAxis: {
                   categories: yearNames,
@@ -324,79 +327,4 @@
     });
     return sorted.reverse()
 }
-
-    // function updateChartst16a(modet16a) {
-    //     // console.log(modet6a);
-    //     var regionnames = [];
-    //     var drivealone = [];
-    //     var carpool = [];
-    //     var publictransit = [];
-    //     var walk = [];
-    //     var bike = [];
-    //     var other = [];
-    //     var workathome = [];
-    //     for (var key in regions) {
-    //         regionnames.push(regions[key].Region);
-    //         drivealone.push(regions[key].DriveAlone);
-    //         carpool.push(regions[key].Carpool);
-    //         publictransit.push(regions[key].PublicTransit);
-    //         walk.push(regions[key].Walk);
-    //         bike.push(regions[key].Bike);
-    //         other.push(regions[key].Other);
-    //         workathome.push(regions[key].WorkatHome);
-    //     }
-
-    //     $('#T16-A-chart').highcharts({
-    //         chart: {
-    //             type: 'line'
-    //         },
-    //         title: {
-    //             text: city + ': Historic Commute Mode Share (Data: 1980-2012)'
-    //         },
-    //         subtitle: {
-    //             text: mode
-    //         },
-    //         xAxis: {
-    //             categories: ['1750', '1800', '1850', '1900', '1950', '1999', '2050'],
-    //             tickmarkPlacement: 'on',
-    //             title: {
-    //                 enabled: false
-    //             }
-    //         },
-    //         yAxis: {
-    //             title: {
-    //                 text: 'Percent'
-    //             }
-    //         },
-    //         tooltip: {
-    //             enabled: false,
-    //             pointFormat: '<span style="color:{series.color} ">{series.name}</span>: <b>{point.percentage:.1f}%</b> ({point.y:,.0f})</b>',
-    //             shared: true
-    //         },
-    //         plotOptions: {
-    //             series: {
-    //                 lineWidth: 5
-    //             },
-    //             line: {
-    //                 //                        dataLabels: {
-    //                 //                            enabled: true
-    //                 //                        },
-    //                 enableMouseTracking: false
-    //             }
-    //         },
-    //         series: [{
-    //             name: 'Region',
-    //             data: regiondata
-    //         }, {
-    //             name: 'County',
-    //             data: countydata
-    //         }, {
-    //             name: city,
-    //             data: citydata
-    //         }]
-    //     });
-
-
-
-    // }
     })(jQuery);

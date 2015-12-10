@@ -30,7 +30,13 @@
         border: 5px solid #fff;
         color: #fff;
       }
+    </style>
 
+  </head>
+  <body>
+
+
+    <style type="text/css">
       .rank-gradient {
         width: 100%;
         height: 10px;
@@ -53,24 +59,89 @@
         top: -3px;
         position: absolute;
       }
+
+      .zoom-in-prompt {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        -webkit-transform: translateX(-50%);
+        top: 0;
+        width: 100%;
+        background: rgba(255, 255, 255, 0.8);
+        padding: 20px 40px;
+        font-weight: bold;
+      }
+
+      .fullscreen-map-container {
+        position: relative;
+      }
     </style>
-  </head>
-  <body>
 
     <div id="T7-B">
       <div class="row">
-        <div class="map col-lg-10" id="mapt7b">&nbsp;</div>
-        <div class="col-lg-2" id="T7-B-info">
+        <div class="col-sm-12" style="padding-bottom: 10px">
+          <div class="btn-group btn-group-justified">
+              <a class="btn btn-primary btn-fix active" id="toggle-congestion-only">Congestion Data</a><a class="btn btn-primary btn-fix" id="toggle-speed">Congestion &amp; Speed Data</a>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm-9">
+          <div class="map" id="mapt7b"></div>
+        </div>
+        <div class="col-sm-3" style="padding: 0;">
+          <div id="T7-B-info" style="padding:10px; background:rgba(255, 255, 255, 0.7)">
             <h4 id="timesliderheading">9am</h4>
             <input class="slider" id="T7-B-time-slider" value="18" />
             <div class="corridor-info-header">
-              <p>Select a <strong style="color:#ec7429">congested corridor</strong> on the map for more information.</p>
+              <p>Select a <strong style="color:#65598a">congested corridor</strong> on the map for more information.</p>
             </div>
             <div class="corridor-info-text"></div>
+          </div>
+
+          <div class="info legend" style="margin-top: 10px; padding:10px; background:rgba(255, 255, 255, 0.7); display: none;">
+            <h5 style="margin-top: 0; font-weight:bold">Congestion</h5>
+            <div class="legend-row">
+              <div class="legend-color" style="background:#65598a;">&nbsp; </div>
+              <div class="legend-text">Congested Freeway</div>
+            </div>
+            <div class="legend-row">
+              <div class="legend-color" style="background:#aaa;">&nbsp; </div>
+              <div class="legend-text">Uncongested Freeway</div>
+            </div>
+          </div>
+        </div>
+      </div><!-- end map row -->
+      <div class="row">
+        <div class="col-sm-12">
+          <p>
+            <a href="#" class="make-map-fullscreen">Increase map size</a>
+            <a href="#" class="reduce-map-size" style="display:none">Reduce map size</a>
+          </p>
         </div>
       </div>
+      <div class="row">
+        <div class="col-md-12">
+          <h4>Most congested segments</h4>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-lg-6 col-md-6 col-sm-12">
+          <h6>1. I-80 westbound from CA-4 to SFOBB Metering Lights</h6>
+          <h6>2. US-101 southbound from I-238 / Washington Avenue Exit to CA-237</h6>
+          <h6>3. US-101 southbound from Fair Oaks Avenue to Oakland Road</h6>
+          <h6>4. US-101 northbound from I-280 to western end of Bay Bridge</h6>
+          <h6>5. I-680 northbound from Crow Canyon Road to Treat Boulevard</h6>
+        </div>
+        <div class="col-lg-6 col-md-6 col-sm-12">
+          <h6>6. I-680 northbound from CA-262/Mission Boulevard to CA-84/Calaveras Road</h6>
+          <h6>7. I-80 eastbound from W Grand Avenue to Gilman Street</h6>
+          <h6>8. I-580 westbound from San Joaquin county line to Santa Rita Road</h6>
+          <h6>9. I-980 eastbound from I-580 to Wilder Road</h6>
+          <h6>10. US-101 northbound from Story Road to Montague Expressway / San Tomas Expressway</h6>
+        </div>
+      </div><!-- end top 10 row -->
     </div>
-
 
     <script type="text/template" id="map-legend-template">
     <div class="highway-sign">
@@ -87,8 +158,10 @@
     </div>
     </script>
 
-    <script type="text/template" id="congestion-far-template">
-      @congested: #ec7429;
+    <script type="text/template" id="congestion-template">
+      // Styles for showing congestion alone
+
+      @congested: #65598a;
 
       #congestion {
         line-color: @congested;
@@ -97,33 +170,62 @@
         line-width: 3;
         line-offset: -3;
 
-        [zoom >= 11] {
-          line-width: 0;
+        [zoom = 11] {
+          line-width: 6;
+          line-offset: -4;
+        }
+
+        [zoom = 12] {
+          line-width: 7;
+          line-offset: -4;
+        }
+
+        [zoom = 13] {
+          line-width: 10;
+          line-offset: -5;
+        }
+
+        [zoom = 14] {
+          line-width: 12;
+          line-offset: -6;
+        }
+
+      }
+    </script>
+
+    <script type="text/template" id="congestion-speed-far-template">
+      // Styles for showing congestion backgrounds
+      #congestion {
+        [zoom < 11] {
+          line-color: #65598a;
+          line-cap: round;
+          line-opacity: 1;
+          line-width: 3;
+          line-offset: -3;
         }
       }
     </script>
 
-    <script type="text/template" id="congestion-template">
-      @congested: #ec7429;
-
+    <script type="text/template" id="congestion-speed-template">
+      // Styles for showing congestion combined with speed
       #congestion {
-        line-color: @congested;
+        line-color: #65598a;
         line-cap: round;
         line-opacity: 1;
-        line-width: 0;
-        line-offset: 0;
+        line-width: 3;
+        line-offset: -3;
 
         [zoom = 11] {
           line-width: 10;
-            line-offset: -6;
+          line-offset: -6;
         }
         [zoom = 12] {
           line-width: 12;
-              line-offset: -6;
+          line-offset: -6;
         }
         [zoom >= 13] {
           line-width: 30;
-              line-offset: 0;
+          line-offset: 0;
         }
       }
     </script>
@@ -163,13 +265,14 @@
 
       #speed_data_merged{
         polygon-opacity: 0;
-        line-color: #88b5c4;
+        line-color: #aaa; //#88b5c4;
         line-width: 6;
         line-opacity: 1;
 
         line-offset: -4;
         line-join: miter;
         line-cap: round;
+
 
         [zoom < 11] {
           line-width: 3;
@@ -211,25 +314,79 @@
         }
       }
 
-      [zoom > 10] {
-        #speed_data_merged [speed <= 72] {
-           line-color: #c6e2ec;
+      [zoom > 4] {
+        #speed_data_merged [speed <= 70] {
+           line-color: #62a60a;
         }
-        #speed_data_merged [speed <= 60.7] {
-           line-color: #8dbfd2;
+        #speed_data_merged [speed <= 60] {
+           line-color: #9dbf88;
         }
-        #speed_data_merged [speed <= 49.7] {
-           line-color: #4ba8d3;
+        #speed_data_merged [speed <= 50] {
+           line-color: #d9b305;
         }
-        #speed_data_merged [speed <= 37.9] {
-           line-color: #2c6d8c;
+        #speed_data_merged [speed <= 35] {
+           line-color: #ea9e77;
         }
-        #speed_data_merged [speed <= 26.3] {
-           line-color: #235365;
+        #speed_data_merged [speed <= 25] {
+           line-color: #ec7429;
         }
       }
     </script>
 
+    <script type="text/template" id="no-speed-template">
+      /** choropleth visualization */
+
+      #speed_data_merged{
+        polygon-opacity: 0;
+        line-color: #aaa; //#88b5c4;
+        line-width: 6;
+        line-opacity: 1;
+
+        line-offset: -4;
+        line-join: miter;
+        line-cap: round;
+
+
+        [zoom < 11] {
+          line-width: 3;
+          line-offset: -3
+        }
+
+        [zoom = 12] {
+          line-width: 8;
+          line-offset: -4;
+        }
+
+        [zoom = 13] {
+          line-width: 10;
+          line-offset: -5;
+        }
+
+        [zoom = 14] {
+          line-width: 12;
+          line-offset: -6;
+        }
+
+        ::outline {
+           [zoom>=9] {
+            line-color: #FFFFFF;
+            line-width: 2;
+            line-opacity: 1;
+            line-cap: round;
+            }
+
+          [zoom = 11] {
+            line-width: 3;
+          }
+          [zoom = 12] {
+            line-width: 0;
+          }
+          [zoom >= 13] {
+            line-width: 0;
+          }
+        }
+      }
+    </script>
 
     <!-- libraries -->
     <script src="http://code.jquery.com/jquery.js"></script>
@@ -239,7 +396,7 @@
     <script src="http://cdn.kendostatic.com/2014.1.528/js/kendo.all.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.5.0/lodash.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bluebird/2.9.13/bluebird.min.js"></script>
-    <script src="http://code.highcharts.com/highcharts.js"></script>
+    <!--<script src="http://code.highcharts.com/highcharts.js"></script>-->
 
     <!--<script src="js/esri-leaflet.js"></script>-->
 

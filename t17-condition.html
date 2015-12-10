@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Reliablity</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="css/app.css" rel="stylesheet" media="screen">
+
+    <!--<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />-->
+
+    <link href="http://cdn.kendostatic.com/2014.1.528/styles/kendo.common.min.css" rel="stylesheet" />
+    <link href="http://cdn.kendostatic.com/2014.1.528/styles/kendo.default.min.css" rel="stylesheet" />
+    <link href="http://cdn.kendostatic.com/2014.1.528/styles/kendo.dataviz.min.css" rel="stylesheet" />
+    <link href="http://cdn.kendostatic.com/2014.1.528/styles/kendo.dataviz.default.min.css" rel="stylesheet" />
+
+  <link type="text/css" rel="stylesheet" href="https://api.tiles.mapbox.com/mapbox.js/v2.1.4/mapbox.css" media="all" />
+
+    <link rel="stylesheet" href="http://libs.cartocdn.com/cartodb.js/v3/3.13/themes/css/cartodb.css" />
+    <script src="http://libs.cartocdn.com/cartodb.js/v3/3.13/cartodb.js"></script>
+
+    <style type="text/css">
+      .map {
+        height: 450px;
+        width: 80%;
+      }
+    </style>
+  </head>
+  <body>
+
+    <h3 class="chart-title">2014 Highway Pavement Condition</h3>
+
+    <div id="T17-B">
+      <div class="row">
+        <div class="col-sm-8">
+          <div class="map" id="mapt17b"></div>
+        </div>
+        <div class="col-sm-4" id="T17-B-info" style="background: #fff;">
+              <div class="corridor-info-text">
+                <div class="corridor-info-header">
+                  <p>Select a corridor on the map for more information.</p>
+                </div>
+              </div>
+              <div class="info legend" style="display:none;"></div>
+              <h4>Legend</h4>
+              <h5>Condition (PCI range)</h5>
+              <div class='my-legend'>
+                <div class='legend-title'></div>
+                  <div class='legend-scale'>
+                      <ul class='legend-labels'>
+                          <li><span style='background:#e60000; padding:5px'></span>Distressed</li>
+                          <li><span style='background:#ffaa00;padding:5px'></span>At Risk</li>
+                          <li><span style='background:#ffff00;padding:5px'></span>No Minimum Service Life</li>
+                          <li><span style='background:#38a800;padding:5px'></span>Good/Excellent</li>
+                      </ul>
+                  </div>
+              </div>
+        </div>
+      </div><!-- end map row -->
+      <!--
+      <div class="row">
+        <div class="col-sm-12">
+          <p>
+            <a href="#" class="make-map-fullscreen">Increase map size</a>
+            <a href="#" class="reduce-map-size" style="display:none">Reduce map size</a>
+          </p>
+        </div>
+      </div>
+    </div><!-- end t17b -->
+
+    <script type="text/template" id="map-legend-template">
+      <h3 style="margin-bottom:0;"><%= caltrans_i %></h3>
+
+      <p><span style="color: <%= color %>;  background: <%= bg %>; display:inline-block; padding: 8px;">Condition: <%= condition %></span></p>
+
+      <p>County: <%= county %></p>
+      <p>Type: <%= type %></p>
+    </script>
+
+    <script type="text/template" id="pavement-condition-template">
+      /** choropleth visualization */
+
+      #t17_hwy_pavement_condition {
+        line-color: #3d9cc8;
+        line-width: 3;
+        line-opacity: 1;
+        line-offset: -3;
+
+        [direction='Eastbound'],
+        [direction='Northbound'] {
+          [caltrans_i!='SM - 35 Northbound'],
+          [caltrans_i!='SON - 12 Eastbound'],
+          [caltrans_i!='SON - 116 Eastbound'] {
+            line-offset: 3;
+          }
+        }
+
+        [zoom<11] {
+          line-width: 2;
+          line-offset: -2;
+          [direction='Eastbound'],
+          [direction='Northbound'] {
+            [caltrans_i!='SM - 35 Northbound'],
+            [caltrans_i!='SON - 12 Eastbound'],
+            [caltrans_i!='SON - 116 Eastbound'] {
+              line-offset: 2;
+            }
+          }
+        }
+        [zoom=11] {
+          line-width: 4;
+          line-offset: -4;
+          [direction='Eastbound'],
+          [direction='Northbound'] {
+            [caltrans_i!='SM - 35 Northbound'],
+            [caltrans_i!='SON - 12 Eastbound'],
+            [caltrans_i!='SON - 116 Eastbound'] {
+              line-offset: 4;
+            }
+          }
+        }
+        [zoom=12] {
+          line-width: 5;
+          line-offset: -5;
+          [direction='Eastbound'],
+          [direction='Northbound'] {
+            [caltrans_i!='SM - 35 Northbound'],
+            [caltrans_i!='SON - 12 Eastbound'],
+            [caltrans_i!='SON - 116 Eastbound'] {
+              line-offset: 5;
+            }
+          }
+        }
+        [zoom=13] {
+          line-width: 6;
+          line-offset: -6;
+          [direction='Eastbound'],
+          [direction='Northbound'] {
+            [caltrans_i!='SM - 35 Northbound'],
+            [caltrans_i!='SON - 12 Eastbound'],
+            [caltrans_i!='SON - 116 Eastbound'] {
+              line-offset: 6;
+            }
+          }
+        }
+        [zoom=14] {
+          line-width: 7;
+          line-offset: -7;
+          [direction='Eastbound'],
+          [direction='Northbound'] {
+            [caltrans_i!='SM - 35 Northbound'],
+            [caltrans_i!='SON - 12 Eastbound'],
+            [caltrans_i!='SON - 116 Eastbound'] {
+              line-offset: 7;
+            }
+          }
+        }
+      } /* end #reliability_new */
+
+
+      // Original colors
+      #t17_hwy_pavement_condition[condition="Distressed"] {
+         line-color: #e60000;
+      }
+      #t17_hwy_pavement_condition[condition="Good/Excellent"] {
+         line-color: #38a800;
+      }
+      #t17_hwy_pavement_condition[condition="Maintenance"] {
+         line-color: #ffaa00;
+      }
+      #t17_hwy_pavement_condition[condition="No MSL"] {
+         line-color: #ffff00;
+      }
+
+      /*
+      #t17_hwy_pavement_condition[condition="Distressed"] {
+         line-color: #ec7429;
+      }
+      #t17_hwy_pavement_condition[condition="Good/Excellent"] {
+         line-color: #3d9cc8;
+      }
+      #t17_hwy_pavement_condition[condition="Maintenance"] {
+         line-color: #ea9e77;
+      }
+      #t17_hwy_pavement_condition[condition="No MSL"] {
+         line-color: #88b5c4;
+      }
+      */
+    </script>
+    <style type="text/css">
+      .fullscreen-map-container {
+        position: relative;
+      }
+    </style>
+
+    <!--
+    To select top AM & PM peaks, start with this SQL:
+    SELECT bti_pmpeak, corridor, direction, endpoint1, endpoint2 FROM reliability_new
+    where year = 2014
+    order by bti_pmpeak desc
+    limit 5
+    -->
+
+
+    <!-- libraries -->
+    <script src="http://code.jquery.com/jquery.js"></script>
+    <!--<script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>-->
+    <!--<script type="text/javascript" src="https://api.tiles.mapbox.com/mapbox.js/v2.1.4/mapbox.js"></script>-->
+
+    <script src="http://cdn.kendostatic.com/2014.1.528/js/kendo.all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.5.0/lodash.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bluebird/2.9.13/bluebird.min.js"></script>
+    <script src="http://code.highcharts.com/highcharts.js"></script>
+
+    <!--<script src="js/esri-leaflet.js"></script>-->
+
+    <!-- From MTC server -->
+    <script src="http://dev-mtc-vital-signs.pantheon.io/sites/all/themes/vitalsigns/js/colors.js"></script>
+
+    <script src="js/viz/t17b.js"></script>
+  </body>
+</html>

@@ -24,70 +24,68 @@
 
     <div id="T1-T2-A + Data"><div style="padding-left:10px;padding-bottom:10px;padding-top:10px;"><div id="countySelect">&nbsp;</div></div><div id="areaChart_T1-T2-A" style="width:100%;height:85%">&nbsp;</div></div>
 
-
-    <div class="row">
-    <div id="T1-T2-B" class="col-lg-12">
-      <div id="T1-T2-B-map" class="col-lg-12">
-        <div class="row">
-          <nav class="navbar navbar-default map-navbar">
-            <div class="navbar-header">
-              <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-navbar-collapse-1">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-              </button>
-            </div>
-             <div class="collapse navbar-collapse" id="bs-navbar-collapse-1">
-               <ul class="nav navbar-nav map-nav">
-                <li><a id="autoButton" class="btn btn-primary btn-fix button-mode">Auto</a></li>
-                <li><a id="carpoolButton" class="btn btn-primary btn-fix button-mode">Carpool</a></li>
-                <li><a id="transitButton" class= "btn btn-primary btn-fix button-mode">Transit</a></li>
-                <li><a id="walkingButton" class="btn btn-primary btn-fix button-mode">Walking</a></li>
-                <li><a id="bikingButton" class="btn btn-primary btn-fix button-mode">Biking</a></li>
-                <li><a id="otherButton" class="btn btn-primary btn-fix button-mode">Other</a></li>
-                <li><a id="teleworkButton" class="btn btn-primary btn-fix button-mode">Telework</a></li>
-                <li><a id="homeButton" class="btn btn-primary btn-fix active going-home"><span class="glyphicon glyphicon-arrow-right"></span> Home</a></li>
-                <li><a id="workButton" class="btn btn-primary btn-fix going-work"><span class="glyphicon glyphicon-arrow-right"></span> Work</a></li>
-              </ul>
-            </div>
-          </nav>
-        </div>
-      </div>
+<div class="row">
+  <div id="T1-T2-B" class="col-lg-12">
+    <div id="T1-T2-B-map" class="col-lg-12">
       <div class="row">
-        <div class="col-lg-8 col-md-8">
-          <div id="map" class="map"></div>
-        </div>
-        <div class="col-lg-4 col-md-4">
-          <div id="T1-T2-B-chart-wrapper">
-              <div id="T1-T2-B-chart2">
-                <div id="T1-T2-B-chart3">
-                  <h4>Top Cities for Taking Transit</h4>
-                  <div class="row">
-                    <div class="col-lg-6">
-                      <h6>1. San Francisco 24%</h6>
-                      <h6>2. Berkeley 21%</h6>
-                      <h6>3. Palo Alto 18%</h6>
-                      <h6>4. San Rafael 17%</h6>
-                      <h6>5. Oakland 17%</h6>
-                    </div>
-                    <div class="col-lg-6">
-                      <h6>6. Emeryville 16%</h6>
-                      <h6>7. San Ramon 16%</h6>
-                      <h6>8. South San Francisco 15%</h6>
-                      <h6>9. Alameda 15%</h6>
-                      <h6>10. Walnut Creek 14%</h6>
-                    </div>
-                  </div>
-              </div>
-            </div>
+        <nav class="navbar navbar-default map-navbar">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-navbar-collapse-1">
+              <span class="sr-only">Toggle navigation</span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
           </div>
-        <div id="T1-T2-B-chart" class="chart"></div>
-        </div>
+           <div class="collapse navbar-collapse" id="bs-navbar-collapse-1">
+             <ul class="nav navbar-nav map-nav">
+              <li><a id="autoButton" class="btn btn-primary btn-fix button-mode">Auto</a></li>
+              <li><a id="carpoolButton" class="btn btn-primary btn-fix button-mode">Carpool</a></li>
+              <li><a id="transitButton" class= "btn btn-primary btn-fix button-mode">Transit</a></li>
+              <li><a id="walkingButton" class="btn btn-primary btn-fix button-mode">Walking</a></li>
+              <li><a id="bikingButton" class="btn btn-primary btn-fix button-mode">Biking</a></li>
+              <li><a id="otherButton" class="btn btn-primary btn-fix button-mode">Other</a></li>
+              <li><a id="teleworkButton" class="btn btn-primary btn-fix button-mode">Telework</a></li>
+              <li><a id="homeButton" class="btn btn-primary btn-fix active going-home"><span class="glyphicon glyphicon-arrow-right"></span> Home</a></li>
+              <li><a id="workButton" class="btn btn-primary btn-fix going-work"><span class="glyphicon glyphicon-arrow-right"></span> Work</a></li>
+            </ul>
+          </div>
+        </nav>
       </div>
     </div>
+    <div class="row">
+      <div class="col-sm-8">
+        <div id="map" class="map"></div>
+      </div>
+      <div class="col-sm-4">
+        <div id="T1-T2-B-chart-wrapper">
+            <div id="T1-T2-B-chart2">
+              <div id="T1-T2-B-chart3">
+                <h4>Top Cities for Taking Transit</h4>
+                <div class="row">
+                  <div class="col-sm-6">
+                    <h6>1. San Francisco 24%</h6>
+                    <h6>2. Berkeley 21%</h6>
+                    <h6>3. Palo Alto 18%</h6>
+                    <h6>4. San Rafael 17%</h6>
+                    <h6>5. Oakland 17%</h6>
+                  </div>
+                  <div class="col-sm-6">
+                    <h6>6. Emeryville 16%</h6>
+                    <h6>7. San Ramon 16%</h6>
+                    <h6>8. South San Francisco 15%</h6>
+                    <h6>9. Alameda 15%</h6>
+                    <h6>10. Walnut Creek 14%</h6>
+                  </div>
+                </div>
+              </div>
+            </div>
+        </div>
+        <div id="T1-T2-B-chart" class="chart"></div>
+      </div>
+    </div> <!-- end row -->
   </div>
-  </div>
+</div>
   <script>
       var drivealone;
       var geojson;
@@ -133,7 +131,8 @@
     <script src="js/viz/t1t2.js"></script>
     <script src="js/viz/t1t2a.js"></script>
     <script src="js/viz/t1t2b.js"></script>
-    <script src="js/viz/t1t2c.js"></script>
+    <!--
+    <script src="js/viz/t1t2c.js"></script>-->
 
   </body>
 </html>

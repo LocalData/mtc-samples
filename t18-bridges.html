@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>T6 Regional Volume</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="css/app.css" rel="stylesheet" media="screen">
+
+    <!--<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />-->
+
+    <link href="http://cdn.kendostatic.com/2014.1.528/styles/kendo.common.min.css" rel="stylesheet" />
+    <link href="http://cdn.kendostatic.com/2014.1.528/styles/kendo.default.min.css" rel="stylesheet" />
+    <link href="http://cdn.kendostatic.com/2014.1.528/styles/kendo.dataviz.min.css" rel="stylesheet" />
+    <link href="http://cdn.kendostatic.com/2014.1.528/styles/kendo.dataviz.default.min.css" rel="stylesheet" />
+
+     <link type="text/css" rel="stylesheet" href="https://api.tiles.mapbox.com/mapbox.js/v2.1.4/mapbox.css" media="all" />
+
+    <!--<link rel="stylesheet" href="http://libs.cartocdn.com/cartodb.js/v3/3.13/themes/css/cartodb.css" />-->
+
+    <style type="text/css">
+      #map {
+        height: 300px;
+        width: 700px;
+      }
+    </style>
+  </head>
+  <body>
+
+  <div class="row">
+    <div class="col-md-12">
+      <h3 class="chart-title">2012 Bridge Condition</h3>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-sm-9">
+      <div id="map" style="width: 100%; max-width: 100%">
+        <div id="controls" style="position:absolute;top:10px;right:20px;z-index:1000;width:100px;">
+          &nbsp;
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-3">
+      <div class="information" id="location">&nbsp;</div>
+      <div class="information" id="status">&nbsp;</div>
+    </div>
+  </div>
+
+  <div class="custom-legend info legend leaflet-control" id="legend" style="display:none;">
+    <h5>Bridge Conditions</h5>
+
+    <div class="legend-row">
+      <div class="legend-color" style="text-align: center">
+        <span style="height: 12px; width: 12px; border-radius: 12px; background-color:#d7191c; display:inline-block;"></span>
+      </div>
+      <div class="legend-text">
+        Structurally Deficient
+      </div>
+    </div>
+
+    <div class="legend-row">
+      <div class="legend-color" style="text-align: center">
+        <span style="height: 12px; width: 12px; border-radius: 12px; background-color:#2c6d8c; display:inline-block;"></span>
+      </div>
+      <div class="legend-text">
+        Structurally Sound
+      </div>
+    </div>
+
+    <h5>Approximate Daily Traffic Volumes</h5>
+
+    <div class="legend-row">
+      <div class="legend-color" style="text-align: center">
+        <span style="height: 5px; width: 5px; border-radius: 5px; background-color:black; display:inline-block;"></span>
+      </div>
+      <div class="legend-text">
+        0-10,000
+      </div>
+    </div>
+    <div class="legend-row">
+      <div class="legend-color" style="text-align: center">
+        <span style="height: 9px; width: 9px; border-radius: 9px; background-color:black; display:inline-block;"></span>
+      </div>
+      <div class="legend-text">
+        10,000-50,000
+      </div>
+    </div>
+    <div class="legend-row">
+      <div class="legend-color" style="text-align: center">
+        <span style="height: 15px; width: 15px; border-radius: 8px; background-color:black; display:inline-block;"></span>
+      </div>
+      <div class="legend-text">
+        50,000+
+      </div>
+    </div>
+
+  </div>
+
+    <!-- libraries -->
+    <script src="http://code.jquery.com/jquery.js"></script>
+    <!--<script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>-->
+    <script type="text/javascript" src="https://api.tiles.mapbox.com/mapbox.js/v2.1.4/mapbox.js"></script>
+
+    <script src="http://cdn.kendostatic.com/2014.1.528/js/kendo.all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.5.0/lodash.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bluebird/2.9.13/bluebird.min.js"></script>
+    <script src="http://code.highcharts.com/highcharts.js"></script>
+
+
+    <!-- From MTC server -->
+    <!-- <script src="http://dev-mtc-vital-signs.pantheon.io/sites/all/themes/vitalsigns/js/geocities.js"></script>-->
+    <script src="http://dev-mtc-vital-signs.pantheon.io/sites/all/themes/vitalsigns/js/colors.js"></script>
+    <script src="http://dev-mtc-vital-signs.pantheon.io/sites/all/themes/vitalsigns/js/science.v1.min.js"></script>
+
+    <script src="js/viz/t18b.js"></script>
+  </body>
+</html>

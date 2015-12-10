@@ -23,11 +23,15 @@
   <body>
     <div class="container">
 
-        <div id="T16-A"><div><input id="t16aCityCombo" style="width: 200px;" /></div><div id="T16-A-chart" style="width:100%;height:85%">&nbsp;</div></div>
+        <div id="T16-A"><h3 class="chart-title">Historical Trend for Street Pavement Condition - Bay Area</h3><div><input id="t16aCityCombo" style="width: 200px;" /></div><div id="T16-A-chart" style="width:100%;height:85%">&nbsp;</div></div>
 
-        <!-- Three columns of text below the carousel -->
         <div class="row">
-            <div class="col-lg-3 col-md-3 col-sm-3 text-left infoDiv">
+            <div class="col-lg-9 col-md-9 col-sm-9 text-center">
+                <div id="map" style="max-width: 100%"></div>
+                <div id="controls" style="position:absolute;top:10px;right:20px;z-index:1000;width:100px;"></div>
+            </div>
+
+            <div class="col-lg-3 col-md-3 col-sm-3 text-left">
                 <div id="cityDiv">
                     <div id="regionTextDiv">
                     </div>
@@ -40,10 +44,8 @@
                             <label for="City_Value" class="col-sm-3 control-label information" id="pciCityLabel">PCI:</label>
                             <div id="City_Value" class="information"></div>
                         </div>
-               </div>
-
-                </div>
-                <!--                End City Div-->
+                    </div>
+                </div> <!-- End City Div-->
 
                 <div id="infoDiv">
                     <h4>Segment Details</h4>
@@ -83,10 +85,6 @@
                 </div>
               </div>
             </div>
-            <div class="col-lg-9 col-md-9 col-sm-9 text-center">
-                <div id="map"></div>
-                <div id="controls" style="position:absolute;top:10px;right:20px;z-index:1000;width:100px;"></div>
-            </div>
         </div>
         <!-- /.row -->
 
@@ -120,7 +118,7 @@
 
 
     <script src="js/viz/tracts.js"></script>
-    <!--<script src="js/viz/t16a.js"></script>-->
+    <script src="js/viz/t16a.js"></script>
     <script src="js/viz/t16b.js"></script>
 
   </body>
