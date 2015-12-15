@@ -1,27 +1,24 @@
- /*globals L, Highcharts, science, allRed, allOrange, allBlue, allGreen, allYellow, allPurple, allGray */
  (function($, _) {
-  var currentVariable = 'DriveAlone_Est';
-  var homeWork = "home";
-  var tractData, cityData, cityDataWork, regionData;
-  var variables = [
-    'DriveAlone_Est',
-    'Carpool_Est',
-    'Transit_Est',
-    'Walk_Est',
-    'Bike_Est',
-    'Telework_Est',
-    'Other_Est'
-  ];
+    var currentVariable = 'DriveAlone_Est'
+    var homeWork = "home"
+    var tractData, cityData, cityDataWork, regionData
+    var variables = [
+      'DriveAlone_Est',
+      'Carpool_Est',
+      'Transit_Est',
+      'Walk_Est',
+      'Bike_Est',
+      'Telework_Est',
+      'Other_Est'];
 
-  var ranges = {};
+    var ranges = {};
 
-  var hues = [
-    '#bdd7e7',
-    '#6baed6',
-    '#3182bd',
-    '#08519c'
-  ];
-
+    var hues = [
+        '#bdd7e7',
+        '#6baed6',
+        '#3182bd',
+        '#08519c'
+        ];
   $(function() {
     // Set the default highcharts separator
     Highcharts.setOptions({
@@ -39,85 +36,17 @@
       'Bike_Est': {title: 'Bike', hues: allYellow},
       'Telework_Est': {title: 'Telecommute', hues: allPurple},
       'Other_Est': {title: 'Other', hues: allGray}
-    };
+    }
 
     for (var i = 0; i < variables.length; i++) {
       ranges[variables[i]] = {};
-    }
-
-    function makeMapFullScreen(event) {
-        event.preventDefault();
-        $('.make-map-fullscreen').hide();
-        $('.reduce-map-size').show();
-        var center = map.getCenter();
-
-        var $container = $('#map');
-        $container.toggleClass('fullscreen-map-container');
-
-        // Move the legend
-        $('.info.legend').show();
-        $('#map .info.legend').hide();
-
-        // Calculate thew new offset
-        var offset = $('#map').offset();
-        var leftOffset = offset.left;
-
-        // Get any existing left offset
-        var left = $container.css('left');
-        left = _.trim(left, 'px');
-        left = parseInt(left, 10);
-        console.log('left', left);
-        if (left) {
-            console.log("We need add subtract", left);
-            leftOffset -= left;
-        }
-
-        // Set the new offiset
-        $container.css('left', '-' + leftOffset + 'px');
-
-        // Set the new width
-        var fullWidth = window.innerWidth - 30;
-        $container.width(fullWidth);
-
-        console.log("Resizing?", offset, leftOffset, fullWidth);
-
-        // Resize the map if the window resizes
-        window.addEventListener('resize', makeMapFullScreen);
-        map._onResize();
-
-        map.panTo(center);
-        console.log("Panned to ", center);
-    }
-
-    function disableFullScreen(event) {
-        event.preventDefault();
-        $('.make-map-fullscreen').show();
-        $('.reduce-map-size').hide();
-
-        var center = map.getCenter();
-
-        // Move the legend
-        $('.info.legend').hide();
-        $('#map .info.legend').show();
-
-        window.removeEventListener('resize', makeMapFullScreen);
-
-        var $container = $('#map');
-        $container.removeClass('fullscreen-map-container');
-        $container.css('left', 'auto');
-        $container.css('width', '100%');
-
-        map._onResize();
-        map.panTo(center);
-        console.log("Panned to ", center);
     }
 
     L.mapbox.accessToken = 'pk.eyJ1IjoicG9zdGNvZGUiLCJhIjoiWWdxRTB1TSJ9.phHjulna79QwlU-0FejOmw';
 
     var map = L.mapbox.map('map', undefined, {
         infoControl: true,
-        attributionControl: false,
-        scrollWheelZoom: false
+        attributionControl: false
     });
 
     var legendControl = new L.mapbox.legendControl();
@@ -131,10 +60,8 @@
     }
     legendControl.addTo(map);
 
-    L.mapbox.tileLayer('postcode.kh28fdpk').addTo(map)
+    var basemap = L.mapbox.tileLayer('postcode.kh28fdpk').addTo(map)
     // The visible tile layer
-
-    $('#map').append('<div class="zoom-in-prompt"><div>Zoom in to see census tract data</div></div>');
 
     var flatCities = flatten(geocities);
     var cityLayer = L.mapbox.featureLayer(flatCities)
@@ -195,55 +122,24 @@
     $.ajax({
       dataType: "json",
       url: "http://vitalsigns-production.elasticbeanstalk.com/t1t2/t1/region",
-      // Was: http://vitalsigns-production.elasticbeanstalk.com/t1t2/t1/region
       async: false,
       success: function(data) {
-        // Process the region data into the new format.
-        // DriveTot_Est: 69.9,
-        // DriveAlone_Est: null,
-        // Carpool_Est: null,
-        // Transit_Est: 15.5,
-        // Walk_Est: 7.8,
-        // Other_w_Bike_Est: 2.2,
-        // Bike_Est: null,
-        // Other_Est: null,
-        // Telework_Est: 5,
-
-        var formattedData = {};
-
-        // We only need the 2014 data here.
-        data = _.where(data, { Year: 2014 });
-        console.log("Using region data", 2014);
-        var regionData = data[0];
-        regionData.DriveTot_Est = _.find(data, { });
-        regionData.DriveAlone_Est =  _.find(data, { Mode: "Auto"}).Share;
-        regionData.Carpool_Est = ;
-        regionData.Transit_Est =  _.find(data, { Mode: "Public Transit"}).Share;
-        regionData.Walk_Est =  _.find(data, { Mode: "Walk"}).Share;
-        regionData.Other_w_Bike_Est = ;
-        regionData.Bike_Est = ;
-        regionData.Other_Est = ;
-        regionData.Telework_Est = _.find(data, { Mode: "Telecommute"}).Share;
+        regionData = data
       }
     });
 
-    pieChart(regionData, "Year", variables, "Region", "T1-T2-B-chart", 2014, "Region", "Bay Area" )
+    pieChart(regionData, "Year", variables, "Region", "T1-T2-B-chart", 2013, "Residence_Geo", "Bay Area" )
 
     map.setView([37.7833, -122.4167], 10)
 
-    $('.make-map-fullscreen').click(makeMapFullScreen);
-    $('.reduce-map-size').click(disableFullScreen);
-
     map.on('viewreset', function() {
       if(map.getZoom() >= 13) {
-        $('.zoom-in-prompt').hide();
         tractLayer.setFilter(function() { return true; })
         setVariable(currentVariable, tractLayer);
         cityLayer.setFilter(function() { return false; })
         cityLayerWork.setFilter(function() { return false; })
         sortTopTen(cityData, currentVariable);
-      } else {
-        $('.zoom-in-prompt').show();
+      } else if (map.getZoom() === 10 || map.getZoom() === 11 || map.getZoom() === 12) {
         if(homeWork == "home") {
           cityLayer.setFilter(function() { return true; })
           setVariable(currentVariable, cityLayer);
@@ -256,6 +152,21 @@
           cityLayer.setFilter(function() { return false; })
         }
         tractLayer.setFilter(function() { return false; })
+      } else {
+        if(homeWork == "home") {
+          // setVariable(currentVariable, countyLayer);
+          tractLayer.setFilter(function() { return false; })
+          cityLayer.setFilter(function() { return false; })
+          cityLayerWork.setFilter(function() { return false; })
+          sortTopTen(cityData, currentVariable);
+        } else {
+          // setVariable(currentVariable, countyLayerWork);
+          tractLayer.setFilter(function() { return false; })
+          cityLayer.setFilter(function() { return false; })
+          cityLayerWork.setFilter(function() { return false; })
+          sortTopTen(cityDataWork, currentVariable);
+        }
+
       }
     });
 
@@ -315,6 +226,13 @@
       zoomFilter(currentVariable)
     });
 
+
+    function loadData(url, geoLayer, nameField, year) {
+      $.getJSON(url)
+        .done(function(data) {
+            joinData(data, geoLayer, nameField, year);
+        });
+    }
 
     function joinData(data, layer, nameField, year) {
       var modes = [],
@@ -395,8 +313,7 @@
     }
 
   function zoomFilter(mode) {
-    if (map.getZoom() < 13) {
-      // City mode
+    if (map.getZoom() >= 10 && map.getZoom() < 13) {
       if(homeWork == "home") {
         cityLayer.setFilter(function() { return true; })
         setVariable(mode, cityLayer);
@@ -410,12 +327,25 @@
       }
         tractLayer.setFilter(function() { return false; })
     } else if (map.getZoom() >= 13) {
-        // Tract mode
         tractLayer.setFilter(function() { return true; })
         setVariable(mode, tractLayer);
         cityLayer.setFilter(function() { return false; })
         cityLayerWork.setFilter(function() { return false; })
         sortTopTen(cityData, mode);
+    } else {
+      if(homeWork == "home") {
+        // setVariable(mode, countyLayer);
+        tractLayer.setFilter(function() { return false; })
+        cityLayer.setFilter(function() { return false; })
+        cityLayerWork.setFilter(function() { return false; })
+        sortTopTen(cityData, mode);
+      } else {
+        // setVariable(mode, countyLayerWork);
+        tractLayer.setFilter(function() { return false; })
+        cityLayer.setFilter(function() { return false; })
+        cityLayerWork.setFilter(function() { return false; })
+        sortTopTen(cityDatawork, mode);
+      }
     }
   }
 
@@ -434,45 +364,32 @@
         return b[mode] - a[mode];
       });
 
-       var topTenText = "<h5>Top Cities for " + variablesObj[mode].title + "</h5><div class='row'><div class='col-lg-6'>"
-       topTenText += "<ol class='broken-list'>";
+       var topTenText = "<h4>Top Cities for " + variablesObj[mode].title + "</h4><div class='row'><div class='col-lg-6'>"
         $.each(sorted.slice(0,10), function(key, value) {
-            topTenText += "<li>" + value.City + ": " + (Math.round(value[mode]*1000)/1000).toFixed(1) + "%</li>"
+            if(key == 5) {
+                topTenText += "</div><div class='col-lg-6'>"
+            }
+            topTenText += "<h6>" + (key *1 +1) + ". " + value.City + ": " + (Math.round(value[mode]*1000)/1000).toFixed(1) + "%</h6>"
         })
-        topTenText += "</ol></div>"
+        topTenText += "</div>"
         $("#T1-T2-B-chart3").html(topTenText);
     }
 
     function changeLegend(quantiles, title, hues) {
-      var legendTemplate = _.template(
-        '<h5><%= title %></h5>' +
-        '<% _.forEach(rangeStrings, function (rangeString, i) { %>' +
-        '<div class="legend-row"><div class="legend-color" style="background:<%= hues[i] %>;">&nbsp; </div>' +
-        '<div class="legend-text"><%= rangeStrings[i] %></div></div><% }) %>'
-      );
       var div = $('.info.legend');
-      var rangeStrings = [];
-      var i;
-      var start;
-      for (i = 0; i < quantiles.length; i += 1) {
-        start = Math.round(quantiles[i] * 100) / 100;
-        if (i + 1 < quantiles.length) {
-          rangeStrings.push(start + '&ndash;' + (Math.round(quantiles[i + 1] * 100) / 100));
-        } else {
-          rangeStrings.push(start + '+');
+      $(div).empty();
+      $(div).addClass("col-lg-12");
+      $(div).append("<h5>"+variablesObj[title].title+"</h5>");
+        // loop through our density intervals and generate a label with a colored square for each interval
+        for (var i = 0; i < quantiles.length; i++) {
+          $(div).append('<div><div class="col-lg-1" style="background:' + variablesObj[title].hues[i] + ';">&nbsp; </div><div class="col-lg-8">' +
+            Math.round(quantiles[i]*100)/100 + (Math.round(quantiles[i + 1]*100)/100 ? '&ndash;' + Math.round(quantiles[i + 1]*100)/100 + '</div>' : '+'));
         }
-      }
-      $(div).html(legendTemplate({
-        title: variablesObj[title].title,
-        hues: variablesObj[title].hues,
-        rangeStrings: rangeStrings
-      }));
     }
     function pieChart(data, seriesName, seriesData, title, container, year, searchValue, searchTerm) {
         // Get the CSV and create the chart
         var options = {
           chart: {
-            backgroundColor: null,
             renderTo: container,
             type: 'pie'
             },
@@ -499,18 +416,20 @@
             type: 'pie',
               name: false,
               data: []
-           }]
+           }],
         }
+        dataArray = []
         options.series[0].data = []
-        $.each(seriesData, function(key, name) {
-          $.each(data, function(i,value) {
+        jQuery.each(seriesData, function(key, name) {
+          dataArray = []
+          jQuery.each(data, function(i,value) {
             if(value.Year == year && value[searchValue] == searchTerm) {
               options.series[0].data.push([variablesObj[name].title, value[name]]);
             }
           });
         })
         options.title.text = title
-        var chart = new Highcharts.Chart(options);
+        chart = new Highcharts.Chart(options);
     }
 
     zoomFilter("DriveAlone_Est")

@@ -463,8 +463,8 @@ regionPromise, countyPromise, cityPromise, _
                 var div = L.DomUtil.create('div', 'info legend');
                 $(div).addClass("col-lg-12");
 
-                $(div).append("<h5>Travel Time Reliability (BTI)</h5>");
-                $(div).append("<p>Amount of buffer time needed on a trip</p>");
+                $(div).append("<h5>Travel Time Reliability</h5>");
+                $(div).append("<p>Measured by BTI (buffer time index)</p>");
 
                 // loop through our density intervals and generate a label
                 // with a colored square for each interval

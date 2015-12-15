@@ -5,6 +5,7 @@
     var homeWork = "home"
     var cityData, cityDataWork, tractData, regionData
 
+
     // Set the default highcharts separator
     Highcharts.setOptions({
         lang: {
@@ -13,26 +14,23 @@
         }
     });
 
-    var fieldToModeMapping = {
-        OverallTime_Est: 'Overall',
-        DATime_Est: 'Drive Alone',
-        CPTime_Est: 'Carpool',
-        PTTime_Est: 'Public Transit'
-    };
+    var variablesObj = {
+      'OverallTime_Est': {title: 'Overall Commute Time', hues: allBlue},
+      'DATime_Est': {title: 'Drive Alone Commute Time', hues: allGreen},
+      'CPTime_Est': {title: 'Carpool Commute Time', hues: allYellow},
+      'PTTime_Est': {title: 'Public Transit Commute Time', hues: allOrange },
+      'Workers_Est': {title: 'Overall Commute Time', hues: allBlue},
+      'DAWorkers_Est': {title: 'Drive Alone Commute Time', hues: allGreen},
+      'CPWorkers_Est': {title: 'Carpool Commute Time', hues: allYellow},
+      'PTWorkers_Est': {title: 'Public Transit Commute Time', hues: allOrange }
+    }
 
     var variables = [
       'OverallTime_Est',
       'DATime_Est',
       'CPTime_Est',
       'PTTime_Est'
-      ];
-
-    var variablesWork = [
-      'Workers_Est',
-      'DAWorkers_Est',
-      'CPWorkers_Est',
-      'PTWorkers_Est'
-      ];
+    ];
 
     var ranges = {};
     var rangesWork = {};
@@ -52,16 +50,6 @@
     }
 
   $(function(){
-    var variablesObj = {
-      'OverallTime_Est': {title: 'Overall Commute Time', hues: allGreen},
-      'DATime_Est': {title: 'Single Driver Commute', hues: allRed},
-      'CPTime_Est': {title: 'Carpool Commute Time', hues: allOrange},
-      'PTTime_Est': {title: 'Transit Commute Time', hues: allBlue },
-      'Workers_Est': {title: 'Overall Commute Time', hues: allGreen},
-      'DAWorkers_Est': {title: 'Single Driver Commute', hues: allRed},
-      'CPWorkers_Est': {title: 'Carpool Commute Time', hues: allOrange},
-      'PTWorkers_Est': {title: 'Transit Commute Time', hues: allBlue }
-    }
 
     // TODO: If each range is an object indexed by a number, and if those
     // numbers are sequential integers starting with zero, then we should
@@ -77,42 +65,62 @@
         var center = map.getCenter();
 
         var $container = $('#map');
+        var $sidebar = $('#T3-T4-B-sidebar');
         $container.toggleClass('fullscreen-map-container');
 
         // Move the legend
-        $('.info.legend').show();
-        $('#map .info.legend').hide();
+        // $('.info.legend').show();
+        // $('#map .info.legend').hide();
+        //$container.height(625);
+        $sidebar.height($container.height());
 
         // Calculate thew new offset
-        var offset = $('#map').offset();
+        var offset = $container.offset();
         var leftOffset = offset.left;
 
         // Get any existing left offset
         var left = $container.css('left');
         left = _.trim(left, 'px');
         left = parseInt(left, 10);
-        console.log('left', left);
         if (left) {
-            console.log("We need add subtract", left);
             leftOffset -= left;
         }
 
-        // Set the new offiset
+        // Set the new offset
         $container.css('left', '-' + leftOffset + 'px');
 
-        // Set the new width
-        var fullWidth = window.innerWidth - 30;
-        $container.width(fullWidth);
+        // Set the sidebar location
+        var sidebarPadding = 30;
+        console.log("Sidebar offset calc", window.innerWidth, $sidebar.offset().left, $sidebar.width())
+        var sidebarOffsetRight = window.innerWidth - ($sidebar.offset().left + $sidebar.width() + sidebarPadding);
 
-        console.log("Resizing?", offset, leftOffset, fullWidth);
+        // Get any existing right offset
+        var right = $sidebar.css('right');
+        right = _.trim(right, 'px');
+        right = parseInt(right, 10);
+        if (right) {
+            sidebarOffsetRight -= right;
+        }
+
+        $sidebar.css({
+          position: 'relative',
+          right: (-sidebarOffsetRight) + 12
+        });
+
+        // console.log("Final sidebar offset", sidebarOffsetRight);
+
+        // Set the new map
+        var fullWidth = window.innerWidth - $sidebar.width() - sidebarPadding;
+        $container.width(fullWidth);
+        // console.log("Resizing container", offset, leftOffset, fullWidth, $sidebar.width(), window.innerWidth);
 
         // Resize the map if the window resizes
         window.addEventListener('resize', makeMapFullScreen);
         map._onResize();
 
         map.panTo(center);
-        console.log("Panned to ", center);
     }
+
 
     function disableFullScreen(event) {
         event.preventDefault();
@@ -132,9 +140,14 @@
         $container.css('left', 'auto');
         $container.css('width', '100%');
 
+        var $sidebar = $('#T3-T4-B-sidebar');
+        $sidebar.css({
+          right: 'auto',
+          position: 'inherit'
+        });
+
         map._onResize();
         map.panTo(center);
-        console.log("Panned to ", center);
     }
 
     L.mapbox.accessToken = 'pk.eyJ1IjoicG9zdGNvZGUiLCJhIjoiWWdxRTB1TSJ9.phHjulna79QwlU-0FejOmw';
@@ -160,27 +173,16 @@
         legendControl.addTo(map);
 
     var basemap = L.mapbox.tileLayer('postcode.kh28fdpk').addTo(map)
-    // The visible tile layer
 
-      /*
-      T1 & T3 are Home
-      T2 & T4 are Work
+    // Add the zoom in indicator
+    $('#map').append('<div class="zoom-in-prompt"><div>Zoom in to see neighborhood data</div></div>');
 
-      T3: Home
-      T4: Work
-      http://vitalsignsvs2.elasticbeanstalk.com/api/t3/region
-      http://vitalsignsvs2.elasticbeanstalk.com/api/t3/city
-      http://vitalsignsvs2.elasticbeanstalk.com/api/t3/tract
-      http://vitalsignsvs2.elasticbeanstalk.com/api/t4/city
-      */
 
     // Initiate the data requests early, so we can do some geodata processing
     // while we wait on the responses.
     var cityHomePromise = get('http://vitalsignsvs2.elasticbeanstalk.com/api/t3/city');
     var cityWorkPromise = get('http://vitalsignsvs2.elasticbeanstalk.com/api/t4/city');
-    // old var
-    // tractPromise = get('http://vitalsigns-production.elasticbeanstalk.com/t3t4/tracts');
-    tractPromise = get('http://vitalsignsvs2.elasticbeanstalk.com/api/t3/tract');
+    var tractPromise = get('http://vitalsignsvs2.elasticbeanstalk.com/api/t3/tract');
     var regionPromise = get('http://vitalsigns-production.elasticbeanstalk.com/t3t4/region');
 
     // Flatten the tract and city data
@@ -191,116 +193,108 @@
     window.geocities = undefined;
     window.tracts = undefined;
 
+
+    var fieldToModeMapping = {
+      'Overall': 'OverallTime_Est',
+      'Drive Alone': 'DATime_Est',
+      'Carpool': 'CPTime_Est',
+      'Public Transit': 'PTTime_Est'
+    };
+
     function convertNewDataFormat(data, scale) {
-      console.log("Cleaning", data);
+      // console.log("Cleaning", data);
       var geographies = [];
+      var geoKey;
+      var i;
 
       // Figure out the names of all cities we'll want data for
       if (scale === 'City') {
         _.each(flatCities.features, function(f) {
           geographies.push(f.properties.NAME);
         });
+        geoKey = 'City';
       }
 
       // Or, figure out all the tracts.
       if (scale === 'Tract') {
-        console.log("Flat tracts", flatTracts);
         _.each(flatTracts.features, function(f) {
           geographies.push(Number(f.properties.NAME));
         });
-        console.log("using geographies", geographies);
+        geoKey = 'ID2';
       }
 
-
+      // Match the raw data to each geography
       formattedData = {};
       _.each(geographies, function(geo) {
+        // If we don't yet have any data for this city/tract yet,
+        // set up an object to store it:
         if (formattedData[geo] == undefined) {
           formattedData[geo] = {};
 
           formattedData[geo][scale] = geo;
           formattedData[geo].Year = 2014;
 
+          for (i = 0; i < variables.length; i++) {
+            formattedData[geo][variables[i]] = null;
+          }
+
           if (scale === 'Tract') {
-            formattedData[geo].Id2 = geo;
+            formattedData[geo].ID2 = geo;
           }
         }
-        // 6013021200 -- tract data
-        // 6081601902
-
-        _.each(fieldToModeMapping, function(mode, key) {
-          var searchOpts = {};
-
-          if (scale === 'Tract') {
-            searchOpts.ID2 = geo;
-          } else {
-            searchOpts[scale] = geo;
-          }
-          searchOpts.Mode = mode;
-
-          var results = _.find(data, searchOpts);
-/*          if (scale === 'Tract' && results !== undefined) {
-            console.log("results", results, "data", data, "opts", searchOpts);
-          }
-*/
-          if (_.has(results, 'Time')) {
-            var datapoint = results.Time;
-            formattedData[geo][key] = datapoint;
-          } else {
-            formattedData[geo][key] = null;
-          }
-
-
-        });
       });
+
+      // Go over each piece of data and match it to a geo
+      for (i = 0; i < data.length; i++) {
+        var d = data[i];
+        // if (d.City === null) {
+        //   continue;
+        // }
+        var key = fieldToModeMapping[d.Mode];
+        if (formattedData[d[geoKey]] === undefined) {
+          // console.log("Missing base geodata for", d, geoKey, formattedData);
+          continue;
+        }
+        formattedData[d[geoKey]][key] = d.Time;
+      }
 
       return _.values(formattedData);
     }
 
 
     var cityLayer = L.mapbox.featureLayer(flatCities)
-        .on('mouseover', function() {
-
-        })
         .on('click', function(e) {
-          barChart(cityData, "Year", variables, e.layer.feature.properties["City"], "T3-T4-B-chart", 2013, "City", e.layer.feature.properties["City"] )
+          barChart(cityData, "Year", variables, e.layer.feature.properties["City"], "T3-T4-B-chart", 2014, "City", e.layer.feature.properties["City"] )
          })
         .addTo(map);
 
     var cityLayerWork = L.mapbox.featureLayer(flatCities)
-        .on('mouseover', function() {
-
-        })
         .on('click', function(e) {
-          barChart(cityDataWork, "Year", variables, e.layer.feature.properties["City"], "T3-T4-B-chart", 2013, "City", e.layer.feature.properties["City"] )
+          barChart(cityDataWork, "Year", variables, e.layer.feature.properties["City"], "T3-T4-B-chart", 2014, "City", e.layer.feature.properties["City"] )
          })
         .addTo(map);
 
-
     var tractLayer = L.mapbox.featureLayer(flatTracts)
         .on('click', function(e) {
-          barChart(tractData, "Year", variables, "Tract " + e.layer.feature.properties["Id2"], "T3-T4-B-chart", 2013, "Id2", e.layer.feature.properties["Id2"] )
+          barChart(tractData, "Year", variables, "Tract " + e.layer.feature.properties["ID2"], "T3-T4-B-chart", 2014, "ID2", e.layer.feature.properties["ID2"] )
         })
         .addTo(map);
 
     // As the remote data comes in, we can join it to the geodata.
     cityHomePromise = cityHomePromise.then(function (home) {
-      home = convertNewDataFormat(home, "City");
-
-      joinData(home, cityLayer, "City", "2014");
-      cityData = home;
+      var convertedData = convertNewDataFormat(home, "City");
+      joinData(convertedData, cityLayer, "City", 2014);
+      cityData = convertedData;
     });
     cityWorkPromise = cityWorkPromise.then(function (work) {
-      work = convertNewDataFormat(work, "City");
-      console.log("got cleaned work data", work);
-      joinData(work, cityLayerWork, "City", "2014");
-      cityDataWork = work;
+      var convertedData = convertNewDataFormat(work, "City");
+      joinData(convertedData, cityLayerWork, "City", 2014);
+      cityDataWork = convertedData;
     });
     tractPromise = tractPromise.then(function (tract) {
-      tract = convertNewDataFormat(tract, "Tract");
-      console.log("Got cleaned tract data", tract);
-
-      joinData(tract, tractLayer, "Tract", "2014");
-      tractData = tract;
+      convertedData = convertNewDataFormat(tract, "Tract");
+      joinData(convertedData, tractLayer, "Tract", 2014);
+      tractData = convertedData;
     });
     regionPromise = regionPromise.then(function (region) {
       regionData = region;
@@ -315,7 +309,7 @@
       regionPromise
     ).then(function () {
 
-      barChart(regionData, "Year", variables, "Region", "T3-T4-B-chart", 2013, "Region", "Bay Area" )
+      // barChart(regionData, "Year", variables, "Region", "T3-T4-B-chart", 2014, "Region", "Bay Area" )
 
       map.setView([37.7833, -122.4167], 9)
 
@@ -356,7 +350,8 @@
         homeWork = "home"
         zoomFilter(currentVariable)
         // If we switch between home and work, the bar chart no longer corresponds to the map.
-        barChart(regionData, "Year", variables, "Region", "T3-T4-B-chart", 2013, "Region", "Bay Area" )
+        $('#T3-T4-B-chart').html('');
+        // barChart(regionData, "Year", variables, "Region", "T3-T4-B-chart", 2014, "Region", "Bay Area" )
       });
 
       $("#workButton").click(function() {
@@ -365,7 +360,8 @@
         homeWork = "work"
         zoomFilter(currentVariable)
         // If we switch between home and work, the bar chart no longer corresponds to the map.
-        barChart(regionData, "Year", variables, "Region", "T3-T4-B-chart", 2013, "Region", "Bay Area" )
+        $('#T3-T4-B-chart').html('');
+        // barChart(regionData, "Year", variables, "Region", "T3-T4-B-chart", 2014, "Region", "Bay Area" )
       });
 
       // Kick things off
@@ -470,12 +466,14 @@
       if ((map.getZoom() < 13)) {
         // City mode
         if(homeWork == "home") {
+          $('.zoom-in-prompt').show();
           cityLayer.setFilter(function() { return true; })
           cityLayerWork.setFilter(function() { return false; })
           setVariable(mode, cityLayer);
           sortTopTen(cityData, mode);
           sortBottomFive(cityData, mode);
         } else {
+          $('.zoom-in-prompt').hide();
           cityLayerWork.setFilter(function() { return true; })
           cityLayer.setFilter(function() { return false; })
           setVariable(mode, cityLayerWork);
@@ -486,6 +484,7 @@
       } else {
         // Tract mode
         if (homeWork === "home") {
+          $('.zoom-in-prompt').hide();
           tractLayer.setFilter(function() { return true; })
           setVariable(mode, tractLayer);
           cityLayer.setFilter(function() { return false; })
@@ -493,12 +492,15 @@
           sortTopTen(cityData, mode);
           sortBottomFive(cityData, mode);
         } else {
-          tractLayer.setFilter(function() { return true; })
-          setVariable(mode, tractLayer, true);
-          cityLayer.setFilter(function() { return false; })
-          cityLayerWork.setFilter(function() { return false; })
-          sortTopTen(cityData, mode);
-          sortBottomFive(cityData, mode);
+          // No tract data is available in this mode.
+          $('.zoom-in-prompt').hide();
+          map.setZoom(12);
+          // tractLayer.setFilter(function() { return true; })
+          // setVariable(mode, tractLayer, true);
+          // cityLayer.setFilter(function() { return false; })
+          // cityLayerWork.setFilter(function() { return false; })
+          // sortTopTen(cityData, mode);
+          // sortBottomFive(cityData, mode);
         }
       }
     }
@@ -518,7 +520,7 @@
         return b[mode] - a[mode];
       })
 
-       var topTenText = "<div class='col-lg-6'><h5>Top Cities for " + variablesObj[mode].title + "</h5>"
+       var topTenText = "<div class='col-lg-6'><h5>Cities with the Longest " + variablesObj[mode].title + "</h5>"
        topTenText += "<ol>";
         $.each(sorted.slice(0, 5), function(key, v) {
             topTenText += "<li>" + v.City + ": " + (Math.round(v[mode]*100)/100).toFixed(1) + " min</li>"
@@ -543,7 +545,7 @@
         return a[mode] - b[mode];
       })
 
-        var bottomFiveText = "<div class='col-lg-6'><h5>Bottom Cities for " + variablesObj[mode].title + "</h5>"
+        var bottomFiveText = "<div class='col-lg-6'><h5>Cities with the Shortest " + variablesObj[mode].title + "</h5>"
         bottomFiveText += "<ol>";
         $.each(sortedBottom.slice(0, 5), function(k, value) {
             bottomFiveText += "<li>" + value.City + ": " + (Math.round(value[mode]*100)/100).toFixed(1) + " min</li>"
@@ -557,8 +559,7 @@
         '<h5><%= title %></h5>' +
         '<% _.forEach(rangeStrings, function (rangeString, i) { %>' +
         '<div class="legend-row"><div class="legend-color" style="background:<%= hues[i] %>;">&nbsp; </div>' +
-        '<div class="legend-text"><%= rangeStrings[i] %></div></div><% }) %>' +
-        '<div class="legend-row"><div class="legend-text">Zoom to see detailed geographies</div></div>'
+        '<div class="legend-text"><%= rangeStrings[i] %> minutes</div></div><% }) %>'
       );
       var div = $('.info.legend');
       var rangeStrings = [];
@@ -568,9 +569,9 @@
       for (i = 0; i < quantiles.length; i += 1) {
         start = Math.round(quantiles[i] * 100) / 100;
         if (i + 1 < quantiles.length) {
-          rangeStrings.push(start + '&ndash;' + (Math.round(quantiles[i + 1] * 100) / 100));
+          rangeStrings.push(start.toFixed(1) + '&ndash;' + (Math.round(quantiles[i + 1] * 100) / 100).toFixed(1));
         } else {
-          rangeStrings.push(start + '+');
+          rangeStrings.push(start.toFixed(1) + '+');
         }
       }
       $(div).html(legendTemplate({
@@ -595,6 +596,9 @@ function getRange(data, value) {
 
 
 function barChart(data, seriesName, seriesData, title, container, year, searchValue, searchTerm) {
+    $('#select-location-prompt').hide();
+    $('#T3-T4-B-chart').show()
+
     // Get the CSV and create the chart
     var options = {
         chart: {
@@ -635,8 +639,11 @@ function barChart(data, seriesName, seriesData, title, container, year, searchVa
     var dataArray = []
     $.each(seriesData, function(key, name) {
       $.each(data, function(i,value) {
-        if(value[searchValue] === searchTerm && value.Year === 2013) {
-            dataArray.push(value[name]);
+        if(value[searchValue] === searchTerm && value.Year === 2014) {
+            dataArray.push({
+              y: value[name],
+              color: variablesObj[name].hues[2]
+            });
         }
       });
       switch(name) {
@@ -647,7 +654,7 @@ function barChart(data, seriesName, seriesData, title, container, year, searchVa
           yaxis.push("Carpool");
           break;
         case "PTTime_Est":
-          yaxis.push("Transit");
+          yaxis.push("Public Transit");
           break;
         case "OverallTime_Est":
           yaxis.push("Overall");

@@ -42,7 +42,7 @@
               </div>
               <div class="info legend" style="display:none;"></div>
               <h4>Legend</h4>
-              <h5>Condition (PCI range)</h5>
+              <h5>Highway pavement condition</h5>
               <div class='my-legend'>
                 <div class='legend-title'></div>
                   <div class='legend-scale'>
@@ -68,12 +68,14 @@
     </div><!-- end t17b -->
 
     <script type="text/template" id="map-legend-template">
-      <h3 style="margin-bottom:0;"><%= caltrans_i %></h3>
+      <div style="margin-bottom: 20px">
+        <h3 style="margin-bottom:0; margin-top: 0;"><%= caltrans_i %></h3>
 
-      <p><span style="color: <%= color %>;  background: <%= bg %>; display:inline-block; padding: 8px;">Condition: <%= condition %></span></p>
+        <p><span style="color: <%= color %>;  background: <%= bg %>; display:inline-block; padding: 8px;">Condition: <%= condition %></span></p>
 
-      <p>County: <%= county %></p>
-      <p>Type: <%= type %></p>
+        <p><strong>County:</strong> <%= county %></p>
+        <p><strong>Type:</strong> <%= type %></p>
+      </div>
     </script>
 
     <script type="text/template" id="pavement-condition-template">

@@ -108,7 +108,7 @@ http://vitalsignsvs2.elasticbeanstalk.com/api/t4/city
     });
 
     // Add zoom prompt
-    $('#map').append('<div class="zoom-in-prompt">Zoom in to see city-level data</div>');
+    $('#map').append('<div class="zoom-in-prompt"><div>Zoom in to see city-level data</div></div>');
     //$('.zoom-in-prompt').hide();
 
     map.on('zoomend', function() {

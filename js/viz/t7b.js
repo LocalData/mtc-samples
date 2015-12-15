@@ -494,7 +494,7 @@ regionPromise, countyPromise, cityPromise, _
             congestionMap.on('click', clearSelectedElement);
 
             // Add zoom-in note
-            // $('#mapt7b').append('<div class="zoom-in-prompt">Zoom in to see speed details</div>');
+            // $('#mapt7b').append('<div class="zoom-in-prompt"><div>Zoom in to see speed details</div></div>');
 
             // Make sure the selected segment stays on top
             congestionMap.on('zoomend', function() {

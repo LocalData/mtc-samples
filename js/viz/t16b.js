@@ -57,7 +57,7 @@
      }
     }
 
-    $('#map').append('<div class="zoom-in-prompt">Zoom in to see individual street segments</div>');
+    $('#map').append('<div class="zoom-in-prompt"><div>Zoom in to see individual street segments</div></div>');
 
     map.on({
         zoomend: manageLayers

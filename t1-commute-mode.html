@@ -3,15 +3,16 @@
   <head>
     <title>T1: Commute Mode</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
-    <link href="css/app.css" rel="stylesheet" media="screen">
+<!--     <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+ -->    <link href="css/app.css" rel="stylesheet" media="screen">
 
     <!--<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />-->
     <link href="http://cdn.kendostatic.com/2014.1.528/styles/kendo.common.min.css" rel="stylesheet" />
     <link href="http://cdn.kendostatic.com/2014.1.528/styles/kendo.default.min.css" rel="stylesheet" />
     <link href="http://cdn.kendostatic.com/2014.1.528/styles/kendo.dataviz.min.css" rel="stylesheet" />
     <link href="http://cdn.kendostatic.com/2014.1.528/styles/kendo.dataviz.default.min.css" rel="stylesheet" />
-    <link type="text/css" rel="stylesheet" href="https://api.tiles.mapbox.com/mapbox.js/v2.1.4/mapbox.css" media="all" />
+<!--     <link type="text/css" rel="stylesheet" href="https://api.tiles.mapbox.com/mapbox.js/v2.1.4/mapbox.css" media="all" />
+ -->    <link rel="stylesheet" href="http://libs.cartocdn.com/cartodb.js/v3/3.13/themes/css/cartodb.css" />
 
     <style type="text/css">
       #map {
@@ -24,68 +25,117 @@
 
     <div id="T1-T2-A + Data"><div style="padding-left:10px;padding-bottom:10px;padding-top:10px;"><div id="countySelect">&nbsp;</div></div><div id="areaChart_T1-T2-A" style="width:100%;height:85%">&nbsp;</div></div>
 
-<div class="row">
-  <div id="T1-T2-B" class="col-lg-12">
-    <div id="T1-T2-B-map" class="col-lg-12">
-      <div class="row">
+  <div id="T1-T2-B">
+    <div class="row">
+      <div class="col-lg-12">
         <nav class="navbar navbar-default map-navbar">
-          <div class="navbar-header">
-            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-navbar-collapse-1">
-              <span class="sr-only">Toggle navigation</span>
-              <span class="icon-bar"></span>
-              <span class="icon-bar"></span>
-              <span class="icon-bar"></span>
-            </button>
-          </div>
-           <div class="collapse navbar-collapse" id="bs-navbar-collapse-1">
-             <ul class="nav navbar-nav map-nav">
-              <li><a id="autoButton" class="btn btn-primary btn-fix button-mode">Auto</a></li>
-              <li><a id="carpoolButton" class="btn btn-primary btn-fix button-mode">Carpool</a></li>
-              <li><a id="transitButton" class= "btn btn-primary btn-fix button-mode">Transit</a></li>
-              <li><a id="walkingButton" class="btn btn-primary btn-fix button-mode">Walking</a></li>
-              <li><a id="bikingButton" class="btn btn-primary btn-fix button-mode">Biking</a></li>
-              <li><a id="otherButton" class="btn btn-primary btn-fix button-mode">Other</a></li>
-              <li><a id="teleworkButton" class="btn btn-primary btn-fix button-mode">Telework</a></li>
-              <li><a id="homeButton" class="btn btn-primary btn-fix active going-home"><span class="glyphicon glyphicon-arrow-right"></span> Home</a></li>
-              <li><a id="workButton" class="btn btn-primary btn-fix going-work"><span class="glyphicon glyphicon-arrow-right"></span> Work</a></li>
-            </ul>
-          </div>
+         <div class="navbar-header">
+           <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-navbar-collapse-1">
+             <span class="sr-only">Toggle navigation</span>
+             <span class="icon-bar"></span>
+             <span class="icon-bar"></span>
+             <span class="icon-bar"></span>
+           </button>
+         </div>
+          <div class="collapse navbar-collapse" id="bs-navbar-collapse-1">
+            <ul class="nav navbar-nav map-nav">
+             <li><a id="autoButton" class="btn btn-primary btn-fix button-mode">Drive Alone</a></li>
+             <li><a id="carpoolButton" class="btn btn-primary btn-fix button-mode">Carpool</a></li>
+             <li><a id="transitButton" class= "btn btn-primary btn-fix button-mode active">Public Transit</a></li>
+             <li><a id="walkingButton" class="btn btn-primary btn-fix button-mode">Walk</a></li>
+             <li><a id="bikingButton" class="btn btn-primary btn-fix button-mode">Bike</a></li>
+             <li><a id="otherButton" class="btn btn-primary btn-fix button-mode">Other</a></li>
+             <li><a id="teleworkButton" class="btn btn-primary btn-fix button-mode">Telecommute</a></li>
+             <li><a id="homeButton" class="btn btn-primary btn-fix active going-home"><span class="glyphicon glyphicon-arrow-right"></span> Home</a></li>
+             <li><a id="workButton" class="btn btn-primary btn-fix going-work"><span class="glyphicon glyphicon-arrow-right"></span> Work</a></li>
+           </ul>
+         </div>
         </nav>
       </div>
-    </div>
+    </div> <!-- end nav row -->
+
     <div class="row">
-      <div class="col-sm-8">
-        <div id="map" class="map"></div>
-      </div>
-      <div class="col-sm-4">
-        <div id="T1-T2-B-chart-wrapper">
-            <div id="T1-T2-B-chart2">
-              <div id="T1-T2-B-chart3">
-                <h4>Top Cities for Taking Transit</h4>
-                <div class="row">
-                  <div class="col-sm-6">
-                    <h6>1. San Francisco 24%</h6>
-                    <h6>2. Berkeley 21%</h6>
-                    <h6>3. Palo Alto 18%</h6>
-                    <h6>4. San Rafael 17%</h6>
-                    <h6>5. Oakland 17%</h6>
-                  </div>
-                  <div class="col-sm-6">
-                    <h6>6. Emeryville 16%</h6>
-                    <h6>7. San Ramon 16%</h6>
-                    <h6>8. South San Francisco 15%</h6>
-                    <h6>9. Alameda 15%</h6>
-                    <h6>10. Walnut Creek 14%</h6>
+      <div class="col-md-12" id="mode-map-container">
+        <div class="row">
+          <div class="col-sm-8">
+            <div id="map" class="map"></div>
+          </div>
+          <div class="col-sm-4" style="background: #fff;" id="T1-T2-B-sidebar">
+            <div id="T1-T2-B-chart-wrapper">
+                <div id="T1-T2-B-chart2">
+                  <div id="T1-T2-B-chart3">
+                    <h4>Top Cities for Taking Transit</h4>
+                    <div class="row">
+                      <div class="col-sm-6">
+                        <h6>1. San Francisco 24%</h6>
+                        <h6>2. Berkeley 21%</h6>
+                        <h6>3. Palo Alto 18%</h6>
+                        <h6>4. San Rafael 17%</h6>
+                        <h6>5. Oakland 17%</h6>
+                      </div>
+                      <div class="col-sm-6">
+                        <h6>6. Emeryville 16%</h6>
+                        <h6>7. San Ramon 16%</h6>
+                        <h6>8. South San Francisco 15%</h6>
+                        <h6>9. Alameda 15%</h6>
+                        <h6>10. Walnut Creek 14%</h6>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
+
+                <p id="select-location-prompt">Select a location on the map for more information.</p>
+                <div id="T1-T2-B-chart" style="height: 300px; display: none;"></div>
             </div>
-        </div>
-        <div id="T1-T2-B-chart" class="chart"></div>
+
+
+          </div>
+        </div> <!-- end map row -->
       </div>
-    </div> <!-- end row -->
+    </div>
+
+    <div class="row">
+      <div class="col-sm-12">
+        <p>
+          <a href="#" class="make-map-fullscreen">Increase map size</a>
+          <a href="#" class="reduce-map-size" style="display:none">Reduce map size</a>
+        </p>
+      </div>
+    </div><!-- end zoom in row -->
   </div>
-</div>
+
+  <script type="text/template" id="tract-template">
+    #t3t4tractdata {
+      [zoom >= 12] {
+        <% _.each(range, function(value, i) { %>
+          ['<%= field %>' > <%= value %>] {
+            polygon-fill: <%= colors[i] %>;
+            polygon-opacity: 0.8;
+            line-width: 0.5;
+            line-color: #fff;
+          }
+        <% }); %>
+      }
+    }
+  </script>
+
+
+  <script type="text/template" id="city-template">
+    <%= selector %> {
+      [zoom < <%= maxzoom %>] {
+        <% _.each(range, function(value, i) { %>
+          ['<%= field %>' > <%= value %>] {
+            polygon-fill: <%= colors[i] %>;
+            polygon-opacity: 0.8;
+            line-width: 0.5;
+            line-color: #fff;
+          }
+        <% }); %>
+      }
+    }
+  </script>
+
+
   <script>
       var drivealone;
       var geojson;
@@ -99,6 +149,9 @@
   </script>
 
 
+<pre id="dump">
+</pre>
+
   <!--<div class="row"><div id="T1-T2-C"><div id="T1-T2-C-chart" style="width:100%;height:85%">&nbsp;</div></div></div>-->
 
 
@@ -107,8 +160,8 @@
     <!-- libraries -->
     <script src="http://code.jquery.com/jquery.js"></script>
     <!--<script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>-->
+    <!--<script type="text/javascript" src="https://api.tiles.mapbox.com/mapbox.js/v2.1.4/mapbox.js"></script>-->
     <script src="http://libs.cartocdn.com/cartodb.js/v3/3.13/cartodb.js"></script>
-    <script type="text/javascript" src="https://api.tiles.mapbox.com/mapbox.js/v2.1.4/mapbox.js"></script>
     <script src="http://cdn-geoweb.s3.amazonaws.com/esri-leaflet/1.0.0-rc.3/esri-leaflet.js"></script>
     <script src="http://cdn.kendostatic.com/2014.1.528/js/kendo.all.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.5.0/lodash.js"></script>
@@ -129,10 +182,9 @@
     <script src="js/viz/t1loader.js"></script>
     <script src="js/viz/tracts.js"></script>
     <script src="js/viz/t1t2.js"></script>
-    <script src="js/viz/t1t2a.js"></script>
+    <!--<script src="js/viz/t1t2a.js"></script>-->
     <script src="js/viz/t1t2b.js"></script>
-    <!--
-    <script src="js/viz/t1t2c.js"></script>-->
+    <!--<script src="js/viz/t1t2c.js"></script>-->
 
   </body>
 </html>

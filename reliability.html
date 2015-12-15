@@ -54,7 +54,7 @@
           <div class="row">
             <div class="col-lg-12">
               <div class="corridor-info-header">
-                <p>Select a corridor on the map for more information.</p>
+                <p>Select a segment on the map for more information.</p>
               </div>
               <div class="corridor-info-text"></div>
 
@@ -74,19 +74,20 @@
       <div class="row">
         <div class="col-lg-6 col-md-6 col-sm-12">
           <h4>Least reliable segments for AM peak</h4>
-          <h6>1. SR-242 southbound from I-680 to SR-4</h6>
+
+          <h6>1. SR-242 southbound from SR-4 to I-680</h6>
           <h6>2. US-101 northbound from SR-85 to I-280/I-680</h6>
-          <h6>3. I-680 southbound from SR-24 to SR-4</h6>
-          <h6>4. I-880 southbound from SR-84 to SR-92</h6>
-          <h6>5. I-80 westbound from US-101 to MacArthur Maze</h6>
+          <h6>3. I-680 southbound from SR-4 to SR-24</h6>
+          <h6>4. I-880 southbound from SR-92 to SR-84</h6>
+          <h6>5. I-80 westbound from MacArthur Maze to US-101</h6>
         </div>
         <div class="col-lg-6 col-md-6 col-sm-12">
           <h4>Least reliable segments for PM peak</h4>
           <h6>1. US-101 northbound from SR-84 to SR-92</h6>
-          <h6>2. SR-13 eastbound from SR-24 to I-580</h6>
-          <h6>3. I-280 southbound from US-101 to SR-85</h6>
-          <h6>4. I-880 southbound from SR-92 to I-80</h6>
-          <h6>5. I-80 eastbound from MacArthur maze to I-580</h6>
+          <h6>2. SR-13 northbound from SR-24 to I-580</h6>
+          <h6>3. I-280 southbound from SR-85 to US-101</h6>
+          <h6>4. I-880 southbound from I-80 to SR-92</h6>
+          <h6>5. I-80 eastbound from MacArthur Maze to I-580</h6>
         </div>
       </div><!-- end top 10 row -->
     </div><!-- end t9b -->
@@ -94,7 +95,7 @@
   <script type="text/template" id="map-legend-template">
   <div class="highway-sign">
     <h3 style="margin-bottom:0;"><%= corridor %> <%= longDirection %></h3>
-    <p><strong>From <%= endpoint1 %> to <%= endpoint2 %></strong></p>
+    <p><strong>Between <%= endpoint1 %> and <%= endpoint2 %></strong></p>
 
     <p>BTI: <%= bti %> at <%= time %></p>
   </div>
