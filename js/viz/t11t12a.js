@@ -1,5 +1,3 @@
-var t11modedata;
-var t11operatordata;
 var charttype = "mode";
 var operators = ["Muni","BART","AC Transit","VTA","Caltrain","SamTrans"];
 //Mode Variables
@@ -11,14 +9,6 @@ var dataset5 = [];
 var dataset6 = [];
 
 var lineData = [];
-
-//Operator Variables
-var munidata = [];
-var bartdata = [];
-var actransitdata = [];
-var vtadata = [];
-var caltraindata = [];
-var samtransdata = [];
 
 var colors = _.clone(altColors);
 colors[0] = altColors[1];
@@ -37,64 +27,14 @@ $(function() {
         }
     });
 
-     //REQUEST MODE DATA FROM SERVER
-     $.ajax({
-        dataType: "json",
-        url: "http://vitalsigns-production.elasticbeanstalk.com/t11/mode",
-        //data: data,
-        async: false,
-        success: successModeDatat11t12a
-    });
-
-     function successModeDatat11t12a(data) {
-        t11modedata = data;
-    }
-
-    //REQUEST OPERATOR DATA FROM SERVER
-    $.ajax({
-        dataType: "json",
-        url: "http://vitalsigns-production.elasticbeanstalk.com/t11/operator",
-        //data: data,
-        async: false,
-        success: successOperatorDatat11t12a
-    });
-
-    function successOperatorDatat11t12a(data) {
-        t11operatordata = data;
-    }
-
-//Populate Mode Objects
-
-
-//Populate Operator Objects
-for (var id in t11operatordata) {
-  if (t11operatordata[id].SimpleName === "Muni"){
-    munidata.push(t11operatordata[id].DailyPax_1991,t11operatordata[id].DailyPax_1995,t11operatordata[id].DailyPax_2000,t11operatordata[id].DailyPax_2005,t11operatordata[id].DailyPax_2010,t11operatordata[id].DailyPax_2012);
-}
-else if (t11operatordata[id].SimpleName === "BART"){
-    bartdata.push(t11operatordata[id].DailyPax_1991,t11operatordata[id].DailyPax_1995,t11operatordata[id].DailyPax_2000,t11operatordata[id].DailyPax_2005,t11operatordata[id].DailyPax_2010,t11operatordata[id].DailyPax_2012);
-}
-else if (t11operatordata[id].SimpleName === "AC Transit"){
-    actransitdata.push(t11operatordata[id].DailyPax_1991,t11operatordata[id].DailyPax_1995,t11operatordata[id].DailyPax_2000,t11operatordata[id].DailyPax_2005,t11operatordata[id].DailyPax_2010,t11operatordata[id].DailyPax_2012);
-}
-else if (t11operatordata[id].SimpleName === "VTA"){
-    vtadata.push(t11operatordata[id].DailyPax_1991,t11operatordata[id].DailyPax_1995,t11operatordata[id].DailyPax_2000,t11operatordata[id].DailyPax_2005,t11operatordata[id].DailyPax_2010,t11operatordata[id].DailyPax_2012);
-}
-else if (t11operatordata[id].SimpleName === "Caltrain"){
-    caltraindata.push(t11operatordata[id].DailyPax_1991,t11operatordata[id].DailyPax_1995,t11operatordata[id].DailyPax_2000,t11operatordata[id].DailyPax_2005,t11operatordata[id].DailyPax_2010,t11operatordata[id].DailyPax_2012);
-}
-else if (t11operatordata[id].SimpleName === "SamTrans"){
-    samtransdata.push(t11operatordata[id].DailyPax_1991,t11operatordata[id].DailyPax_1995,t11operatordata[id].DailyPax_2000,t11operatordata[id].DailyPax_2005,t11operatordata[id].DailyPax_2010,t11operatordata[id].DailyPax_2012);
-}
-}
-
-lineChart("http://vitalsigns-production.elasticbeanstalk.com/t11/region", "Year", ["Daily_Boardings"], "Geography", "Daily Transit Ridership")
+lineChart("http://vitalsignsvs2.elasticbeanstalk.com/api/t11/region", "Year", "Est_Weekday_Boardings", "Region", "Daily Transit Ridership", ",.0f")
 //CREATE BUTTONS AND CLICK EVENTS T11-T12-A
 $("#totalButtont11t12a").kendoButton({
  enable: true
+
 });
 $("#totalButtont11t12a").click(function() {
-  lineChart("http://vitalsigns-production.elasticbeanstalk.com/t11/region", "Year", ["Daily_Boardings"], "Geography", "Daily Transit Ridership")
+  lineChart("http://vitalsignsvs2.elasticbeanstalk.com/api/t11/region", "Year", "Est_Weekday_Boardings", "Region", "Daily Transit Ridership", ",.0f")
   $(this).addClass("active")
   $(this).siblings('a').removeClass('active');
 });
@@ -103,7 +43,7 @@ $("#percapitaTotalButtont11t12a").kendoButton({
  enable: true
 });
 $("#percapitaTotalButtont11t12a").click(function() {
-  lineChart("http://vitalsigns-production.elasticbeanstalk.com/t12/region", "Year", ["PC_Annual_Boardings"], "Geography", "Annual Transit Ridership per Capita")
+  lineChart("http://vitalsignsvs2.elasticbeanstalk.com/api/t12/region", "Year", "PC_Annual_Boardings", "Region", "Annual Transit Ridership per Capita", ",.1f")
   $(this).addClass("active")
   $(this).siblings('a').removeClass('active');
 });
@@ -113,7 +53,7 @@ $("#modeButtont11t12a").kendoButton({
 })
 
 $("#modeButtont11t12a").click(function() {
- lineChartAggregate("http://vitalsigns-production.elasticbeanstalk.com/t11/mode", "Year", ["Daily_Boardings"], "Mode", "Daily Transit Ridership by Mode")
+ lineChartAggregate("http://vitalsignsvs2.elasticbeanstalk.com/api/t11/mode", "Year", "Est_Weekday_Boardings", "Mode_Simple", "Daily Transit Ridership by Mode", ",.0f")
  $(this).addClass("active")
   $(this).siblings('a').removeClass('active');
 });
@@ -122,7 +62,7 @@ $("#percapitaModeButtont11t12a").kendoButton({
  enable: true
 });
 $("#percapitaModeButtont11t12a").click(function() {
- lineChart("http://vitalsigns-production.elasticbeanstalk.com/t12/mode", "Year", ["PC_Annual_Boardings"], "Mode_Simple", "Annual Transit Ridership by Mode per Capita")
+ lineChart("http://vitalsignsvs2.elasticbeanstalk.com/api/t12/mode", "Year", "PC_Annual_Boardings", "Mode_Simple", "Annual Transit Ridership by Mode per Capita", ",.1f")
  $(this).addClass("active")
   $(this).siblings('a').removeClass('active');
 });
@@ -130,8 +70,9 @@ $("#percapitaModeButtont11t12a").click(function() {
 
 });
 
-function lineChartAggregate(dataUrl, seriesName, seriesData, aggregate, title) {
+function lineChartAggregate(dataUrl, seriesName, seriesData, aggregate, title, numberFormat) {
   var yAxisTitle;
+  console.log("Line chart");
 
   if (title === 'Daily Transit Ridership') {
     yAxisTitle = 'Weekday Boardings';
@@ -167,14 +108,14 @@ function lineChartAggregate(dataUrl, seriesName, seriesData, aggregate, title) {
       min: 0,
       startOnTick: false,
          // max: 50,
-      title: {
-        text: yAxisTitle
+         title: {
+          text: yAxisTitle
       }
     },
    tooltip: {
       headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
       pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-      '<td style="padding:0"><b>{point.y:,.1f}</b></td></tr>',
+      '<td style="padding:0"><b>{point.y:' + numberFormat + '}</b></td></tr>',
       footerFormat: '</table>',
       shared: true,
       useHTML: true
@@ -233,8 +174,10 @@ function lineChartAggregate(dataUrl, seriesName, seriesData, aggregate, title) {
   })
 }
 
-function lineChart(dataUrl, seriesName, seriesData, chartType, title) {
-    var yAxisTitle;
+function lineChart(dataUrl, seriesName, seriesData, chartType, title, numberFormat) {
+  var yAxisTitle;
+  console.log("Line chart");
+
     if (title === 'Daily Transit Ridership') {
       yAxisTitle = 'Weekday Boardings';
     }
@@ -247,6 +190,7 @@ function lineChart(dataUrl, seriesName, seriesData, chartType, title) {
     if (title === 'Annual Transit Ridership by Mode per Capita') {
       yAxisTitle = 'Per-Capita Annual Boardings';
     }
+
     // Get the CSV and create the chart
     var chartT11T12AOptions = {
       chart: {
@@ -273,7 +217,7 @@ function lineChart(dataUrl, seriesName, seriesData, chartType, title) {
       tooltip: {
         headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
         pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-        '<td style="padding:0"><b>{point.y:,.1f}</b></td></tr>',
+        '<td style="padding:0"><b>{point.y:' + numberFormat + '}</b></td></tr>',
         footerFormat: '</table>',
         shared: true,
         useHTML: true

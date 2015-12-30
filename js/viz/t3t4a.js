@@ -72,11 +72,11 @@ $(function() {
     $chartTitle = $('<h3 class="chart-title">Historical Trend for Commute Time - Region</h3>').prependTo($('#T3-T4-A'));
     $('#T3-T4-A-chart').highcharts({
         chart: {
-            type: 'line'
+            type: 'line',
+            marginTop: 40
         },
         title: {
-            text: '&nbsp;',
-            useHTML: true
+            text: ''
         },
         xAxis: {
             type: 'linear',
@@ -200,10 +200,11 @@ $.fn.UpdateT3T4ChartData = function(searchcounty) {
     $chartTitle.html('Historical Trend for Commute Time - ' + searchcounty);
     $('#T3-T4-A-chart').highcharts({
         chart: {
-            type: 'line'
+            type: 'line',
+            marginTop: 40
         },
         title: {
-            text: '&nbsp;',
+            text: '',
             useHTML: true
         },
         legend: {

@@ -8,7 +8,8 @@ var mode = "OverallTime_Est";
 
 (function($) {
   $(function() {
-    $('#T3-T4-C').prepend('<h3 class="chart-title">Metro Comparison for 2012 Commute Time</h3>');
+    var data;
+    $('#T3-T4-C').prepend('<h3 class="chart-title">Metro Comparison for 2014 Commute Time</h3>');
 
     // Set the default highcharts separator
     Highcharts.setOptions({
@@ -33,7 +34,7 @@ var mode = "OverallTime_Est";
 
     });
     $("#overallButtont3t4c").click(function() {
-      stackedChart('http://vitalsigns-production.elasticbeanstalk.com/t3t4/metros', 'Metro_Name', ["OverallTime_Est"])
+      stackedChart(data, 'Metro', 'Overall')
       $(this).addClass("active")
       $(this).siblings('a').removeClass('active');
     });
@@ -42,7 +43,7 @@ var mode = "OverallTime_Est";
         enable: true
     });
     $("#datimeButtont3t4c").click(function() {
-      stackedChart('http://vitalsigns-production.elasticbeanstalk.com/t3t4/metros', 'Metro_Name', ["DATime_Est"])
+      stackedChart(data, 'Metro', 'Drive Alone')
       $(this).addClass("active")
       $(this).siblings('a').removeClass('active');
     });
@@ -50,7 +51,7 @@ var mode = "OverallTime_Est";
         enable: true
     });
     $("#cptimeButtont3t4c").click(function() {
-      stackedChart('http://vitalsigns-production.elasticbeanstalk.com/t3t4/metros', 'Metro_Name', ["CPTime_Est"])
+      stackedChart(data, 'Metro', 'Carpool')
       $(this).addClass("active")
       $(this).siblings('a').removeClass('active');
     });
@@ -59,20 +60,25 @@ var mode = "OverallTime_Est";
         enable: true
     });
     $("#pttimeButtont3t4c").click(function() {
-      stackedChart('http://vitalsigns-production.elasticbeanstalk.com/t3t4/metros', 'Metro_Name', ["PTTime_Est"])
+      stackedChart(data, 'Metro', 'Public Transit')
       $(this).addClass("active")
       $(this).siblings('a').removeClass('active');
     });
-    stackedChart('http://vitalsigns-production.elasticbeanstalk.com/t3t4/metros', 'Metro_Name', ["OverallTime_Est"])
+
+    jQuery.getJSON('http://vitalsignsvs2.elasticbeanstalk.com/api/t3/metro', function (result) {
+        data = result;
+        stackedChart(data, 'Metro', 'Overall')
+    });
 });
 
 
-function stackedChart(dataUrl, seriesName, seriesData) {
+function stackedChart(rawData, seriesName, seriesData) {
     // Get the CSV and create the chart
     var options = {
           chart: {
               renderTo: 'chart1',
-              defaultSeriesType: 'bar'
+              defaultSeriesType: 'bar',
+              marginTop: 40
               },
               plotOptions: {
             },
@@ -101,8 +107,7 @@ function stackedChart(dataUrl, seriesName, seriesData) {
           enabled: false
         },
         title: {
-              text: '&nbsp;',
-              useHTML: true
+              text: '',
           },
 
           tooltip: {
@@ -113,40 +118,13 @@ function stackedChart(dataUrl, seriesName, seriesData) {
               useHTML: true,
               crosshairs: false
           }
-      }
-  jQuery.getJSON(dataUrl, function(data) {
-    yaxis = [];
-    dataArray = []
-    data = sortData(data, seriesData)
-    jQuery.each(seriesData, function(key, name) {
-      dataArray[name] = []
-      options.series[key] = [{}]
-      options.series[key].data = []
-      options.series[key].name = []
-      jQuery.each(data, function(i,value) {
-        if(value.Year == "2012") {
-            nameVal = value[seriesName]
-            dataArray[name].push(value[name]);
-            yaxis.push([nameVal])
-        }
-      });
-    options.series[key].data = dataArray[name];
-    switch(name) {
-      case "DATime_Est":
-        options.series[key].name = "Drive Alone";
-        break;
-      case "CPTime_Est":
-        options.series[key].name = "Carpool";
-        break;
-      case "PTTime_Est":
-        options.series[key].name = "Transit";
-        break;
-
-      }
-    })
-    options.xAxis.categories = yaxis
+    }
+    var data = _(rawData).filter('Mode', seriesData).sortBy('Avg_Commute_Time').value();
+    options.series = [{
+      data: _.pluck(data, 'Avg_Commute_Time')
+    }];
+    options.xAxis.categories = _.pluck(data, 'Metro');
     chart = new Highcharts.Chart(options);
-  })
 }
 
 function sortData(data, value) {

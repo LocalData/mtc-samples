@@ -28,9 +28,9 @@
         $("#infoDiv").css("display", "block");
         $("#location").html("<h4>"+evt.data.FACILITY_C+"</h4>");
         if(evt.data.STATUS == 1) {
-          $("#status").html("Structurally Deficient");
+          $("#status").html('<span style="color: white; background: #d7191c; display:inline-block; padding: 8px;">Structurally Deficient</span>');
         } else {
-          $("#status").html("Structurally Sound");
+          $("#status").html('<span style="color: white; background: #2c6d8c; display:inline-block; padding: 8px;">Structurally Sound</span>');
         }
       }
     });
@@ -40,9 +40,9 @@
         $("#infoDiv").css("display", "block");
         $("#location").html("<h4>"+evt.data.FACILITY_C+"</h4>");
         if(evt.data.STATUS == 1) {
-          $("#status").html("Structurally Deficient");
+          $("#status").html('<span style="color: white; background: #d7191c; display:inline-block; padding: 8px;">Structurally Deficient</span>');
         } else {
-          $("#status").html("Structurally Sound");
+          $("#status").html('<span style="color: white; background: #2c6d8c; display:inline-block; padding: 8px;">Structurally Sound</span>');
         }
       }
     });

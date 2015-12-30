@@ -67,10 +67,10 @@ $(function() {
         areaChart =  $('#areaChart_T1-T2-A').highcharts({
             chart: {
                 type: 'area',
-                spacingTop: 0
+                marginTop: 40
             },
             title: {
-                text: '&nbsp;',
+                text: '',
                 useHTML: true
             },
             xAxis: {
@@ -183,10 +183,10 @@ $.fn.UpdateChartData = function(searchtext) {
         $('#areaChart_T1-T2-A').highcharts({
             chart: {
                 type: 'area',
-                spacingTop: 0
+                marginTop: 40
             },
             title: {
-                text: '&nbsp;',
+                text: '',
                 useHTML: true
             },
             xAxis: {
@@ -292,10 +292,10 @@ $.fn.UpdateChartData = function(searchtext) {
     $('#areaChart_T1-T2-A').highcharts({
         chart: {
             type: 'area',
-            spacingTop: 0
+            marginTop: 40
         },
         title: {
-            text: '&nbsp;',
+            text: '',
             useHTML: true
         },
         xAxis: {

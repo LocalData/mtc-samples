@@ -41,7 +41,7 @@
         .sortBy('Share')
         .pluck('Metro')
         .value();
-        
+
         var order = {};
         _.forEach(regionnames, function (name, index) {
           order[name] = index;
@@ -50,7 +50,7 @@
         function getOrder(item) {
           return order[item.Metro];
         }
-        
+
         function times100(x) {
           return x * 100;
         }
@@ -103,17 +103,23 @@
         .pluck('Share')
         .map(times100)
         .value();
-        
+
         //CREATE CHART
         $chartTitle.html('Metro Comparison for 2014 Commute Mode Choice');
         var t1t2cChart = $('#T1-T2-C-chart').highcharts({
             chart: {
                 type: 'bar',
-                spacingTop: 0
+                marginTop: 40
             },
             title: {
-                text: '&nbsp;',
-                useHTML: true
+                text: '',
+            },
+            exporting: {
+                chartOptions: {
+                    title: {
+                        text: 'Metro Comparison for 2014 Commute Mode Choice'
+                    }
+                }
             },
             xAxis: {
                 categories: regionnames,

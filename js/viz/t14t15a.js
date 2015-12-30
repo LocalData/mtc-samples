@@ -88,7 +88,7 @@ var type;
                 marginTop: 40
             },
             title: {
-                text: '&nbsp;',
+                text: '',
                 useHTML: true
             },
             xAxis: {

@@ -1,7 +1,7 @@
 /*globals L, Highcharts, science, geocities, tracts,
     allRed, allOrange, allBlue, allYellow, allPurple, allGray, allGreen */
  (function($, _) {
-    var currentVariable = 'DriveAlone_Est';
+    var currentVariable = 'Transit_Est';
     var homeWork = "home";
     var map, tractData, cityData, cityDataWork, regionData, tractLayer;
     var cdbCityWork, cdbCityHome;
@@ -335,7 +335,7 @@
           sql: "SELECT * FROM t1t2cityhome",
           cartocss: cityTemplate({
             selector: '#t1t2cityhome',
-            maxzoom: TRACT_ZOOM - 1,
+            maxzoom: TRACT_ZOOM,
             colors: variablesObj[currentVariable].hues,
             range: ranges[currentVariable],
             field: currentVariable.toLowerCase()
@@ -476,7 +476,7 @@
 
       cityLayer.setCartoCSS(cityTemplate({
         selector: '#t1t2cityhome',
-        maxzoom: TRACT_ZOOM - 1,
+        maxzoom: TRACT_ZOOM,
         colors: variablesObj[currentVariable].hues,
         range: ranges[currentVariable],
         field: currentVariable.toLowerCase()
@@ -494,17 +494,21 @@
         field: currentVariable.toLowerCase()
       }));
 
+      sortTopTen();
+
       if(homeWork == "home") {
         // Home mode
         map.addLayer(cityLayer);
         map.addLayer(tractLayer);
         map.removeLayer(cityLayerWork);
-        sortTopTen();
+
+        if (map.getZoom() < TRACT_ZOOM) {
+          $('.zoom-in-prompt').show();
+        }
       } else {
         map.addLayer(cityLayerWork);
         map.removeLayer(cityLayer);
         map.removeLayer(tractLayer);
-        sortTopTen();
 
         if (map.getZoom() >= TRACT_ZOOM) {
           map.setZoom(TRACT_ZOOM - 1);

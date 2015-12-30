@@ -19,7 +19,7 @@
     $("#totalButtont11t12b").click(function() {
       $(this).addClass("active");
       $(this).siblings('a').removeClass('active');
-      lineChartAggregate("http://vitalsigns-production.elasticbeanstalk.com/t11/metros", "Year", ["Daily_Boardings"], "Geo_Simple", "Metro Comparison for Daily Transit Ridership" );
+      lineChartAggregate("http://vitalsignsvs2.elasticbeanstalk.com/api/t11/metro", "Year", "Est_Weekday_Boardings", "Metro", "Metro Comparison for Daily Transit Ridership" );
     });
 
     $("#percentTotalButtont11t12b").kendoButton({
@@ -28,7 +28,7 @@
     $("#percentTotalButtont11t12b").click(function() {
       $(this).addClass("active")
       $(this).siblings('a').removeClass('active');
-      lineChart("http://vitalsigns-production.elasticbeanstalk.com/t11/metros", "Year", ["PercentChg_1991"], "Geo_Simple", "Metro Comparison for Percent Change in Daily Transit Ridership" )
+      lineChart("http://vitalsignsvs2.elasticbeanstalk.com/api/t11/metro", "Year", "PercentChg_1991", "Metro", "Metro Comparison for Percent Change in Daily Transit Ridership" )
     });
     $("#percapitaButtont11t12b").kendoButton({
         enable: true
@@ -36,7 +36,7 @@
     $("#percapitaButtont11t12b").click(function() {
       $(this).addClass("active")
       $(this).siblings('a').removeClass('active');
-      lineChart("http://vitalsigns-production.elasticbeanstalk.com/t12/metros", "Year", ["PC_Annual_Boardings"], "Geo_Simple", "Metro Comparison for Annual Transit Ridership per Capita" )
+      lineChart("http://vitalsignsvs2.elasticbeanstalk.com/api/t12/metro", "Year", "PC_Annual_Boardings", "Metro", "Metro Comparison for Annual Transit Ridership per Capita" )
     });
     $("#percentPercapitaButtont11t12b").kendoButton({
         enable: true
@@ -44,9 +44,9 @@
     $("#percentPercapitaButtont11t12b").click(function() {
     $(this).addClass("active")
       $(this).siblings('a').removeClass('active');
-    lineChart("http://vitalsigns-production.elasticbeanstalk.com/t12/metros", "Year", ["PercentChg_1991"], "Geo_Simple", "Metro Comparison for Percent Change in Annual Transit Ridership per Capita")
+    lineChart("http://vitalsignsvs2.elasticbeanstalk.com/api/t12/metro", "Year", "PercentChg_1991", "Metro", "Metro Comparison for Percent Change in Annual Transit Ridership per Capita")
     });
-    lineChartAggregate("http://vitalsigns-production.elasticbeanstalk.com/t11/metros", "Year", ["Daily_Boardings"], "Geo_Simple", "Metro Comparison for Daily Transit Ridership" )
+    lineChartAggregate("http://vitalsignsvs2.elasticbeanstalk.com/api/t11/metro", "Year", "Est_Weekday_Boardings", "Metro", "Metro Comparison for Daily Transit Ridership" )
 
   })
 
@@ -70,6 +70,7 @@
             text: ''
         },
         yAxis: {
+          max: 15000000,
           title: {
             text: 'Weekday Boardings'
           }
@@ -77,14 +78,13 @@
         tooltip: {
           headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
           pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-          '<td style="padding:0"><b>{point.y:,.1f}</b></td></tr>',
+          '<td style="padding:0"><b>{point.y:,.0f}</b></td></tr>',
           footerFormat: '</table>',
           shared: true,
           useHTML: true
         },
         colors: colors
-      };
-
+      }
     jQuery.getJSON(dataUrl, function(data) {
       yaxis = [];
       dataArray = []
@@ -129,8 +129,7 @@
       }
       if(seriesData == "Daily_Boardings") {
         options.tooltip.pointFormat = '<tr><td style="color:{series.color};padding:0">{series.name}: </td><td style="padding:0"><b>{point.y:,.0f}</b></td></tr>'
-        options.yAxis.title.text = 'Weekday Boardings';
-        options.yAxis.max = 15000000;
+        options.yAxis.title.text = 'Weekday Boardings'
       }
       options.xAxis.categories = years
       // options.title.text = title
@@ -210,7 +209,7 @@ function lineChart(dataUrl, seriesName, seriesData, chartType, title) {
       }
     if(seriesData == "Daily_Boardings") {
         options.tooltip.pointFormat = '<tr><td style="color:{series.color};padding:0">{series.name}: </td><td style="padding:0"><b>{point.y:,.0f}</b></td></tr>'
-        options.yAxis.title.text = 'Daily Ridership'
+        options.yAxis.title.text = 'Per-Capita Annual Boardings'
       }
     options.xAxis.categories = categories
     $('#T11-T12-B .chart-title').html(title);

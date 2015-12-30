@@ -379,6 +379,7 @@
         }
       });
 
+      changeLegend();
       sortTopFive();
       sortBottomFive();
 
@@ -518,9 +519,7 @@
         map.addLayer(tractLayer);
         map.removeLayer(cityLayerWork);
 
-        console.log("Should I show zoom", map.getZoom());
         if (map.getZoom() < TRACT_ZOOM) {
-          console.log("Showing prompt");
           $('.zoom-in-prompt').show();
         }
       } else {
