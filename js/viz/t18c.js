@@ -42,6 +42,13 @@
             title: {
                 text: ''
             },
+            exporting: {
+                chartOptions: {
+                    title: {
+                        text: 'Metro Comparison for Bridge Condition'
+                    }
+                }
+            },
             yAxis: {
                 min: 1,
                 max: 40,

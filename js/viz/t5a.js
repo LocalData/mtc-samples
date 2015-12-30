@@ -938,6 +938,13 @@ var series = [];
                 title: {
                   text: '',
                 },
+                exporting: {
+                    chartOptions: {
+                        title: {
+                            text: '2010 Commute Flows between Bay Area Counties'
+                        }
+                    }
+                },
                 xAxis: {
                     categories: counties
                 },

@@ -102,6 +102,13 @@ var vmtCounty;
             title: {
                 text: ''
             },
+            exporting: {
+                chartOptions: {
+                    title: {
+                        text: '2012 Bridge Condition'
+                    }
+                }
+            },
             xAxis: {
                 categories: yearNames
             },
@@ -144,13 +151,21 @@ var vmtCounty;
 
         $.fn.Updatet18aChartData = function(searchcounty) {
             if(searchcounty == "Bay Area"){
-                $('#T18-A .chart-title').html('Historical Trend for Bridge Conditions - Bay Area');
+                var title = 'Historical Trend for Bridge Conditions - Bay Area';
+                $('#T18-A .chart-title').html(title);
                 $('#T18-A-chart').highcharts({
                     chart: {
                         type: 'line'
                     },
                     title: {
                         text: ''
+                    },
+                    exporting: {
+                        chartOptions: {
+                            title: {
+                                text: title
+                            }
+                        }
                     },
                     xAxis: {
                         categories: yearNames
@@ -202,13 +217,21 @@ var vmtCounty;
                     }
                 }
 
-                $('#T18-A .chart-title').html('Historical Trend for Bridge Conditions - ' + countyname + " County");
+                var title = 'Historical Trend for Bridge Conditions - ' + countyname + " County";
+                $('#T18-A .chart-title').html(title);
                 var t1t2cChart = $('#T18-A-chart').highcharts({
                     chart: {
                         type: 'line'
                     },
                     title: {
                         text: ''
+                    },
+                    exporting: {
+                        chartOptions: {
+                            title: {
+                                text: title
+                            }
+                        }
                     },
                     xAxis: {
                         categories: yearNames
@@ -277,13 +300,21 @@ var vmtCounty;
         //UPDATE CHART BASED ON MODE
         function updateChartModo(mode) {
             var actual;
-            $('#T18-A .chart-title').html('Metro Comparison - Drive Alone');
+            var title = 'Metro Comparison - Drive Alone';
+            $('#T18-A .chart-title').html(title);
             $('#T18-A-chart').highcharts({
                 chart: {
                     type: 'line'
                 },
                 title: {
                     text: ''
+                },
+                exporting: {
+                    chartOptions: {
+                        title: {
+                            text: title
+                        }
+                    }
                 },
                 xAxis: {
                     categories: yearNames

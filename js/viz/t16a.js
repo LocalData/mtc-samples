@@ -75,7 +75,8 @@
           }
         }
 
-        $('#T16-A .chart-title').html('Historical Trend for Street Pavement Condition - Bay Area');
+        var title = 'Historical Trend for Street Pavement Condition - Bay Area';
+        $('#T16-A .chart-title').html(title);
         var t1t2cChart = $('#T16-A-chart').highcharts({
             chart: {
                 type: 'line',
@@ -84,6 +85,13 @@
             colors: altColors,
             title: {
                 text: ''
+            },
+            exporting: {
+                chartOptions: {
+                    title: {
+                        text: title
+                    }
+                }
             },
             xAxis: {
                 categories: yearNames,
@@ -187,8 +195,8 @@
             }
             countyname += " County"
 
-            console.log("Point A");
-            $('#T16-A .chart-title').html('Historical Trend for Street Pavement Condition - ' + searchcity + ' and ' + countyname);
+            var title = 'Historical Trend for Street Pavement Condition - ' + searchcity + ' and ' + countyname;
+            $('#T16-A .chart-title').html(title);
             var t14t15Chart = $('#T16-A-chart').highcharts({
                 chart: {
                     type: 'line',
@@ -196,7 +204,14 @@
                 },
                 colors: altColors,
                 title: {
-                    text: ""
+                    text: ''
+                },
+                exporting: {
+                    chartOptions: {
+                        title: {
+                            text: title
+                        }
+                    }
                 },
                 xAxis: {
                     categories: yearNames,
@@ -263,7 +278,8 @@
         }
 
       function regionChart() {
-        $('#T16-A .chart-title').html('Historical Trend for Street Pavement Condition - Bay Area');
+        var title = 'Historical Trend for Street Pavement Condition - Bay Area';
+        $('#T16-A .chart-title').html(title);
             var t1t2cChart = $('#T16-A-chart').highcharts({
               chart: {
                   type: 'line'
@@ -271,6 +287,13 @@
              colors: altColors,
               title: {
                   text: '' //'Regional Annual PCI'
+              },
+              exporting: {
+                  chartOptions: {
+                      title: {
+                          text: title
+                      }
+                  }
               },
               xAxis: {
                   categories: yearNames,

@@ -42,11 +42,11 @@ $(function() {
 
     var regionPromise = $.ajax({
         dataType: "json",
-        url: "http://vitalsignsvs2.elasticbeanstalk.com/api/t1/regionsimple",
+        url: "http://vitalsignsvs2.elasticbeanstalk.com/api/t1/regionsimple"
     });
     var countyPromise = $.ajax({
         dataType: "json",
-        url: "http://vitalsignsvs2.elasticbeanstalk.com/api/t1/countysimple",
+        url: "http://vitalsignsvs2.elasticbeanstalk.com/api/t1/countysimple"
     });
 
     $.when(regionPromise, countyPromise).done(setup);
@@ -72,6 +72,13 @@ $(function() {
             title: {
                 text: '',
                 useHTML: true
+            },
+            exporting: {
+                chartOptions: {
+                    title: {
+                        text: 'Historical Trend for Commute Mode Choice - Bay Area'
+                    }
+                }
             },
             xAxis: {
                 // type: 'linear',
@@ -179,7 +186,8 @@ $.fn.UpdateChartData = function(searchtext) {
     searchtext = searchtext.toString();
     //FOR BAY AREA
     if (searchtext === "Bay Area") {
-        $areaChartTitle.text('Historical Trend for Commute Mode Choice - Bay Area');
+        var title = 'Historical Trend for Commute Mode Choice - Bay Area';
+        $areaChartTitle.text(title);
         $('#areaChart_T1-T2-A').highcharts({
             chart: {
                 type: 'area',
@@ -188,6 +196,13 @@ $.fn.UpdateChartData = function(searchtext) {
             title: {
                 text: '',
                 useHTML: true
+            },
+            exporting: {
+                chartOptions: {
+                    title: {
+                        text: title
+                    }
+                }
             },
             xAxis: {
                 type: 'linear',
@@ -288,7 +303,8 @@ $.fn.UpdateChartData = function(searchtext) {
     .filter('County', searchtext)
     .map(pullYearShare).value();
 
-    $areaChartTitle.text('Historical Trend for Commute Mode Choice - ' + searchtext);
+    var title = 'Historical Trend for Commute Mode Choice - ' + searchtext;
+    $areaChartTitle.text(title);
     $('#areaChart_T1-T2-A').highcharts({
         chart: {
             type: 'area',
@@ -297,6 +313,13 @@ $.fn.UpdateChartData = function(searchtext) {
         title: {
             text: '',
             useHTML: true
+        },
+        exporting: {
+            chartOptions: {
+                title: {
+                    text: title
+                }
+            }
         },
         xAxis: {
             type: 'linear',

@@ -22,8 +22,8 @@ regionPromise, countyPromise: true
     var t6achart;
     var focus_key = 'BD_AADT';
 
-    function chart(series, options) {
-        var title = "";
+    function chart(series, options, title) {
+        title = title || "Historical Trend for Traffic Volumes at Regional Gateways";
         if (!options) {
             options = {};
         }
@@ -37,6 +37,13 @@ regionPromise, countyPromise: true
             },
             title: {
                 text: ''
+            },
+            exporting: {
+                chartOptions: {
+                    title: {
+                        text: title
+                    }
+                }
             },
             xAxis: {
                 categories: years,
@@ -87,7 +94,6 @@ regionPromise, countyPromise: true
                 var intersections = _.uniq(_.pluck(_.where(routeData, {
                     Route_Text: routeText
                 }), 'Halo_County'));
-                console.log("Intersections", intersections);
 
                 // If so, add the location of the intersection
                 if (intersections.length > 1) {
@@ -115,8 +121,7 @@ regionPromise, countyPromise: true
             });
         }
 
-        console.log("Got series", series);
-        chart(series);
+        chart(series, {}, title);
 
         // Update the title
         $('#T6 .chart-title').html(title);

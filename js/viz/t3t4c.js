@@ -107,17 +107,23 @@ function stackedChart(rawData, seriesName, seriesData) {
           enabled: false
         },
         title: {
-              text: '',
-          },
-
-          tooltip: {
-              headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
-              pointFormat: '<tr><td style="padding:0"><b>{point.y:,.1f} minutes</b></td></tr>',
-              footerFormat: '</table>',
-              shared: true,
-              useHTML: true,
-              crosshairs: false
-          }
+          text: '',
+        },
+        exporting: {
+            chartOptions: {
+                title: {
+                    text: 'Metro Comparison for 2014 Commute Time'
+                }
+            }
+        },
+        tooltip: {
+            headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+            pointFormat: '<tr><td style="padding:0"><b>{point.y:,.1f} minutes</b></td></tr>',
+            footerFormat: '</table>',
+            shared: true,
+            useHTML: true,
+            crosshairs: false
+        }
     }
     var data = _(rawData).filter('Mode', seriesData).sortBy('Avg_Commute_Time').value();
     options.series = [{

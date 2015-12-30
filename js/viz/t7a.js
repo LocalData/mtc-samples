@@ -23,6 +23,13 @@
       title: {
         text: ''
       },
+      exporting: {
+          chartOptions: {
+              title: {
+                  text: 'Historical Trend for Time Spent in Congestion - Bay Area'
+              }
+          }
+      },
       colors: [allBlue[3], allBlue[0]], // ['#EC7429', '#D9B305'],
       series: [{
           name: 'val1',

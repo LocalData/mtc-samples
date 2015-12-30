@@ -87,6 +87,13 @@ regionPromise, countyPromise: true
       title: {
         text: ''
       },
+      exporting: {
+          chartOptions: {
+              title: {
+                  text: 'Historical Trend for Share of Miles Traveled in Congestion'
+              }
+          }
+      },
       colors: allBlue,
       xAxis: {
         categories: yearNames

@@ -104,6 +104,13 @@ function lineChartAggregate(dataUrl, seriesName, seriesData, aggregate, title, n
     title: {
         text: ''
     },
+    exporting: {
+        chartOptions: {
+            title: {
+                text: ''
+            }
+        }
+    },
     yAxis: {
       min: 0,
       startOnTick: false,
@@ -170,6 +177,8 @@ function lineChartAggregate(dataUrl, seriesName, seriesData, aggregate, title, n
     chartT11T12AOptions.xAxis.categories = years
     $('#T11-T12-A .chart-title').html("Historical Trend for " + title);
 
+    chartT11T12AOptions.exporting.chartOptions.title.text = "Historical Trend for " + title;
+
     chart = new Highcharts.Chart(chartT11T12AOptions);
   })
 }
@@ -207,6 +216,13 @@ function lineChart(dataUrl, seriesName, seriesData, chartType, title, numberForm
       },
       title: {
           text: ''
+      },
+      exporting: {
+          chartOptions: {
+              title: {
+                  text: ''
+              }
+          }
       },
       yAxis: {
         title: {
@@ -264,6 +280,9 @@ function lineChart(dataUrl, seriesName, seriesData, chartType, title, numberForm
       }
     chartT11T12AOptions.xAxis.categories = categories
     $('#T11-T12-A .chart-title').html("Historical Trend for " + title);
+
+    chartT11T12AOptions.exporting.chartOptions.title.text = "Historical Trend for " + title;
+
     chart = new Highcharts.Chart(chartT11T12AOptions);
   })
 }

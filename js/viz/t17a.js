@@ -44,6 +44,13 @@ var cityname;
             title: {
                 text: ''
             },
+            exporting: {
+                chartOptions: {
+                    title: {
+                        text: 'Historical Trend for Highway Pavement Condition - Bay Area'
+                    }
+                }
+            },
             xAxis: {
                 type: 'datetime',
                 //categories: yearNames,

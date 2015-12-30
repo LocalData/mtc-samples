@@ -27,7 +27,13 @@
       title: {
         text: ''
       },
-      colors: allBlue, // ['#D9B305', '#EC7429'],
+      exporting: {
+          chartOptions: {
+              title: {
+                  text: 'Metro Comparison for 2011 Time Spent in Congestion'
+              }
+          }
+      },      colors: allBlue, // ['#D9B305', '#EC7429'],
       series: [{
           name: 'val1',
           data: []

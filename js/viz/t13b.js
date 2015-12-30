@@ -26,9 +26,15 @@
             xAxis: {
                 categories: []
             },
-
             title: {
                 text: ''
+            },
+            exporting: {
+                chartOptions: {
+                    title: {
+                        text: 'Metro Comparison for Transit System Efficiency'
+                    }
+                }
             },
             yAxis: {
                 min: 0,

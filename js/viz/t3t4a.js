@@ -78,6 +78,13 @@ $(function() {
         title: {
             text: ''
         },
+        exporting: {
+            chartOptions: {
+                title: {
+                    text: 'Historical Trend for Commute Time - Region'
+                }
+            }
+        },
         xAxis: {
             type: 'linear',
             tickInterval: 10,
@@ -197,15 +204,22 @@ $.fn.UpdateT3T4ChartData = function(searchcounty) {
         .map(pullYearTime).value();
     }
 
-    $chartTitle.html('Historical Trend for Commute Time - ' + searchcounty);
+    var title = 'Historical Trend for Commute Time - ' + searchcounty;
+    $chartTitle.html(title);
     $('#T3-T4-A-chart').highcharts({
         chart: {
             type: 'line',
             marginTop: 40
         },
         title: {
-            text: '',
-            useHTML: true
+            text: ''
+        },
+        exporting: {
+            chartOptions: {
+                title: {
+                    text: title
+                }
+            }
         },
         legend: {
             enabled: true

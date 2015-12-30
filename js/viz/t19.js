@@ -46,6 +46,13 @@ var avg_cont =0;
             title: {
                 text: ''
             },
+            exporting: {
+                chartOptions: {
+                    title: {
+                        text: 'Transit Asset Condition'
+                    }
+                }
+            },
             xAxis: {
                 categories: regionnames,
                 labels: {
@@ -54,7 +61,7 @@ var avg_cont =0;
                     }
                 }
             },
-            colors: altColors,
+            colors: [altColors[1], altColors[0]],
             yAxis: {
                 min: 0,
                 max: 100,

@@ -77,6 +77,7 @@ var metrosList;
             }
         }
         //CREATE CHART
+        var title = 'Historical Trend for Transit System Efficiency - ' + filter;
         $('#T13A-chart').highcharts({
             chart: {
                 type: 'bar',
@@ -87,6 +88,13 @@ var metrosList;
             },
             title: {
                 text: ''
+            },
+            exporting: {
+                chartOptions: {
+                    title: {
+                        text: title
+                    }
+                }
             },
             xAxis: {
                 categories:  years
@@ -124,7 +132,8 @@ var metrosList;
                 data: farebox
             }]
         });
-        $('#T13-A .chart-title').html('Historical Trend for Transit System Efficiency - ' + filter);
+
+        $('#T13-A .chart-title').html(title);
     }
     function setComboBox(url, title, idcombo, field, default_item){
         //REQUEST MODE  LIST DATA FROM SERVER

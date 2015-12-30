@@ -88,8 +88,14 @@ var type;
                 marginTop: 40
             },
             title: {
-                text: '',
-                useHTML: true
+                text: ''
+            },
+            exporting: {
+                chartOptions: {
+                    title: {
+                        text: 'Historical Trend for Daily Miles Traveled'
+                    }
+                }
             },
             xAxis: {
                 categories: yearNames
@@ -184,8 +190,8 @@ var type;
                 }
             }
 
-            $('#T14-T15-A .chart-title').html(countyname + ' County: Vehicle Miles Traveled (VMT)');
-
+            var title = countyname + ' County: Vehicle Miles Traveled (VMT)';
+            $('#T14-T15-A .chart-title').html(title);
             var t1t2cChart = $('#T14-T15-A-chart').highcharts({
                 chart: {
                     type: 'line',
@@ -193,6 +199,13 @@ var type;
                 },
                 title: {
                     text: ''
+                },
+                exporting: {
+                    chartOptions: {
+                        title: {
+                            text: title
+                        }
+                    }
                 },
                 xAxis: {
                     categories: yearNames
@@ -299,7 +312,8 @@ var type;
                 }
                 actual = ListRegion;
 
-                $('#T14-T15-A-chart .chart-title').html('Historical Trend for Daily Miles Traveled');
+                var title = 'Historical Trend for Daily Miles Traveled';
+                $('#T14-T15-A-chart .chart-title').html(title);
 
                 $('#T14-T15-A-chart').highcharts({
                     chart: {
@@ -308,6 +322,13 @@ var type;
                     },
                     title: {
                         text: ''
+                    },
+                    exporting: {
+                        chartOptions: {
+                            title: {
+                                text: title
+                            }
+                        }
                     },
                     xAxis: {
                         categories: yearNames
@@ -339,7 +360,8 @@ var type;
                 });
                 actual = ListRegionCP;
 
-                $('#T14-T15-A-chart .chart-title').html('Historical Trend for Per-Capita Daily Miles Traveled');
+                var title = 'Historical Trend for Per-Capita Daily Miles Traveled';
+                $('#T14-T15-A-chart .chart-title').html(title);
                 $('#T14-T15-A-chart').highcharts({
                     chart: {
                         type: 'line',
@@ -347,6 +369,13 @@ var type;
                     },
                     title: {
                         text:''
+                    },
+                    exporting: {
+                        chartOptions: {
+                            title: {
+                                text: title
+                            }
+                        }
                     },
                     xAxis: {
                         categories: yearNames
@@ -395,7 +424,8 @@ var type;
                 }
                 listaActual.reverse();
 
-                $('#T14-T15-A-chart .chart-title').html('Historical Trend for Daily Miles Traveled by County');
+                var title = 'Historical Trend for Daily Miles Traveled by County';
+                $('#T14-T15-A-chart .chart-title').html(title);
                 $('#T14-T15-A-chart').highcharts({
                     chart: {
                         type: 'line',
@@ -403,6 +433,13 @@ var type;
                     },
                     title: {
                         text:''
+                    },
+                    exporting: {
+                        chartOptions: {
+                            title: {
+                                text: title
+                            }
+                        }
                     },
                     xAxis: {
                         categories: yearNames
@@ -447,7 +484,9 @@ var type;
                 }
 
                 listaActual.reverse();
-                $('#T14-T15-A-chart .chart-title').html('Historical Trend for Per-Capita Daily Miles Traveled by County');
+
+                var title = 'Historical Trend for Per-Capita Daily Miles Traveled by County';
+                $('#T14-T15-A-chart .chart-title').html(title);
                 $('#T14-T15-A-chart').highcharts({
                     chart: {
                         type: 'line',
@@ -455,6 +494,13 @@ var type;
                     },
                     title: {
                         text:''
+                    },
+                    exporting: {
+                        chartOptions: {
+                            title: {
+                                text: title
+                            }
+                        }
                     },
                     xAxis: {
                         categories: yearNames

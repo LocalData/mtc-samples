@@ -77,7 +77,8 @@ var values = [];
             if($.inArray(el, uniqueNames) === -1) uniqueNames.push(el);
         });
         //CREATE CHART
-        $('#T1415-B .chart-title').html('Metro Comparison for 2013 Daily Miles Traveled');
+        var title = 'Metro Comparison for 2013 Daily Miles Traveled';
+        $('#T1415-B .chart-title').html(title);
         var t1t2cChart = $('#T1415B-chart').highcharts({
             chart: {
                 type: 'bar',
@@ -85,6 +86,13 @@ var values = [];
             },
             title: {
                 text: ''
+            },
+            exporting: {
+                chartOptions: {
+                    title: {
+                        text: title
+                    }
+                }
             },
             xAxis: {
                 categories:  uniqueNames,
@@ -174,7 +182,8 @@ var values = [];
         });
         //uniqueNames.sort(function(a, b){return b-a});
         //CREATE CHART
-        $('#T1415-B .chart-title').html('Metro Comparison for 2013 Per-Capita Daily Miles Traveled');
+        var title = 'Metro Comparison for 2013 Per-Capita Daily Miles Traveled';
+        $('#T1415-B .chart-title').html();
         var t1t2cChart = $('#T1415B-chart').highcharts({
             chart: {
                 type: 'bar',
@@ -182,6 +191,13 @@ var values = [];
             },
             title: {
                 text: ''
+            },
+            exporting: {
+                chartOptions: {
+                    title: {
+                        text: title
+                    }
+                }
             },
             xAxis: {
                 categories:  uniqueNames,

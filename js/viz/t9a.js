@@ -56,6 +56,13 @@
                 title: {
                     text: ''
                 },
+                exporting: {
+                    chartOptions: {
+                        title: {
+                            text: 'Historical Trend for Travel Time Reliability - Bay Area'
+                        }
+                    }
+                },
                 xAxis: {
                     categories: data_years
                 },
@@ -129,6 +136,7 @@
                     title: {
                         text: 'Historical Trend for Travel Time Reliability'
                     },
+
                     subtitle: {
                         text: 'Top Metropolitan Areas'
                     },

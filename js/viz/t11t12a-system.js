@@ -85,6 +85,13 @@ function lineChartAggregate(dataUrl, seriesName, seriesData, aggregate, title ) 
       title: {
           text: ''
       },
+      exporting: {
+          chartOptions: {
+              title: {
+                  text: ''
+              }
+          }
+      },
       tooltip: {
         headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
         pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
@@ -155,6 +162,7 @@ function lineChartAggregate(dataUrl, seriesName, seriesData, aggregate, title ) 
       chartT11T12AOptions.xAxis.categories = years
       // chartT11T12AOptions.title.text = "Historical Trend for "+title
       $('#T11-T12-A-system .chart-title').html("Historical Trend for " + title);
+      chartT11T12AOptions.exporting.chartOptions.title.text = "Historical Trend for " + title;
 
       chart = new Highcharts.Chart(chartT11T12AOptions);
     })
@@ -183,6 +191,13 @@ function lineChart(dataUrl, seriesName, seriesData, chartType, title) {
         },
         title: {
             text: ''
+        },
+        exporting: {
+            chartOptions: {
+                title: {
+                    text: ''
+                }
+            }
         },
         colors: altColors,
       tooltip: {
@@ -240,6 +255,8 @@ function lineChart(dataUrl, seriesName, seriesData, chartType, title) {
     chartT11T12AOptions.xAxis.categories = categories
     // chartT11T12AOptions.title.text = "Historical Trend for "+title
     $('#T11-T12-A-system .chart-title').html("Historical Trend for " + title);
+    chartT11T12AOptions.exporting.chartOptions.title.text = "Historical Trend for " + title;
+
     chart = new Highcharts.Chart(chartT11T12AOptions);
   })
 }

@@ -66,25 +66,33 @@
           categories: []
       },
 
-        title: {
-            text: ''
-        },
-        yAxis: {
-          max: 15000000,
-          title: {
-            text: 'Weekday Boardings'
+      title: {
+          text: ''
+      },
+      exporting: {
+          chartOptions: {
+              title: {
+                  text: ''
+              }
           }
-        },
-        tooltip: {
-          headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
-          pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-          '<td style="padding:0"><b>{point.y:,.0f}</b></td></tr>',
-          footerFormat: '</table>',
-          shared: true,
-          useHTML: true
-        },
-        colors: colors
-      }
+      },
+      yAxis: {
+        max: 15000000,
+        title: {
+          text: 'Weekday Boardings'
+        }
+      },
+      tooltip: {
+        headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+        pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+        '<td style="padding:0"><b>{point.y:,.0f}</b></td></tr>',
+        footerFormat: '</table>',
+        shared: true,
+        useHTML: true
+      },
+      colors: colors
+    }
+
     jQuery.getJSON(dataUrl, function(data) {
       yaxis = [];
       dataArray = []
@@ -134,6 +142,8 @@
       options.xAxis.categories = years
       // options.title.text = title
       $('#T11-T12-B .chart-title').html(title);
+      options.exporting.chartOptions.title.text = title;
+
       chart = new Highcharts.Chart(options);
     })
   }
@@ -156,6 +166,13 @@ function lineChart(dataUrl, seriesName, seriesData, chartType, title) {
       },
       title: {
           text: ''
+      },
+      exporting: {
+          chartOptions: {
+              title: {
+                  text: ''
+              }
+          }
       },
       yAxis: {
         title: {
@@ -213,6 +230,7 @@ function lineChart(dataUrl, seriesName, seriesData, chartType, title) {
       }
     options.xAxis.categories = categories
     $('#T11-T12-B .chart-title').html(title);
+    options.exporting.chartOptions.title.text = title;
     chart = new Highcharts.Chart(options);
   })
 }
