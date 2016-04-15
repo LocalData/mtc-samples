@@ -107,7 +107,7 @@ function stackedChart(rawData, seriesName, seriesData) {
           enabled: false
         },
         title: {
-          text: '',
+          text: ''
         },
         exporting: {
             chartOptions: {

@@ -30,6 +30,13 @@
       exporting: {
           chartOptions: {
               title: {
+                  text: 'Metro Comparison for 2014 Time Spent in Congestion'
+              }
+          }
+      },
+      exporting: {
+          chartOptions: {
+              title: {
                   text: 'Metro Comparison for 2011 Time Spent in Congestion'
               }
           }
