@@ -1,9 +1,3 @@
-var t8_data = [];
-var series = [];
-
-var avg = [0,0,0,0,0,0,0,0,0,0];
-var avg_cont =0;
-
 (function($) {
     // Set the default highcharts separator
     Highcharts.setOptions({
@@ -14,18 +8,16 @@ var avg_cont =0;
     });
 
     $(function () {
-
+        var t19aRegionData;
         $.ajax({
             dataType: "json",
             url: "http://vitalsigns-production.elasticbeanstalk.com/t19/operator",
-            //data: data,
             async: false,
             success: successRegionDatat19a
         });
 
         function successRegionDatat19a(data) {
             t19aRegionData = data;
-            // console.log(t19aRegionData);
         }
         var regionnames = [];
         var pastuseful = [];
@@ -49,7 +41,7 @@ var avg_cont =0;
             exporting: {
                 chartOptions: {
                     title: {
-                        text: 'Transit Asset Condition'
+                        text: '2015 Transit Asset Condition by Operator'
                     }
                 }
             },

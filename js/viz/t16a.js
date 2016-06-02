@@ -12,7 +12,7 @@
         //REQUEST COUNTY LIST DATA FROM SERVER
         $.ajax({
             dataType: "json",
-            url: "http://vitalsigns-production.elasticbeanstalk.com/counties",
+            url: "http://data.vitalsigns.mtc.ca.gov/api/geo/county",
             //data: data,
             async: false,
             success: successt16aCountyList
@@ -26,7 +26,7 @@
         //REQUEST CITY DATA FROM SERVER
         $.ajax({
             dataType: "json",
-            url: "http://vitalsigns-production.elasticbeanstalk.com/t16/city",
+            url: "http://vitalsigns-production.elasticbeanstalk.com/api/t16/city",
             //data: data,
             async: false,
             success: successt16aCityData
@@ -40,7 +40,7 @@
         //REQUEST COUNTY DATA FROM SERVER
         $.ajax({
             dataType: "json",
-            url: "http://vitalsigns-production.elasticbeanstalk.com/t16/county",
+            url: "http://vitalsigns-production.elasticbeanstalk.com/api/t16/county",
             //data: data,
             async: false,
             success: successt16aCountyData
@@ -54,7 +54,7 @@
         //REQUEST REGION DATA FROM SERVER
         $.ajax({
             dataType: "json",
-            url: "http://vitalsigns-production.elasticbeanstalk.com/t16/region",
+            url: "http://vitalsigns-production.elasticbeanstalk.com/api/t16/region",
             //data: data,
             async: false,
             success: successt16aRegionData
@@ -64,7 +64,7 @@
             t16aregiondata = data;
 
         }
-        var yearNames = [2003, 2004, 2005, 2006, 2007,2009, 2010, 2011, 2012, 2013, 2014];
+        var yearNames = [2003, 2004, 2005, 2006, 2007,2009, 2010, 2011, 2012, 2013, 2014, 2015];
         var regionalPCI = [];
 
         for (var i = 0; i < yearNames.length; i++) {
@@ -188,7 +188,7 @@
                 }
               }
               for (var items in t16acountydata) {
-                if (t16acountydata[items].Year == yearNames[i] && t16acountydata[items].Jurisdiction == countyname) {
+                if (t16acountydata[items].Year == yearNames[i] && t16acountydata[items].County == countyname) {
                     countyPCI.push(Math.round(t16acountydata[items]["3YRAverage"]*1)/1);
                 }
               }
@@ -269,7 +269,7 @@
                 }
             }
             for (var items in t16acountydata) {
-                if (year === t16acountydata[items].Year && t16acountydata[items].Jurisdiction === countyname) {
+                if (year === t16acountydata[items].Year && t16acountydata[items].County === countyname) {
                     countyvalue = Math.round(t16acountydata[items]["3YRAverage"]*1)/1;
                 }
             }
