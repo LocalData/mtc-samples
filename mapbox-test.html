@@ -2,7 +2,6 @@
 <html>
 <head>
     <meta charset='utf-8' />
-    <title></title>
     <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
     <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.20.1/mapbox-gl.js'></script>
     <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.20.1/mapbox-gl.css' rel='stylesheet' />
@@ -13,7 +12,60 @@
 </head>
 <body>
 
+<style>
+.map-overlay {
+    font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+    position: absolute;
+    width: 25%;
+    top: 0;
+    left: 0;
+    padding: 10px;
+}
+
+.map-overlay .map-overlay-inner {
+    background-color: #fff;
+    box-shadow:0 1px 2px rgba(0, 0, 0, 0.20);
+    border-radius: 3px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.map-overlay h2 {
+    line-height: 24px;
+    display: block;
+    margin: 0 0 10px;
+}
+
+.map-overlay .legend .bar {
+    height: 10px;
+    display: inline-block;
+}
+
+.map-overlay input {
+    background-color: transparent;
+    display: inline-block;
+    width: 100%;
+    position: relative;
+    margin: 0;
+    cursor: ew-resize;
+}
+</style>
+
 <div id='map'></div>
+
+<div class='map-overlay top'>
+    <div class='map-overlay-inner'>
+        <h2>Speed Traveled by Time</h2>
+        <label id='hour'></label>
+        <input id='slider' type='range' min='0' max='24' step='1' value='12' />
+    </div>
+    <div class='map-overlay-inner'>
+        <div id='legend' class='legend'>
+            <div>Speed (mph)</div>
+        </div>
+    </div>
+</div>
+
 <script>
 // public key per mapbox account
 mapboxgl.accessToken = 'pk.eyJ1IjoiamVzc2ljYW1jaW5jaGFrIiwiYSI6ImNpcTB4Y2h2ODAwa3BmaG5uYW0xOHBlOGoifQ.VSD_IOgj6S1oVmrSamgZvw';
@@ -24,6 +76,9 @@ var map = new mapboxgl.Map({
     center: [-122.4, 37.8], // starting position - longlat san francisco
     zoom: 8 // starting zoom
 });
+
+var hourLabel = document.getElementById('hour');
+var legend = document.getElementById('legend');
 
 // add zoom and rotation controls to the map
 map.addControl(new mapboxgl.Navigation());
@@ -36,7 +91,7 @@ map.on('style.load', function() {
         "data": "https://mtc.cartodb.com:443/api/v2/sql?format=GeoJSON&q=SELECT * FROM public.speed_data_merged"
     });
 
-    // add layer with all data first
+    // add layer of all data, color by travel speed categories
     map.addLayer({
         "id": "speed-merged",
         "type": "line",
@@ -46,9 +101,22 @@ map.on('style.load', function() {
             "line-cap": "round"
         },
         "paint": {
-            "line-width": 2
+            "line-width": 2,
+            "line-color": {
+                "property": "speed",
+                "type": "categorical",
+                // need to calculate ranges for speed categories
+                "stops": [
+                    [25, '#ec7429'],
+                    [35, '#ea9e77'],
+                    [50, '#d9b305'],
+                    [60, '#9dbf88'],
+                    [90, '#62a60a']
+                ]
+            }
         }
     });
+
 });
 </script>
 
