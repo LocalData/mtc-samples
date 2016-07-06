@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8' />
+    <title></title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.20.1/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.20.1/mapbox-gl.css' rel='stylesheet' />
+    <style>
+        body { margin:0; padding:0; }
+        #map { position:absolute; top:0; bottom:10%; width:90%; }
+    </style>
+</head>
+<body>
+
+<div id='map'></div>
+<script>
+// public key per mapbox account
+mapboxgl.accessToken = 'pk.eyJ1IjoiamVzc2ljYW1jaW5jaGFrIiwiYSI6ImNpcTB4Y2h2ODAwa3BmaG5uYW0xOHBlOGoifQ.VSD_IOgj6S1oVmrSamgZvw';
+
+var map = new mapboxgl.Map({
+    container: 'map', // container id
+    style: 'mapbox://styles/mapbox/streets-v9', //stylesheet location
+    center: [-122.4, 37.8], // starting position - longlat san francisco
+    zoom: 8 // starting zoom
+});
+
+// add zoom and rotation controls to the map
+map.addControl(new mapboxgl.Navigation());
+
+// load data
+map.on('style.load', function() {
+    map.addSource("speed-merged", {
+        "type": "geojson",
+        // use cartodb sql api call, change default json format to geojson
+        "data": "https://mtc.cartodb.com:443/api/v2/sql?format=GeoJSON&q=SELECT * FROM public.speed_data_merged"
+    });
+
+    // add layer with all data first
+    map.addLayer({
+        "id": "speed-merged",
+        "type": "line",
+        "source": "speed-merged",
+        "layout": {
+            "line-join": "round",
+            "line-cap": "round"
+        },
+        "paint": {
+            "line-width": 2
+        }
+    });
+});
+</script>
+
+</body>
+</html>
