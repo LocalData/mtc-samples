@@ -11,7 +11,6 @@
     </style>
 </head>
 <body>
-
 <style>
 .map-overlay {
     font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
@@ -67,29 +66,84 @@
 </div>
 
 <script>
+/** 
+ * Prototyping congestion/speed data with Mapbox GL as alternative to CartoDB
+ * 
+ * Reference examples:
+ * https://www.mapbox.com/mapbox-gl-js/example/data-driven-circle-colors/
+ * https://www.mapbox.com/mapbox-gl-js/example/timeline-animation/
+ * https://ryanbaumann.squarespace.com/blog/2016/1/23/mapbox-gl-create-data-driven-styles
+ */
+
 // public key per mapbox account
 mapboxgl.accessToken = 'pk.eyJ1IjoiamVzc2ljYW1jaW5jaGFrIiwiYSI6ImNpcTB4Y2h2ODAwa3BmaG5uYW0xOHBlOGoifQ.VSD_IOgj6S1oVmrSamgZvw';
-
+        
+// draw map
 var map = new mapboxgl.Map({
     container: 'map', // container id
     style: 'mapbox://styles/mapbox/streets-v9', //stylesheet location
-    center: [-122.4, 37.8], // starting position - longlat san francisco
+    center: [-122.4, 37.8], // starting position - longfrancisco
     zoom: 8 // starting zoom
 });
 
+// draw slider and legend
 var hourLabel = document.getElementById('hour');
 var legend = document.getElementById('legend');
 
-// add zoom and rotation controls to the map
-map.addControl(new mapboxgl.Navigation());
+// set global vars for filtering and coloring speed data
+var breaks = [25, 35, 50, 60, 61];
+var colors = ['#ec7429', '#ea9e77', '#d9b305', '#9dbf88', '#62a60a'];
+var layers = [];
+var filters = [];
 
-// load data
+// calculate speed ranges
+// logic: is speed value <= 25, > 25 and <= 35 etc or >= 61
+function getSpeedRanges(breaks, param) {
+    filters = [];
+    for (var p = 0; p < breaks.length; p++) {
+        if (p <= 0) {
+            filters.push([ 'all', 
+                [ '<=', param, breaks[p] ]
+            ])
+        } else if (p < breaks.length - 1) {
+            filters.push([ 'all', 
+                [ '>', param, breaks[p -1] ],
+                [ '<=', param, breaks[p] ]
+            ])
+        } else {
+            filters.push([ 'all', 
+                [ '>=', param, breaks[p] ]
+            ])
+        }
+    }
+}
+
+// create map layer with speed ranges
+function getSpeedLayers(filters, colors) {
+    layers = [];
+    for (var p = 0; p < breaks.length; p++) {
+        layers.push({
+            id: 'points-' + p,
+            type: 'line',
+            source: 'speed-merged',
+            paint: {
+                "line-color": colors[p]
+            },
+            filter: filters[p]
+        })
+    }
+}
+
+// load and process the map data
 map.on('style.load', function() {
     map.addSource("speed-merged", {
         "type": "geojson",
         // use cartodb sql api call, change default json format to geojson
         "data": "https://mtc.cartodb.com:443/api/v2/sql?format=GeoJSON&q=SELECT * FROM public.speed_data_merged"
     });
+
+    // add zoom and rotation controls
+    map.addControl(new mapboxgl.Navigation());
 
     // add layer of all data, color by travel speed categories
     map.addLayer({
@@ -101,21 +155,24 @@ map.on('style.load', function() {
             "line-cap": "round"
         },
         "paint": {
-            "line-width": 2,
-            "line-color": {
-                "property": "speed",
-                "type": "categorical",
-                // need to calculate ranges for speed categories
-                "stops": [
-                    [25, '#ec7429'],
-                    [35, '#ea9e77'],
-                    [50, '#d9b305'],
-                    [60, '#9dbf88'],
-                    [90, '#62a60a']
-                ]
-            }
+            "line-width": 2
+            // "line-color": {
+            //     "property": "speed",
+            //     "type": "categorical",
+            //     // need to calculate ranges for speed categories
+            //     "stops": [
+            //         [filters[0], '#ec7429'],
+            //         [filters[1], '#ea9e77'],
+            //         [filters[2], '#d9b305'],
+            //         [filters[3], '#9dbf88'],
+            //         [filters[4], '#62a60a']
+            //     ]
+            // }
         }
     });
+
+    getSpeedRanges(breaks, 'speed'); // get the ranges based on data param
+    getSpeedLayers(filters, colors); // 
 
 });
 </script>
